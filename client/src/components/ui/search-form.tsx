@@ -52,15 +52,15 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
 
   return (
     <div className={cn(
-      "bg-white rounded-lg shadow-lg p-4 md:p-6 w-full max-w-5xl mx-auto",
+      "bg-white rounded-lg shadow-lg p-3 md:p-6 w-full max-w-5xl mx-auto",
       className
     )}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className={cn(
-          isCompact ? "flex flex-wrap items-end gap-2" : "space-y-4"
+          isCompact ? "flex flex-wrap items-end gap-2" : "space-y-3"
         )}>
           <div className={cn(
-            "grid gap-4",
+            "grid gap-2 md:gap-4",
             isCompact ? "grid-cols-1 md:grid-cols-5 w-full" : "grid-cols-1 md:grid-cols-4"
           )}>
             <FormField
@@ -69,8 +69,8 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               render={({ field }) => (
                 <FormItem className={isCompact ? "md:col-span-2" : ""}>
                   <FormLabel className={cn(
-                    "text-neutral-600 font-medium",
-                    isCompact && "text-sm"
+                    "text-neutral-600 font-medium text-xs md:text-sm",
+                    isCompact && "text-xs"
                   )}>
                     Destination
                   </FormLabel>
@@ -78,7 +78,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                     <Input 
                       placeholder="Where to?" 
                       {...field} 
-                      className="w-full"
+                      className="w-full h-8 md:h-10 text-sm"
                     />
                   </FormControl>
                 </FormItem>
@@ -91,8 +91,8 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={cn(
-                    "text-neutral-600 font-medium",
-                    isCompact && "text-sm"
+                    "text-neutral-600 font-medium text-xs md:text-sm",
+                    isCompact && "text-xs"
                   )}>
                     Check-in
                   </FormLabel>
@@ -102,7 +102,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal h-8 md:h-10 text-sm",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -135,8 +135,8 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={cn(
-                    "text-neutral-600 font-medium",
-                    isCompact && "text-sm"
+                    "text-neutral-600 font-medium text-xs md:text-sm",
+                    isCompact && "text-xs"
                   )}>
                     Check-out
                   </FormLabel>
@@ -146,7 +146,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-3 text-left font-normal",
+                            "w-full pl-3 text-left font-normal h-8 md:h-10 text-sm",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -181,14 +181,14 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className={cn(
-                    "text-neutral-600 font-medium",
-                    isCompact && "text-sm"
+                    "text-neutral-600 font-medium text-xs md:text-sm",
+                    isCompact && "text-xs"
                   )}>
                     Travelers
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 md:h-10 text-sm">
                         <SelectValue placeholder="Select travelers" />
                       </SelectTrigger>
                     </FormControl>
@@ -208,15 +208,15 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
           <Button 
             type="submit" 
             className={cn(
-              "flex items-center",
+              "flex items-center text-xs md:text-sm",
               isCompact
-                ? "py-2 md:h-10 md:mt-0 mt-2"
-                : "px-8 py-3 bg-secondary hover:bg-secondary-dark w-full md:w-auto md:mx-auto mt-4"
+                ? "py-1 h-8 md:h-10 md:mt-0 mt-1"
+                : "px-4 md:px-8 py-2 md:py-3 bg-secondary hover:bg-secondary-dark w-full md:w-auto md:mx-auto mt-2 md:mt-4"
             )}
-            size={isCompact ? "sm" : "lg"}
+            size={isCompact ? "sm" : "default"}
             variant={isCompact ? "default" : "secondary"}
           >
-            <Search className="mr-2 h-4 w-4" />
+            <Search className="mr-1 h-3 w-3 md:h-4 md:w-4" />
             Search
           </Button>
         </form>
