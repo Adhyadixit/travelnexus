@@ -16,16 +16,25 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Parse the URL parameters
-  const params = new URLSearchParams(location.split("?")[1] || "");
-  const itemType = params.get("type") as "package" | "hotel" | "cab" | "cruise" | "event" | null;
-  const itemId = params.get("id") ? parseInt(params.get("id") as string) : null;
+  // Parse the URL parameters - format: /checkout/:type/:id?queryParams
+  const pathParts = location.split('/');
+  const queryParams = location.split('?')[1] || '';
+  const params = new URLSearchParams(queryParams);
+  
+  // Extract type and id from the path
+  const itemType = pathParts.length > 2 ? pathParts[2] as "package" | "hotel" | "cab" | "cruise" | "event" : null;
+  const itemId = pathParts.length > 3 ? parseInt(pathParts[3]) : null;
+  
+  // Extract booking details from URL parameters
+  const startDateParam = params.get('startDate');
+  const endDateParam = params.get('endDate');
+  const guestsParam = params.get('guests');
   
   // Booking details state
   const [bookingDetails, setBookingDetails] = useState({
-    startDate: new Date(),
-    endDate: undefined as Date | undefined,
-    numberOfPeople: 1,
+    startDate: startDateParam ? new Date(startDateParam) : new Date(),
+    endDate: endDateParam ? new Date(endDateParam) : undefined as Date | undefined,
+    numberOfPeople: guestsParam ? parseInt(guestsParam) : 1,
   });
   
   // Fetch the item based on type
@@ -110,17 +119,26 @@ export default function CheckoutPage() {
     );
   }
   
+  // Helper function to type-check item properties
+  const hasProperty = <T extends object, K extends string>(obj: T, prop: K): obj is T & Record<K, any> => {
+    return prop in obj;
+  };
+
   // Prepare item data for checkout
   const checkoutItem = {
     id: item.id,
-    name: "name" in item ? item.name : "driverName" in item ? item.driverName : "Unknown",
-    price: "pricePerNight" in item ? item.pricePerNight : "dailyRate" in item ? item.dailyRate : "price" in item ? item.price : 0,
-    image: "imageUrl" in item ? item.imageUrl : "vehicleImageUrl" in item ? item.vehicleImageUrl : "",
-    type: itemType,
+    name: hasProperty(item, "name") ? item.name : 
+          hasProperty(item, "driverName") ? item.driverName : "Unknown",
+    price: hasProperty(item, "pricePerNight") ? item.pricePerNight : 
+           hasProperty(item, "dailyRate") ? item.dailyRate : 
+           hasProperty(item, "price") ? item.price : 0,
+    image: hasProperty(item, "imageUrl") ? item.imageUrl : 
+           hasProperty(item, "vehicleImageUrl") ? item.vehicleImageUrl : "",
+    type: itemType || "package",  // Provide a safe default
     destination: destination?.name,
-    duration: "duration" in item ? item.duration : undefined,
-    rating: "rating" in item ? item.rating : undefined,
-  };
+    duration: hasProperty(item, "duration") ? item.duration : undefined,
+    rating: hasProperty(item, "rating") ? item.rating : undefined,
+  } as const;
 
   return (
     <PageContainer>

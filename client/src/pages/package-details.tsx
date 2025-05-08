@@ -112,6 +112,7 @@ export default function PackageDetails() {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (packageData?.duration || 0));
     
+    // Use the correct URL format matching the route in App.tsx
     setLocation(`/checkout/package/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}`);
   };
   
