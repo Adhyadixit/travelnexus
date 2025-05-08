@@ -1342,9 +1342,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid file format. Only images are allowed." });
       }
 
-      // Import here to avoid circular dependencies
-      const { uploadImage } = require("./cloudinary");
-      const result = await uploadImage(file, folder);
+      // Use imported functions from cloudinary.ts
+      // We'll use dynamic import to avoid any circular dependencies
+      const cloudinaryModule = await import("./cloudinary");
+      const result = await cloudinaryModule.uploadImage(file, folder);
       res.json(result);
     } catch (error: any) {
       console.error("Error uploading image:", error);
@@ -1403,29 +1404,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Image upload route for Cloudinary integration
-  app.post("/api/upload-image", async (req, res) => {
-    if (!req.isAuthenticated()) return res.status(401).json({ error: "Unauthorized" });
-    
-    try {
-      const { file, folder = "travelease" } = req.body;
-      
-      if (!file) {
-        return res.status(400).json({ error: "No file provided" });
-      }
-
-      // Validate the file is a data URL
-      if (!file.startsWith("data:image/")) {
-        return res.status(400).json({ error: "Invalid file format. Only images are allowed." });
-      }
-
-      const result = await uploadImage(file, folder);
-      res.json(result);
-    } catch (error: any) {
-      console.error("Error uploading image:", error);
-      res.status(500).json({ error: error.message || "Failed to upload image" });
-    }
-  });
+  // Image upload route is handled by the modular imageUploadRoutes import
 
   // Admin destinations CRUD operations
   // Routes moved to a separate file (server/routes/admin-destinations.ts)
