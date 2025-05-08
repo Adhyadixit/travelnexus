@@ -1,7 +1,8 @@
 import { storage } from "./storage";
 import { hashPassword } from "./auth";
-import { roleEnum } from "@shared/schema";
+import { roleEnum, hotels, reviews } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 // Function to create admin user
 async function createAdminUser() {
@@ -576,14 +577,14 @@ async function createReviews() {
     }
     
     // Check if reviews already exist
-    const reviewsData = await storage.db.select().from(storage.reviews).limit(1);
+    const reviewsData = await db.select().from(reviews).limit(1);
     if (reviewsData.length > 0) {
       console.log("Reviews already exist");
       return;
     }
     
     // Create reviews for hotels
-    const hotelReviews = [
+    const hotelReviewsData = [
       // Reviews for first hotel (Burj Al Arab)
       {
         userId: admin.id,
@@ -690,29 +691,29 @@ async function createReviews() {
     ];
     
     // Insert reviews into database
-    for (const review of hotelReviews) {
-      await storage.db.insert(storage.reviews).values(review);
+    for (const review of hotelReviewsData) {
+      await db.insert(reviews).values(review);
     }
     
-    // Update the review counts and ratings for hotels
-    for (const hotel of hotels) {
-      const hotelReviews = hotelReviews.filter(r => r.itemId === hotel.id);
+    // Update the review counts and ratings for each hotel
+    for (let i = 0; i < hotels.length; i++) {
+      const hotel = hotels[i];
+      const hotelReviews = hotelReviewsData.filter(r => r.itemId === hotel.id);
+      
       if (hotelReviews.length > 0) {
         const reviewCount = hotelReviews.length;
         const totalRating = hotelReviews.reduce((sum, review) => sum + review.rating, 0);
         const avgRating = totalRating / reviewCount;
         
-        await storage.db
-          .update(storage.hotels)
-          .set({ 
-            reviewCount, 
-            userRating: avgRating
-          })
-          .where(eq(storage.hotels.id, hotel.id));
+        // Use direct SQL update to avoid schema mismatch issues
+        await db.execute(
+          `UPDATE hotels SET review_count = $1, user_rating = $2 WHERE id = $3`,
+          [reviewCount, avgRating, hotel.id]
+        );
       }
     }
     
-    console.log(`${hotelReviews.length} reviews created`);
+    console.log(`${hotelReviewsData.length} reviews created`);
   } catch (error) {
     console.error("Error creating reviews:", error);
   }
