@@ -692,18 +692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/drivers/admin", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const allDrivers = await storage.getAllDrivers();
-      res.json(allDrivers);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch drivers" });
-    }
-  });
+  // Routes for drivers admin have been moved to server/routes/admin-drivers.ts
 
   app.get("/api/cruises/admin", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {
