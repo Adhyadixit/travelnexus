@@ -11,7 +11,8 @@ import {
   CalendarDays, 
   BookmarkIcon, 
   Settings, 
-  LogOut 
+  LogOut,
+  Compass
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -29,6 +30,11 @@ export default function AdminSidebar() {
       title: "Dashboard",
       href: "/admin/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />
+    },
+    {
+      title: "Destinations",
+      href: "/admin/destinations",
+      icon: <Compass className="h-5 w-5" />
     },
     {
       title: "Packages",
