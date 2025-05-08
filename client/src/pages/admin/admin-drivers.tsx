@@ -24,8 +24,8 @@ export default function AdminDrivers() {
   const filteredDrivers = searchQuery
     ? drivers.filter(driver =>
         driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        driver.vehicleType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        driver.vehicleDetails.toLowerCase().includes(searchQuery.toLowerCase())
+        driver.carModel.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        driver.languages.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : drivers;
   
@@ -80,9 +80,9 @@ export default function AdminDrivers() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Vehicle Type</TableHead>
-                    <TableHead>Vehicle Details</TableHead>
-                    <TableHead>Price Per Day</TableHead>
+                    <TableHead>Car Model</TableHead>
+                    <TableHead>Languages</TableHead>
+                    <TableHead>Daily Rate</TableHead>
                     <TableHead>Destination</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -91,9 +91,9 @@ export default function AdminDrivers() {
                   {filteredDrivers.map((driver) => (
                     <TableRow key={driver.id}>
                       <TableCell className="font-medium">{driver.name}</TableCell>
-                      <TableCell>{driver.vehicleType}</TableCell>
-                      <TableCell>{driver.vehicleDetails}</TableCell>
-                      <TableCell>${driver.pricePerDay}</TableCell>
+                      <TableCell>{driver.carModel}</TableCell>
+                      <TableCell>{driver.languages}</TableCell>
+                      <TableCell>${driver.dailyRate}</TableCell>
                       <TableCell>{driver.destinationId}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">

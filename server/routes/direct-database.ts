@@ -12,6 +12,7 @@ import {
   conversations,
   messages,
 } from "@shared/schema";
+import { eq, and, gte, lte, desc, asc } from "drizzle-orm";
 
 const router = Router();
 
@@ -119,6 +120,37 @@ router.get("/api/direct/messages", async (req, res) => {
   } catch (error) {
     console.error("Error in direct messages route:", error);
     res.status(500).json({ error: "Failed to fetch messages directly" });
+  }
+});
+
+// Direct reviews route with user information
+router.get("/api/direct/reviews", async (req, res) => {
+  try {
+    console.log("Direct database access for reviews with user data");
+    const allReviews = await db.select({
+      review: reviews,
+      user: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        username: users.username,
+      }
+    })
+    .from(reviews)
+    .leftJoin(users, eq(reviews.userId, users.id))
+    .orderBy(desc(reviews.createdAt));
+    
+    // Transform the data to the expected format
+    const formattedReviews = allReviews.map(item => ({
+      ...item.review,
+      user: item.user
+    }));
+    
+    console.log(`Successfully fetched ${formattedReviews.length} reviews directly from DB`);
+    res.json(formattedReviews);
+  } catch (error) {
+    console.error("Error in direct reviews route:", error);
+    res.status(500).json({ error: "Failed to fetch reviews directly" });
   }
 });
 
