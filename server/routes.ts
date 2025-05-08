@@ -530,6 +530,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch hotels" });
     }
   });
+  
+  // Hotel Room Types
+  app.get("/api/hotel-room-types/:hotelId", async (req, res) => {
+    try {
+      const hotelId = parseInt(req.params.hotelId);
+      
+      const roomTypes = await db
+        .select()
+        .from(hotelRoomTypes)
+        .where(eq(hotelRoomTypes.hotelId, hotelId))
+        .orderBy(asc(hotelRoomTypes.name));
+      
+      res.json(roomTypes);
+    } catch (error) {
+      console.error("Error fetching room types:", error);
+      res.status(500).json({ error: "Failed to fetch room types" });
+    }
+  });
+  
+  app.get("/api/hotel-room-types/:id/images", async (req, res) => {
+    try {
+      const roomTypeId = parseInt(req.params.id);
+      
+      const images = await db
+        .select()
+        .from(hotelRoomImages)
+        .where(eq(hotelRoomImages.roomTypeId, roomTypeId))
+        .orderBy(asc(hotelRoomImages.displayOrder));
+      
+      res.json(images);
+    } catch (error) {
+      console.error("Error fetching room images:", error);
+      res.status(500).json({ error: "Failed to fetch room images" });
+    }
+  });
+  
+  // Admin routes for room types and images
+  app.post("/api/hotel-room-types", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const [roomType] = await db
+        .insert(hotelRoomTypes)
+        .values(req.body)
+        .returning();
+      
+      res.status(201).json(roomType);
+    } catch (error) {
+      console.error("Error creating room type:", error);
+      res.status(500).json({ error: "Failed to create room type" });
+    }
+  });
+  
+  app.put("/api/hotel-room-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const [updatedRoomType] = await db
+        .update(hotelRoomTypes)
+        .set(req.body)
+        .where(eq(hotelRoomTypes.id, parseInt(req.params.id)))
+        .returning();
+      
+      if (!updatedRoomType) {
+        return res.status(404).json({ error: "Room type not found" });
+      }
+      
+      res.json(updatedRoomType);
+    } catch (error) {
+      console.error("Error updating room type:", error);
+      res.status(500).json({ error: "Failed to update room type" });
+    }
+  });
+  
+  app.delete("/api/hotel-room-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      await db
+        .delete(hotelRoomTypes)
+        .where(eq(hotelRoomTypes.id, parseInt(req.params.id)));
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting room type:", error);
+      res.status(500).json({ error: "Failed to delete room type" });
+    }
+  });
+  
+  // Room images management
+  app.post("/api/hotel-room-images", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const [roomImage] = await db
+        .insert(hotelRoomImages)
+        .values(req.body)
+        .returning();
+      
+      res.status(201).json(roomImage);
+    } catch (error) {
+      console.error("Error adding room image:", error);
+      res.status(500).json({ error: "Failed to add room image" });
+    }
+  });
+  
+  app.put("/api/hotel-room-images/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const [updatedImage] = await db
+        .update(hotelRoomImages)
+        .set(req.body)
+        .where(eq(hotelRoomImages.id, parseInt(req.params.id)))
+        .returning();
+      
+      if (!updatedImage) {
+        return res.status(404).json({ error: "Room image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      console.error("Error updating room image:", error);
+      res.status(500).json({ error: "Failed to update room image" });
+    }
+  });
+  
+  app.delete("/api/hotel-room-images/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      await db
+        .delete(hotelRoomImages)
+        .where(eq(hotelRoomImages.id, parseInt(req.params.id)));
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting room image:", error);
+      res.status(500).json({ error: "Failed to delete room image" });
+    }
+  });
 
   app.get("/api/drivers/admin", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {

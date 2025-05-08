@@ -175,6 +175,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
             <TabsTrigger value="images">Images</TabsTrigger>
             <TabsTrigger value="amenities">Amenities & Features</TabsTrigger>
             <TabsTrigger value="rooms">Room Types</TabsTrigger>
+            <TabsTrigger value="roomImages">Room Images</TabsTrigger>
             <TabsTrigger value="details">Additional Details</TabsTrigger>
           </TabsList>
           
@@ -574,10 +575,36 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       <FormDescription>
                         Enter room types in JSON format. The price field represents additional cost over base price.
                       </FormDescription>
+                      <FormDescription className="mt-2 text-primary">
+                        Note: After saving the hotel, use the Room Images tab to manage images for each room type.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Room Images Tab */}
+          <TabsContent value="roomImages">
+            <Card>
+              <CardHeader>
+                <CardTitle>Room Type Images</CardTitle>
+                <CardDescription>Manage images for each room type in this hotel</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {initialData ? (
+                  <RoomImagesManager hotelId={initialData.id} />
+                ) : (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Hotel not saved</AlertTitle>
+                    <AlertDescription>
+                      Please save the hotel first before managing room images.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
