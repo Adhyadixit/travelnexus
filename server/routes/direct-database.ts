@@ -300,7 +300,7 @@ router.post("/api/direct/payment-details", async (req, res) => {
 });
 
 // Direct create event route
-router.post("/api/events", async (req, res) => {
+router.post("/api/direct/events", async (req, res) => {
   try {
     console.log("Direct database access to create event");
     
@@ -339,7 +339,7 @@ router.post("/api/events", async (req, res) => {
 });
 
 // Direct update event route
-router.patch("/api/events/:id", async (req, res) => {
+router.patch("/api/direct/events/:id", async (req, res) => {
   try {
     console.log(`Direct database access to update event with ID: ${req.params.id}`);
     const eventId = parseInt(req.params.id);
@@ -387,7 +387,7 @@ router.patch("/api/events/:id", async (req, res) => {
 });
 
 // Direct delete event route
-router.delete("/api/events/:id", async (req, res) => {
+router.delete("/api/direct/events/:id", async (req, res) => {
   try {
     console.log(`Direct database access to delete event with ID: ${req.params.id}`);
     const eventId = parseInt(req.params.id);
