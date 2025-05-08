@@ -11,12 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { Search, Edit, Trash, Plus, Ship } from "lucide-react";
+import { Search, Edit, Trash, Plus, Ship, X } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 const cruiseFormSchema = insertCruiseSchema.extend({
   price: z.coerce.number().min(1, "Price must be greater than 0"),
@@ -315,21 +316,28 @@ export default function AdminCruises() {
                     )}
                   />
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-6">
+                    <h3 className="text-lg font-medium">Images</h3>
                     <FormField
                       control={createForm.control}
                       name="imageUrl"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Image URL</FormLabel>
+                          <FormLabel>Main Image</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://example.com/image.jpg" {...field} />
+                            <ImageUpload
+                              value={field.value}
+                              onChange={field.onChange}
+                              folder="travelease/cruises"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <FormField
                       control={createForm.control}
                       name="price"
@@ -589,37 +597,105 @@ export default function AdminCruises() {
               
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Images</h3>
+                
                 <FormField
                   control={editForm.control}
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image URL</FormLabel>
+                      <FormLabel>Main Image</FormLabel>
                       <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="imageGallery"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Images (JSON array of URLs)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder='["https://example.com/image1.jpg", "https://example.com/image2.jpg"]'
-                          rows={3}
-                          {...field} 
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          folder="travelease/cruises"
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Image Gallery</FormLabel>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const currentValue = editForm.getValues("imageGallery");
+                        try {
+                          const currentGallery = currentValue ? JSON.parse(currentValue) : [];
+                          const newGallery = [...currentGallery, ""];
+                          editForm.setValue("imageGallery", JSON.stringify(newGallery));
+                        } catch (error) {
+                          // If JSON parsing fails, start a new array
+                          editForm.setValue("imageGallery", JSON.stringify([""]));
+                        }
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Image
+                    </Button>
+                  </div>
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="imageGallery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <div className="space-y-4">
+                            {(() => {
+                              let galleryImages: string[] = [];
+                              try {
+                                galleryImages = field.value ? JSON.parse(field.value) : [];
+                              } catch (error) {
+                                // If parsing fails, use empty array
+                              }
+                              
+                              return galleryImages.map((url, index) => (
+                                <div key={index} className="relative border rounded-md p-4">
+                                  <div className="absolute top-2 right-2">
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      onClick={() => {
+                                        const newGallery = [...galleryImages];
+                                        newGallery.splice(index, 1);
+                                        field.onChange(JSON.stringify(newGallery));
+                                      }}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="mt-6">
+                                    <ImageUpload
+                                      value={url}
+                                      onChange={(newUrl) => {
+                                        const newGallery = [...galleryImages];
+                                        newGallery[index] = newUrl;
+                                        field.onChange(JSON.stringify(newGallery));
+                                      }}
+                                      folder="travelease/cruises/gallery"
+                                    />
+                                  </div>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          Add multiple images to showcase different aspects of the cruise
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               
               <div className="space-y-6">
