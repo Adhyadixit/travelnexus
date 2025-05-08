@@ -100,11 +100,12 @@ export default function HomePage() {
             <div className="overflow-x-auto no-scrollbar">
               <div className="flex space-x-4 pb-4 min-w-max md:grid md:grid-cols-5 md:gap-4 md:space-x-0">
                 {destinations?.slice(0, 5).map((destination) => (
-                  <DestinationCard 
-                    key={destination.id} 
-                    destination={destination} 
-                    className="w-40 md:w-auto"
-                  />
+                  <div key={destination.id} className="w-40 md:w-auto flex-shrink-0">
+                    <DestinationCard 
+                      destination={destination} 
+                      className="h-full"
+                    />
+                  </div>
                 ))}
               </div>
               <div className="mt-4 text-center md:hidden">

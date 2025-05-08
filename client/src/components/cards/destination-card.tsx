@@ -10,9 +10,9 @@ interface DestinationCardProps {
 export default function DestinationCard({ destination, className }: DestinationCardProps) {
   return (
     <Link href={`/destinations/${destination.id}`}>
-      <a className={cn("block", className)}>
+      <a className={cn("block w-full", className)}>
         <div className="destination-card rounded-xl overflow-hidden bg-white shadow cursor-pointer">
-          <div className="h-40 relative">
+          <div className="aspect-[4/5] relative">
             <img 
               src={destination.imageUrl} 
               alt={`${destination.name}, ${destination.country}`} 
