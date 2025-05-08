@@ -1,255 +1,209 @@
-import { Request, Response, Router } from "express";
+import { Router, Request, Response } from "express";
 import { db } from "../db";
-import { 
-  bookings, 
-  paymentDetails,
-  insertPaymentDetailsSchema,
-  InsertPaymentDetail
-} from "@shared/schema";
+import { paymentDetails, bookings } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { isAuthenticated, isAdmin } from "../auth";
-import { z } from "zod";
 
 const router = Router();
 
-// Create payment details for a booking
-router.post("/", isAuthenticated, async (req: Request, res: Response) => {
-  try {
-    const { bookingId } = req.body;
-    
-    // First check if the booking exists and belongs to the user
-    const booking = await db.query.bookings.findFirst({
-      where: eq(bookings.id, bookingId),
-    });
-    
-    if (!booking) {
-      return res.status(404).json({ error: "Booking not found" });
-    }
-    
-    // Verify user owns this booking or is admin
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Access denied" });
-    }
-    
-    // Validate payment details
-    try {
-      const validPaymentData = insertPaymentDetailsSchema.parse(req.body);
-      
-      // Modify the credit card number to only store the last 4 digits for security
-      const cardNumber = validPaymentData.cardNumber;
-      const maskedCardNumber = cardNumber.slice(-4).padStart(cardNumber.length, '*');
-      
-      // Create the payment details
-      const [newPaymentDetails] = await db
-        .insert(paymentDetails)
-        .values({
-          ...validPaymentData,
-          cardNumber: maskedCardNumber,
-          // We should clear the CVC immediately after processing
-          cardCVC: null,
-        })
-        .returning();
-      
-      // Update the booking payment status
-      await db
-        .update(bookings)
-        .set({
-          paymentStatus: "pending",
-          transactionId: newPaymentDetails.transactionId || `TR-${booking.id}-${Date.now().toString().slice(-6)}`,
-        })
-        .where(eq(bookings.id, bookingId));
-      
-      res.status(201).json(newPaymentDetails);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid payment data", details: validationError.errors });
-      }
-      throw validationError;
-    }
-  } catch (error) {
-    console.error("Error creating payment details:", error);
-    res.status(500).json({ error: "Failed to create payment details" });
-  }
-});
-
-// Get payment details for a booking - for the user who owns the booking
-router.get("/booking/:bookingId", isAuthenticated, async (req: Request, res: Response) => {
+// Get payment details for a specific booking
+router.get("/api/payment-details/booking/:bookingId", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const bookingId = parseInt(req.params.bookingId);
     
-    // First check if the booking exists and belongs to the user
-    const booking = await db.query.bookings.findFirst({
-      where: eq(bookings.id, bookingId),
-    });
-    
-    if (!booking) {
-      return res.status(404).json({ error: "Booking not found" });
+    if (isNaN(bookingId)) {
+      return res.status(400).json({ error: "Invalid booking ID" });
     }
     
-    // Verify user owns this booking or is admin
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Access denied" });
+    const paymentDetail = await db
+      .select()
+      .from(paymentDetails)
+      .where(eq(paymentDetails.bookingId, bookingId))
+      .limit(1);
+    
+    if (paymentDetail.length === 0) {
+      return res.status(404).json({ error: "Payment details not found for this booking" });
     }
     
-    // Get payment details
-    const paymentData = await db.query.paymentDetails.findFirst({
-      where: eq(paymentDetails.bookingId, bookingId),
-    });
-    
-    if (!paymentData) {
-      return res.status(404).json({ error: "Payment details not found" });
-    }
-    
-    // Never return the CVC even if it somehow got stored
-    const { cardCVC, ...safePaymentData } = paymentData;
-    
-    res.json(safePaymentData);
+    res.json(paymentDetail[0]);
   } catch (error) {
     console.error("Error fetching payment details:", error);
     res.status(500).json({ error: "Failed to fetch payment details" });
   }
 });
 
-// Process payment (simulate payment processing)
-router.post("/process/:bookingId", isAuthenticated, async (req: Request, res: Response) => {
+// Process payment for a booking
+router.post("/api/payment-details/process/:bookingId", isAuthenticated, async (req: Request, res: Response) => {
   try {
     const bookingId = parseInt(req.params.bookingId);
+    const paymentData = req.body;
     
-    // First check if the booking exists and belongs to the user
-    const booking = await db.query.bookings.findFirst({
-      where: eq(bookings.id, bookingId),
-    });
+    if (isNaN(bookingId)) {
+      return res.status(400).json({ error: "Invalid booking ID" });
+    }
     
-    if (!booking) {
+    // Check if booking exists
+    const bookingExists = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.id, bookingId))
+      .limit(1);
+    
+    if (bookingExists.length === 0) {
       return res.status(404).json({ error: "Booking not found" });
     }
     
-    // Verify user owns this booking or is admin
-    if (booking.userId !== req.user!.id && req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Access denied" });
-    }
+    // Here we would normally integrate with Stripe
+    // But since we don't have Stripe keys yet, we'll create a mock payment processor response
     
-    // Get payment details
-    const paymentData = await db.query.paymentDetails.findFirst({
-      where: eq(paymentDetails.bookingId, bookingId),
-    });
+    // Save payment details
+    const result = await db.insert(paymentDetails).values({
+      bookingId,
+      cardName: paymentData.cardName,
+      cardNumber: paymentData.cardNumber,
+      cardExpiry: paymentData.cardExpiry,
+      cardCvc: paymentData.cardCvc,
+      address: paymentData.address,
+      city: paymentData.city,
+      state: paymentData.state,
+      zipCode: paymentData.zipCode,
+      country: paymentData.country || "USA",
+      amount: bookingExists[0].totalPrice,
+      paymentStatus: "error", // Set status to error
+      errorMessage: "We are experiencing some issues with our payment processor at the moment. Please try again later or contact support for assistance.",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
     
-    if (!paymentData) {
-      return res.status(404).json({ error: "Payment details not found" });
-    }
+    // Update booking status
+    await db
+      .update(bookings)
+      .set({ 
+        status: "pending",
+        address: paymentData.address,
+        city: paymentData.city,
+        state: paymentData.state,
+        zipCode: paymentData.zipCode,
+        country: paymentData.country || "USA",
+      })
+      .where(eq(bookings.id, bookingId));
     
-    // Simulate payment processing (in a real system, this would integrate with Stripe or another provider)
-    // For this demo, we'll simulate a payment error to demonstrate the error handling flow
-    const paymentResult = {
+    res.status(201).json({
       success: false,
-      error: "Payment declined by issuing bank. Please try another payment method or contact your bank.",
-    };
-    
-    if (paymentResult.success) {
-      // Update payment status to success
-      await db
-        .update(paymentDetails)
-        .set({
-          paymentStatus: "success",
-          errorMessage: null,
-          transactionId: `TR-${Date.now().toString().slice(-10)}`,
-        })
-        .where(eq(paymentDetails.bookingId, bookingId));
-      
-      // Update booking status
-      await db
-        .update(bookings)
-        .set({
-          status: "confirmed",
-          paymentStatus: "paid",
-        })
-        .where(eq(bookings.id, bookingId));
-      
-      res.json({ success: true, message: "Payment processed successfully" });
-    } else {
-      // Update payment status to failed
-      await db
-        .update(paymentDetails)
-        .set({
-          paymentStatus: "failed",
-          errorMessage: paymentResult.error,
-        })
-        .where(eq(paymentDetails.bookingId, bookingId));
-      
-      // Don't update booking status - keep it as pending
-      res.status(400).json({ 
-        success: false, 
-        error: paymentResult.error,
-      });
-    }
+      paymentDetail: result[0],
+      error: {
+        message: "We are experiencing some issues with our payment processor at the moment. Please try again later or contact support for assistance.",
+        code: "stripe_unavailable",
+        needHelp: true
+      }
+    });
   } catch (error) {
     console.error("Error processing payment:", error);
-    res.status(500).json({ error: "Failed to process payment" });
+    res.status(500).json({ 
+      success: false, 
+      error: {
+        message: "We are experiencing some issues with our payment processor at the moment. Please try again later or contact support for assistance.",
+        code: "payment_error",
+        needHelp: true
+      }
+    });
   }
 });
 
-// Admin routes
 // Get all payment details (admin only)
-router.get("/admin", isAdmin, async (req: Request, res: Response) => {
+router.get("/api/payment-details/admin", isAdmin, async (req: Request, res: Response) => {
   try {
-    const allPayments = await db.query.paymentDetails.findMany({
-      orderBy: (paymentDetails, { desc }) => [desc(paymentDetails.createdAt)],
-    });
+    const allPaymentDetails = await db
+      .select({
+        payment: paymentDetails,
+        booking: {
+          id: bookings.id,
+          userId: bookings.userId,
+          status: bookings.status,
+          totalPrice: bookings.totalPrice,
+          travelDate: bookings.travelDate,
+          bookingType: bookings.bookingType,
+          itemId: bookings.itemId
+        }
+      })
+      .from(paymentDetails)
+      .leftJoin(bookings, eq(paymentDetails.bookingId, bookings.id))
+      .orderBy(paymentDetails.createdAt);
     
-    // Never return CVCs
-    const safePaymentsData = allPayments.map(({ cardCVC, ...payment }) => payment);
+    const formattedPaymentDetails = allPaymentDetails.map(item => ({
+      ...item.payment,
+      booking: item.booking
+    }));
     
-    res.json(safePaymentsData);
+    res.json(formattedPaymentDetails);
   } catch (error) {
-    console.error("Error fetching payment details:", error);
+    console.error("Error fetching all payment details:", error);
     res.status(500).json({ error: "Failed to fetch payment details" });
   }
 });
 
-// Update payment details status (admin only)
-router.patch("/:id", isAdmin, async (req: Request, res: Response) => {
+// Update payment details (admin only)
+router.patch("/api/payment-details/:id", isAdmin, async (req: Request, res: Response) => {
   try {
     const paymentId = parseInt(req.params.id);
-    const { paymentStatus, errorMessage, transactionId } = req.body;
     
-    const [updatedPayment] = await db
+    if (isNaN(paymentId)) {
+      return res.status(400).json({ error: "Invalid payment ID" });
+    }
+    
+    const updatedPaymentDetail = await db
       .update(paymentDetails)
       .set({
-        paymentStatus,
-        errorMessage,
-        transactionId,
-        updatedAt: new Date(),
+        ...req.body,
+        updatedAt: new Date()
       })
       .where(eq(paymentDetails.id, paymentId))
       .returning();
     
-    if (!updatedPayment) {
+    if (updatedPaymentDetail.length === 0) {
       return res.status(404).json({ error: "Payment details not found" });
     }
     
-    // Update associated booking if payment status changed
-    if (paymentStatus) {
-      const bookingPaymentStatus = paymentStatus === "success" ? "paid" : 
-                                  paymentStatus === "failed" ? "unpaid" : "pending";
-      
-      const bookingStatus = paymentStatus === "success" ? "confirmed" : null;
-      
-      const updateData: any = { paymentStatus: bookingPaymentStatus };
-      if (bookingStatus) updateData.status = bookingStatus;
-      
-      await db
-        .update(bookings)
-        .set(updateData)
-        .where(eq(bookings.id, updatedPayment.bookingId));
-    }
-    
-    // Never return the CVC
-    const { cardCVC, ...safePaymentData } = updatedPayment;
-    
-    res.json(safePaymentData);
+    res.json(updatedPaymentDetail[0]);
   } catch (error) {
     console.error("Error updating payment details:", error);
     res.status(500).json({ error: "Failed to update payment details" });
+  }
+});
+
+// Create payment details
+router.post("/api/payment-details", isAuthenticated, async (req: Request, res: Response) => {
+  try {
+    const { bookingId } = req.body;
+    
+    if (!bookingId) {
+      return res.status(400).json({ error: "Booking ID is required" });
+    }
+    
+    // Check if payment details already exist for this booking
+    const existingPaymentDetail = await db
+      .select()
+      .from(paymentDetails)
+      .where(eq(paymentDetails.bookingId, bookingId));
+    
+    if (existingPaymentDetail.length > 0) {
+      return res.status(400).json({ error: "Payment details already exist for this booking" });
+    }
+    
+    const newPaymentDetail = await db
+      .insert(paymentDetails)
+      .values({
+        ...req.body,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        paymentStatus: "pending"
+      })
+      .returning();
+    
+    res.status(201).json(newPaymentDetail[0]);
+  } catch (error) {
+    console.error("Error creating payment details:", error);
+    res.status(500).json({ error: "Failed to create payment details" });
   }
 });
 
