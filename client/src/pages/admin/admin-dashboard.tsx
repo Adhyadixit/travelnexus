@@ -13,12 +13,12 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!user) {
       setLocation("/admin-auth");
-    } else if (!user.isAdmin) {
+    } else if (user.role !== 'admin') {
       setLocation("/");
     }
   }, [user, setLocation]);
   
-  if (!user || !user.isAdmin) {
+  if (!user || user.role !== 'admin') {
     return null;
   }
 

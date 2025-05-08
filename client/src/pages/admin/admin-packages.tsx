@@ -73,7 +73,7 @@ export default function AdminPackages() {
   useEffect(() => {
     if (!user) {
       navigate("/admin-auth");
-    } else if (!user.isAdmin) {
+    } else if (user.role !== 'admin') {
       navigate("/");
     }
   }, [user, navigate]);
@@ -310,7 +310,7 @@ export default function AdminPackages() {
     },
   ];
   
-  if (!user || !user.isAdmin) {
+  if (!user || user.role !== 'admin') {
     return null;
   }
 
