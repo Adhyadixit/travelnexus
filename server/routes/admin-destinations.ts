@@ -57,11 +57,7 @@ router.put("/api/destinations/admin/:id", isAdmin, async (req, res) => {
 router.delete("/api/destinations/admin/:id", isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const deleted = await storage.deleteDestination(id);
-    if (!deleted) {
-      return res.status(404).json({ error: "Destination not found" });
-    }
-
+    await storage.deleteDestination(id);
     res.status(204).send();
   } catch (error: any) {
     console.error("Error deleting destination:", error);

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { db } from "./db";
 import { seed } from "./seed";
+import { uploadImage } from "./cloudinary";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
@@ -11,7 +12,7 @@ import {
   bookings, bookingTypeEnum,
   destinations, packages, hotels, drivers, cruises, events, users, reviews,
   guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
-  hotelRoomTypes, hotelRoomImages
+  hotelRoomTypes, hotelRoomImages, insertDestinationSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1391,11 +1392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const id = parseInt(req.params.id);
-      const deleted = await storage.deleteDestination(id);
-      
-      if (!deleted) {
-        return res.status(404).json({ error: "Destination not found" });
-      }
+      await storage.deleteDestination(id);
       
       res.status(204).send();
     } catch (error: any) {
@@ -1404,6 +1401,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Image upload route for Cloudinary integration
+  app.post("/api/upload-image", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ error: "Unauthorized" });
+    
+    try {
+      const { file, folder = "travelease" } = req.body;
+      
+      if (!file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      // Validate the file is a data URL
+      if (!file.startsWith("data:image/")) {
+        return res.status(400).json({ error: "Invalid file format. Only images are allowed." });
+      }
+
+      const result = await uploadImage(file, folder);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ error: error.message || "Failed to upload image" });
+    }
+  });
+
+  // Admin destinations CRUD operations
+  app.get("/api/destinations/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const destinations = await storage.getAllDestinations();
+      res.json(destinations);
+    } catch (error: any) {
+      console.error("Error fetching destinations:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  app.post("/api/destinations/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const validated = insertDestinationSchema.safeParse(req.body);
+      if (!validated.success) {
+        return res.status(400).json({ error: validated.error.message });
+      }
+      
+      const destination = await storage.createDestination(validated.data);
+      res.status(201).json(destination);
+    } catch (error: any) {
+      console.error("Error creating destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  app.put("/api/destinations/admin/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      const validated = insertDestinationSchema.safeParse(req.body);
+      if (!validated.success) {
+        return res.status(400).json({ error: validated.error.message });
+      }
+      
+      const destination = await storage.updateDestination(id, validated.data);
+      if (!destination) {
+        return res.status(404).json({ error: "Destination not found" });
+      }
+      
+      res.json(destination);
+    } catch (error: any) {
+      console.error("Error updating destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  app.delete("/api/destinations/admin/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteDestination(id);
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Seed the database with initial data
   try {
     await seed();
