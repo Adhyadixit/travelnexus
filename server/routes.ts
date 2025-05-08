@@ -1323,6 +1323,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Image upload route for Cloudinary integration
+  app.post("/api/upload-image", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ error: "Unauthorized" });
+    
+    try {
+      const { file, folder = "travelease" } = req.body;
+      
+      if (!file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      // Validate the file is a data URL
+      if (!file.startsWith("data:image/")) {
+        return res.status(400).json({ error: "Invalid file format. Only images are allowed." });
+      }
+
+      // Import here to avoid circular dependencies
+      const { uploadImage } = require("./cloudinary");
+      const result = await uploadImage(file, folder);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ error: error.message || "Failed to upload image" });
+    }
+  });
+
+  // Admin destinations CRUD endpoints
+  app.post("/api/destinations/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const destination = await storage.createDestination(req.body);
+      res.status(201).json(destination);
+    } catch (error: any) {
+      console.error("Error creating destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/destinations/admin/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      const destination = await storage.updateDestination(id, req.body);
+      
+      if (!destination) {
+        return res.status(404).json({ error: "Destination not found" });
+      }
+      
+      res.json(destination);
+    } catch (error: any) {
+      console.error("Error updating destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/destinations/admin/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDestination(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Destination not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error: any) {
+      console.error("Error deleting destination:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // Seed the database with initial data
   try {
     await seed();

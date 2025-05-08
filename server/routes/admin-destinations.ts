@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { insertDestinationSchema } from "@shared/schema";
-import { isAdmin } from "../auth";
 
 const router = Router();
+const isAdmin = (global as any).isAdmin;
 
 // Get all destinations (admin only)
 router.get("/api/destinations/admin", isAdmin, async (req, res) => {

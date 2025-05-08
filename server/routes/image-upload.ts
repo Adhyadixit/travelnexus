@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { uploadImage } from "../cloudinary";
-import { isAuthenticated } from "../auth";
 
 const router = Router();
+const isAuthenticated = (global as any).isAuthenticated;
 
 // Upload an image to Cloudinary
 router.post("/api/upload-image", isAuthenticated, async (req, res) => {

@@ -119,6 +119,18 @@ export function setupAuth(app: Express) {
     res.status(403).json({ message: "Access denied: Admin only" });
   }
 
+  // Authentication check middleware
+  function isAuthenticated(req: any, res: any, next: any) {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    res.status(401).json({ message: "Authentication required" });
+  }
+
   // Apply admin middleware to all admin routes
   app.use('/api/admin/*', isAdmin);
+  
+  // Export middleware for use in other route files
+  (global as any).isAdmin = isAdmin;
+  (global as any).isAuthenticated = isAuthenticated;
 }
