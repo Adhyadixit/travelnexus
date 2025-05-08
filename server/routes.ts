@@ -1508,6 +1508,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.error("Error seeding database:", error);
   }
 
+  // Register our custom routes
+  app.use(imageUploadRoutes);
+  app.use(adminDestinationsRoutes);
+
   const httpServer = createServer(app);
   return httpServer;
 }
