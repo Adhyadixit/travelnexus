@@ -37,6 +37,7 @@ const hotelFormSchema = insertHotelSchema.extend({
   attractionsList: z.string().optional(),
   policiesList: z.string().optional(),
   roomTypesList: z.string().optional(),
+  hotelType: z.enum(['hotel', 'resort', 'villa', 'independent_house']).default('hotel'),
 });
 
 type HotelFormValues = z.infer<typeof hotelFormSchema>;

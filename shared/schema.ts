@@ -87,6 +87,9 @@ export const packagesRelations = relations(packages, ({ one, many }) => ({
   bookings: many(bookings),
 }));
 
+// Define hotel type enum
+export const hotelTypeEnum = pgEnum('hotel_type', ['hotel', 'resort', 'villa', 'independent_house']);
+
 // Hotels table
 export const hotels = pgTable('hotels', {
   id: serial("id").primaryKey(),
@@ -109,6 +112,7 @@ export const hotels = pgTable('hotels', {
   featured: boolean("featured").default(false),
   freeCancellation: boolean("free_cancellation").default(false),
   roomTypes: text("room_types"), // JSON string of available room types with details
+  hotelType: hotelTypeEnum("hotel_type").default('hotel'), // Type of accommodation
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -323,6 +327,54 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
   }),
 }));
 
+// Reviews table
+export const reviews = pgTable('reviews', {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  itemType: text("item_type").notNull(), // hotel, package, cruise, driver, event
+  itemId: integer("item_id").notNull(), // The ID of the item being reviewed
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: text("title").notNull(),
+  comment: text("comment").notNull(),
+  dateOfStay: timestamp("date_of_stay"), // For hotel reviews
+  images: text("images"), // Optional JSON array of image URLs uploaded by reviewer
+  helpfulVotes: integer("helpful_votes").default(0),
+  verified: boolean("verified").default(false), // Indicates if this is from a verified stay
+  response: text("response"), // Response from the property/provider
+  responseDate: timestamp("response_date"),
+  status: text("status").default("approved"), // pending, approved, rejected
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Review relations
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
+  }),
+  hotel: one(hotels, {
+    fields: [reviews.itemId],
+    references: [hotels.id],
+  }),
+  package: one(packages, {
+    fields: [reviews.itemId],
+    references: [packages.id],
+  }),
+  cruise: one(cruises, {
+    fields: [reviews.itemId],
+    references: [cruises.id],
+  }),
+  driver: one(drivers, {
+    fields: [reviews.itemId],
+    references: [drivers.id],
+  }),
+  event: one(events, {
+    fields: [reviews.itemId],
+    references: [events.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -388,6 +440,7 @@ export const insertHotelSchema = createInsertSchema(hotels).pick({
   featured: true,
   freeCancellation: true,
   roomTypes: true,
+  hotelType: true,
 });
 
 export const insertDriverSchema = createInsertSchema(drivers).pick({
@@ -527,3 +580,17 @@ export type InsertEvent = z.infer<typeof insertEventSchema>;
 
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+
+export const insertReviewSchema = createInsertSchema(reviews).pick({
+  userId: true,
+  itemType: true,
+  itemId: true,
+  rating: true,
+  title: true,
+  comment: true,
+  dateOfStay: true,
+  images: true,
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
