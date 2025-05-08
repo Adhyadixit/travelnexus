@@ -339,7 +339,7 @@ export default function CruiseDetails() {
               <div className="text-blue-100">Starting from</div>
               <div className="text-3xl md:text-4xl font-heading font-bold">{formatCurrency(cruise.price)}</div>
               <div className="text-blue-100 text-sm">per person</div>
-              <Badge className="mt-2 bg-secondary text-white">Save 15% • Limited Offer</Badge>
+              <Badge className="mt-2 bg-secondary text-black">Save 15% • Limited Offer</Badge>
             </div>
           </div>
         </div>
