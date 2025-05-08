@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, parseAmenities } from "@/lib/utils";
+import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { 
   CalendarIcon, 
   ChevronLeft, 
