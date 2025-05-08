@@ -16,6 +16,7 @@ import {
   Phone, 
   Loader2 
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -193,7 +194,7 @@ export default function ProfilePage() {
                       <p className="text-sm text-neutral-500">{user.email}</p>
                       
                       {user.isAdmin && (
-                        <Badge className="mt-2 bg-accent text-white">Admin</Badge>
+                        <CustomTag className="mt-2 bg-accent text-white">Admin</CustomTag>
                       )}
                     </div>
                     
@@ -672,7 +673,7 @@ function InterestTag({ label, selected = false }: InterestTagProps) {
   );
 }
 
-function Badge({ className, children }: { className?: string, children: React.ReactNode }) {
+function CustomTag({ className, children }: { className?: string, children: React.ReactNode }) {
   return (
     <span className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
       {children}

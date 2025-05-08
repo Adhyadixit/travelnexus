@@ -17,7 +17,8 @@ export default function Header() {
   const { user, logoutMutation } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
     return name
       .split(' ')
       .map(part => part[0])
@@ -77,14 +78,18 @@ export default function Header() {
                 <button className="flex items-center space-x-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-white">
-                      {getInitials(user.fullName)}
+                      {getInitials(user.firstName && user.lastName 
+                        ? `${user.firstName} ${user.lastName}`
+                        : user.username)}
                     </AvatarFallback>
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <div className="p-2">
-                  <p className="font-medium">{user.fullName}</p>
+                  <p className="font-medium">{user.firstName && user.lastName 
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.username}</p>
                   <p className="text-sm text-neutral-500">{user.email}</p>
                 </div>
                 <DropdownMenuSeparator />
@@ -164,11 +169,15 @@ export default function Header() {
               <div className="flex items-center mb-4">
                 <Avatar className="h-10 w-10 mr-3">
                   <AvatarFallback className="bg-primary text-white">
-                    {getInitials(user.fullName)}
+                    {getInitials(user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}`
+                      : user.username)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{user.fullName}</p>
+                  <p className="font-medium">{user.firstName && user.lastName 
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.username}</p>
                   <p className="text-sm text-neutral-500">{user.email}</p>
                 </div>
               </div>
