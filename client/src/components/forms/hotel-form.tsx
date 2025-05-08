@@ -97,6 +97,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
     userRating: initialData?.userRating || 0,
     checkIn: initialData?.checkIn || "14:00",
     checkOut: initialData?.checkOut || "12:00",
+    hotelType: initialData?.hotelType || "hotel",
     amenitiesList: arrayToString(parseJsonOrDefault(initialData?.amenities || null, [])),
     policiesList: stringifyJsonSafely(parseJsonOrDefault(initialData?.policies || null, {
       cancellation: "Free cancellation up to 24 hours before check-in",
@@ -253,6 +254,33 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                     )}
                   />
                 </div>
+                
+                <FormField
+                  control={form.control}
+                  name="hotelType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Accommodation Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select accommodation type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="hotel">Hotel</SelectItem>
+                          <SelectItem value="resort">Resort</SelectItem>
+                          <SelectItem value="villa">Villa</SelectItem>
+                          <SelectItem value="independent_house">Independent House</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Choose the type of accommodation you are listing
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField
                   control={form.control}

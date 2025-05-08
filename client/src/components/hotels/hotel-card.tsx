@@ -32,14 +32,20 @@ export function HotelCard({ hotel, className }: HotelCardProps) {
           </Link>
           <div className="flex">
             {[...Array(hotel.rating)].map((_, i) => (
-              <Star key={i} className="text-secondary w-4 h-4 fill-current" />
+              <Star key={i} className="text-yellow-400 w-4 h-4 fill-current" />
             ))}
           </div>
         </div>
         
-        <div className="flex items-center mb-3">
+        <div className="flex items-center mb-2">
           <MapPin className="text-neutral-500 w-4 h-4 mr-1" />
           <span className="text-neutral-500 text-sm">{hotel.address}</span>
+        </div>
+        
+        <div className="flex items-center mb-3">
+          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+            {hotel.hotelType ? hotel.hotelType.replace('_', ' ').charAt(0).toUpperCase() + hotel.hotelType.replace('_', ' ').slice(1) : 'Hotel'}
+          </span>
         </div>
         
         <p className="text-neutral-600 mb-4 text-sm">{truncateText(hotel.description, 100)}</p>

@@ -22,6 +22,7 @@ export default function HotelsPage() {
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState("rating");
+  const [hotelTypeFilter, setHotelTypeFilter] = useState<string | null>(null);
   
   // Fetch all hotels
   const { 
@@ -35,6 +36,7 @@ export default function HotelsPage() {
   const filteredHotels = hotels?.filter(hotel => 
     (searchTerm === "" || hotel.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (ratingFilter === null || hotel.rating === ratingFilter) &&
+    (hotelTypeFilter === null || hotel.hotelType === hotelTypeFilter) &&
     (hotel.price >= priceRange[0] && hotel.price <= priceRange[1])
   );
   
@@ -98,7 +100,7 @@ export default function HotelsPage() {
                       >
                         <div className="flex">
                           {[...Array(rating)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${ratingFilter === rating ? 'text-secondary fill-current' : 'text-secondary'}`} />
+                            <Star key={i} className={`w-4 h-4 text-yellow-400 ${ratingFilter === rating ? 'fill-current' : ''}`} />
                           ))}
                         </div>
                         <span className="ml-2 text-sm">{rating} Stars</span>
@@ -122,6 +124,36 @@ export default function HotelsPage() {
                     value={priceRange}
                     onValueChange={setPriceRange}
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-2">Accommodation Type</label>
+                  <div className="space-y-2">
+                    <div 
+                      className={`flex items-center p-2 rounded-md cursor-pointer ${hotelTypeFilter === 'hotel' ? 'bg-primary/10' : 'hover:bg-neutral-100'}`}
+                      onClick={() => setHotelTypeFilter(hotelTypeFilter === 'hotel' ? null : 'hotel')}
+                    >
+                      <span className="text-sm">Hotel</span>
+                    </div>
+                    <div 
+                      className={`flex items-center p-2 rounded-md cursor-pointer ${hotelTypeFilter === 'resort' ? 'bg-primary/10' : 'hover:bg-neutral-100'}`}
+                      onClick={() => setHotelTypeFilter(hotelTypeFilter === 'resort' ? null : 'resort')}
+                    >
+                      <span className="text-sm">Resort</span>
+                    </div>
+                    <div 
+                      className={`flex items-center p-2 rounded-md cursor-pointer ${hotelTypeFilter === 'villa' ? 'bg-primary/10' : 'hover:bg-neutral-100'}`}
+                      onClick={() => setHotelTypeFilter(hotelTypeFilter === 'villa' ? null : 'villa')}
+                    >
+                      <span className="text-sm">Villa</span>
+                    </div>
+                    <div 
+                      className={`flex items-center p-2 rounded-md cursor-pointer ${hotelTypeFilter === 'independent_house' ? 'bg-primary/10' : 'hover:bg-neutral-100'}`}
+                      onClick={() => setHotelTypeFilter(hotelTypeFilter === 'independent_house' ? null : 'independent_house')}
+                    >
+                      <span className="text-sm">Independent House</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
