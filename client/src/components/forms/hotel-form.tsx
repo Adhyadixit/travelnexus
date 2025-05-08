@@ -672,7 +672,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
           </TabsContent>
         </Tabs>
         
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
           <Button 
             type="submit" 
             size="lg"
@@ -684,6 +684,47 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                 Saving...
               </>
             ) : initialData ? "Update Hotel" : "Create Hotel"}
+          </Button>
+          
+          {/* Manual submit button that bypasses the form submit */}
+          <Button 
+            type="button" 
+            size="lg"
+            variant="secondary"
+            className="min-w-[150px]"
+            onClick={() => {
+              console.log("Manual submit triggered");
+              const data = form.getValues();
+              console.log("Current form values:", data);
+              
+              try {
+                const formattedData = {
+                  ...data,
+                  destinationId: parseInt(data.destinationId),
+                  amenities: stringToArray(data.amenitiesList || ""),
+                  languagesSpoken: stringToArray(data.languagesList || ""),
+                  nearbyAttractions: stringToArray(data.attractionsList || ""),
+                  policies: data.policiesList,
+                  roomTypes: data.roomTypesList,
+                  imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+                };
+                
+                // Remove temporary form-only fields
+                delete formattedData.amenitiesList;
+                delete formattedData.languagesList;
+                delete formattedData.attractionsList;
+                delete formattedData.policiesList;
+                delete formattedData.roomTypesList;
+                delete formattedData.imageGalleryUrls;
+                
+                console.log("Manually formatted data for submission:", formattedData);
+                onSubmit(formattedData);
+              } catch (error) {
+                console.error("Error in manual hotel form submission:", error);
+              }
+            }}
+          >
+            Manual Submit
           </Button>
         </div>
       </form>

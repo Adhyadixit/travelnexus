@@ -771,7 +771,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
           </TabsContent>
         </Tabs>
         
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
           <Button 
             type="submit" 
             size="lg"
@@ -783,6 +783,53 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                 Saving...
               </>
             ) : initialData ? "Update Package" : "Create Package"}
+          </Button>
+          
+          {/* Manual submit button that bypasses the form submit */}
+          <Button 
+            type="button" 
+            size="lg"
+            variant="secondary"
+            className="min-w-[150px]"
+            onClick={() => {
+              console.log("Manual submit triggered");
+              const data = form.getValues();
+              console.log("Current form values:", data);
+              
+              try {
+                const formattedData = {
+                  ...data,
+                  destinationId: parseInt(data.destinationId),
+                  included: stringToArray(data.includedItems || ""),
+                  excluded: stringToArray(data.excludedItems || ""),
+                  itinerary: data.itineraryText,
+                  hotels: data.hotelsText,
+                  citiesCovered: stringToArray(data.citiesCoveredText || ""), 
+                  meals: data.mealsText,
+                  startingDates: stringToArray(data.startingDatesText || ""),
+                  highlights: stringToArray(data.highlightsText || ""),
+                  imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+                };
+                
+                // Remove temporary form-only fields
+                delete formattedData.includedItems;
+                delete formattedData.excludedItems;
+                delete formattedData.itineraryText;
+                delete formattedData.hotelsText;
+                delete formattedData.citiesCoveredText;
+                delete formattedData.mealsText;
+                delete formattedData.startingDatesText;
+                delete formattedData.highlightsText;
+                delete formattedData.imageGalleryUrls;
+                
+                console.log("Manually formatted data for submission:", formattedData);
+                onSubmit(formattedData);
+              } catch (error) {
+                console.error("Error in manual package form submission:", error);
+              }
+            }}
+          >
+            Manual Submit
           </Button>
         </div>
       </form>
