@@ -120,7 +120,7 @@ export default function AdminCruises() {
   // Create cruise mutation
   const createCruiseMutation = useMutation({
     mutationFn: async (data: CruiseFormValues) => {
-      const response = await apiRequest("POST", "/api/cruises", data);
+      const response = await apiRequest("POST", "/api/admin/cruises", data);
       return response.json();
     },
     onSuccess: () => {
@@ -145,7 +145,7 @@ export default function AdminCruises() {
   const updateCruiseMutation = useMutation({
     mutationFn: async (data: CruiseFormValues & { id: number }) => {
       const { id, ...cruiseData } = data;
-      const response = await apiRequest("PATCH", `/api/cruises/${id}`, cruiseData);
+      const response = await apiRequest("PUT", `/api/admin/cruises/${id}`, cruiseData);
       return response.json();
     },
     onSuccess: () => {
@@ -169,7 +169,7 @@ export default function AdminCruises() {
   // Delete cruise mutation
   const deleteCruiseMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/cruises/${id}`);
+      await apiRequest("DELETE", `/api/admin/cruises/${id}`);
       return id;
     },
     onSuccess: () => {
