@@ -1066,22 +1066,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a conversation
   app.post("/api/conversations", async (req, res) => {
     try {
-      // Handle both authenticated users and guest users
-      if (!req.isAuthenticated() && !req.body.guestUserId) {
-        return res.status(400).json({ error: "Either login or provide guest user ID" });
+      let guestUserId = null;
+      
+      // Handle guest user creation if needed
+      if (!req.isAuthenticated()) {
+        // Create guest user if not already present
+        if (req.body.guestName && req.body.guestEmail) {
+          console.log("Creating new guest user for inquiry");
+          const guestUser = await storage.createGuestUser({
+            name: req.body.guestName,
+            email: req.body.guestEmail,
+            phone: req.body.guestPhone || '',
+            sessionId: req.sessionID,
+          });
+          guestUserId = guestUser.id;
+          console.log(`Created guest user with ID: ${guestUserId}`);
+        } else if (req.body.guestUserId) {
+          // Use existing guest user ID if provided
+          guestUserId = req.body.guestUserId;
+        } else {
+          return res.status(400).json({ error: "Must provide guest user information or be logged in" });
+        }
       }
       
       // Create conversation with the correct status enum value
       const conversationData = {
         userId: req.isAuthenticated() ? req.user!.id : null,
-        guestUserId: !req.isAuthenticated() ? req.body.guestUserId : null,
-        itemType: req.body.itemType,
-        itemId: req.body.itemId,
-        subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
+        guestUserId: !req.isAuthenticated() ? guestUserId : null,
+        itemType: req.body.itemType || 'inquiry',
+        itemId: req.body.itemId || 0,
+        subject: req.body.subject || "General Inquiry",
         status: 'open' as const, // Type assertion to match the enum
       };
       
       const conversation = await storage.createConversation(conversationData);
+      
+      // Create the first message if provided
+      if (req.body.message) {
+        const messageData = {
+          conversationId: conversation.id,
+          body: req.body.message,
+          type: req.isAuthenticated() ? 'user' : 'guest',
+          readAt: null,
+        };
+        
+        await storage.createMessage(messageData);
+      }
+      
       res.status(201).json(conversation);
     } catch (error) {
       console.error("Error creating conversation:", error);
