@@ -10,6 +10,7 @@ import {
 import {
   bookings, bookingTypeEnum,
   destinations, packages, hotels, drivers, cruises, events, users, reviews,
+  guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -902,6 +903,267 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(booking);
     } catch (error) {
       res.status(500).json({ error: "Failed to update booking" });
+    }
+  });
+
+  // Chat API - Guest user creation
+  app.post("/api/guest-users", async (req, res) => {
+    try {
+      // Create a guest user account
+      const guestUserData = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        phoneNumber: req.body.phoneNumber,
+        sessionId: req.sessionID,
+      };
+      
+      // Check if a guest user with this session already exists
+      let guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+      
+      if (!guestUser) {
+        // If not exists, create a new guest user
+        guestUser = await storage.createGuestUser(guestUserData);
+      }
+      
+      res.status(201).json(guestUser);
+    } catch (error) {
+      console.error("Error creating guest user:", error);
+      res.status(500).json({ error: "Failed to create guest user" });
+    }
+  });
+  
+  // Create a conversation
+  app.post("/api/conversations", async (req, res) => {
+    try {
+      // Handle both authenticated users and guest users
+      let conversationData;
+      
+      if (req.isAuthenticated()) {
+        // For logged-in users
+        conversationData = {
+          userId: req.user!.id,
+          itemType: req.body.itemType, // hotel, package, cruise, etc.
+          itemId: req.body.itemId,
+          subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
+          status: 'open',
+        };
+      } else if (req.body.guestUserId) {
+        // For guest users
+        conversationData = {
+          guestUserId: req.body.guestUserId,
+          itemType: req.body.itemType,
+          itemId: req.body.itemId,
+          subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
+          status: 'open',
+        };
+      } else {
+        return res.status(400).json({ error: "Either login or provide guest user ID" });
+      }
+      
+      const conversation = await storage.createConversation(conversationData);
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ error: "Failed to create conversation" });
+    }
+  });
+  
+  // Add message to conversation
+  app.post("/api/conversations/:id/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Check authorization
+      if (req.isAuthenticated()) {
+        // For authenticated users, check if conversation belongs to them
+        if (conversation.userId && conversation.userId !== req.user!.id && req.user!.role !== 'admin') {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else if (conversation.guestUserId) {
+        // For guest users, check if the guest user in the session matches
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (!guestUser || guestUser.id !== conversation.guestUserId) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Create the message
+      const messageData = {
+        conversationId,
+        content: req.body.content,
+        isFromAdmin: req.isAuthenticated() && req.user!.role === 'admin',
+        readByAdmin: req.isAuthenticated() && req.user!.role === 'admin',
+        readByUser: req.isAuthenticated() && req.user!.role !== 'admin',
+        messageType: req.body.messageType || 'text',
+      };
+      
+      const message = await storage.createMessage(messageData);
+      
+      // Update conversation status if needed
+      if (conversation.status === 'pending') {
+        await storage.updateConversation(conversationId, { status: 'open' });
+      }
+      
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating message:", error);
+      res.status(500).json({ error: "Failed to create message" });
+    }
+  });
+  
+  // Get conversation messages
+  app.get("/api/conversations/:id/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Check authorization
+      if (req.isAuthenticated()) {
+        // For authenticated users, check if conversation belongs to them
+        if (conversation.userId && conversation.userId !== req.user!.id && req.user!.role !== 'admin') {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else if (conversation.guestUserId) {
+        // For guest users, check if the guest user in the session matches
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (!guestUser || guestUser.id !== conversation.guestUserId) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      // Get messages
+      const messages = await storage.getMessagesByConversation(conversationId);
+      
+      // Mark messages as read
+      if (req.isAuthenticated() && req.user!.role === 'admin') {
+        await storage.markMessagesAsReadByAdmin(conversationId);
+      } else {
+        await storage.markMessagesAsReadByUser(conversationId);
+      }
+      
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+  
+  // Get user's conversations
+  app.get("/api/conversations", async (req, res) => {
+    try {
+      let conversations;
+      
+      if (req.isAuthenticated()) {
+        if (req.user!.role === 'admin') {
+          // Admin gets all active conversations
+          conversations = await storage.getActiveConversations();
+        } else {
+          // Regular user gets their own conversations
+          conversations = await storage.getConversationsByUser(req.user!.id);
+        }
+      } else {
+        // Guest user gets conversations tied to their session
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (!guestUser) {
+          return res.status(404).json({ error: "Guest user not found" });
+        }
+        conversations = await storage.getConversationsByGuestUser(guestUser.id);
+      }
+      
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+  
+  // Get a single conversation
+  app.get("/api/conversations/:id", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Check authorization
+      if (req.isAuthenticated()) {
+        // For authenticated users, check if conversation belongs to them
+        if (conversation.userId && conversation.userId !== req.user!.id && req.user!.role !== 'admin') {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else if (conversation.guestUserId) {
+        // For guest users, check if the guest user in the session matches
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (!guestUser || guestUser.id !== conversation.guestUserId) {
+          return res.status(403).json({ error: "Access denied" });
+        }
+      } else {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ error: "Failed to fetch conversation" });
+    }
+  });
+  
+  // Close a conversation
+  app.put("/api/conversations/:id/close", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Only admins and conversation owners can close conversations
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      if (req.user!.role !== 'admin' && conversation.userId !== req.user!.id) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Close the conversation
+      const updatedConversation = await storage.closeConversation(conversationId);
+      res.json(updatedConversation);
+    } catch (error) {
+      console.error("Error closing conversation:", error);
+      res.status(500).json({ error: "Failed to close conversation" });
+    }
+  });
+  
+  // Admin statistics for chat
+  app.get("/api/admin/chat-stats", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const unreadMessageCount = await storage.getUnreadMessageCountForAdmin();
+      res.json({ unreadMessageCount });
+    } catch (error) {
+      console.error("Error fetching chat stats:", error);
+      res.status(500).json({ error: "Failed to fetch chat statistics" });
     }
   });
 

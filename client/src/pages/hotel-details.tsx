@@ -382,7 +382,7 @@ export default function HotelDetails() {
       };
   
   // Handle chat inquiry
-  const handleChatInquiry = () => {
+  const handleChatInquiry = async () => {
     // Validate form
     if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phoneNumber || !guestDetails.message) {
       toast({
@@ -393,22 +393,86 @@ export default function HotelDetails() {
       return;
     }
 
-    // Here we would normally submit to the API
-    // For now just show a success message
-    toast({
-      title: "Inquiry sent!",
-      description: "Our team will get back to you shortly.",
-    });
+    try {
+      // Step 1: Create or get guest user
+      const guestUserResponse = await fetch('/api/guest-users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: guestDetails.firstName,
+          lastName: guestDetails.lastName,
+          email: guestDetails.email,
+          phoneNumber: guestDetails.phoneNumber,
+        }),
+      });
 
-    // Reset form and close modal
-    setGuestDetails({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phoneNumber: '',
-      message: ''
-    });
-    setShowChatModal(false);
+      if (!guestUserResponse.ok) {
+        throw new Error('Failed to create guest user');
+      }
+
+      const guestUser = await guestUserResponse.json();
+
+      // Step 2: Create conversation
+      const conversationResponse = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          guestUserId: guestUser.id,
+          itemType: 'hotel',
+          itemId: parseInt(id),
+          subject: `Inquiry about ${hotel?.name}`,
+        }),
+      });
+
+      if (!conversationResponse.ok) {
+        throw new Error('Failed to create conversation');
+      }
+
+      const conversation = await conversationResponse.json();
+
+      // Step 3: Send initial message
+      const messageResponse = await fetch(`/api/conversations/${conversation.id}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: guestDetails.message,
+          messageType: 'text',
+        }),
+      });
+
+      if (!messageResponse.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      // Success
+      toast({
+        title: "Inquiry sent!",
+        description: "Our team will get back to you shortly.",
+      });
+
+      // Reset form and close modal
+      setGuestDetails({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        message: ''
+      });
+      setShowChatModal(false);
+    } catch (error) {
+      console.error('Chat inquiry error:', error);
+      toast({
+        title: "Failed to send inquiry",
+        description: "Please try again later or contact us directly.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Handle input change
