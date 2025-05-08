@@ -101,7 +101,7 @@ export default function AdminEvents() {
         date: data.date.toISOString(),
       };
       
-      const response = await apiRequest("POST", "/api/events", apiData);
+      const response = await apiRequest("POST", "/api/direct/events", apiData);
       return response.json();
     },
     onSuccess: () => {
@@ -132,7 +132,7 @@ export default function AdminEvents() {
         date: eventData.date.toISOString(),
       };
       
-      const response = await apiRequest("PATCH", `/api/events/${id}`, apiData);
+      const response = await apiRequest("PATCH", `/api/direct/events/${id}`, apiData);
       return response.json();
     },
     onSuccess: () => {
@@ -156,7 +156,7 @@ export default function AdminEvents() {
   // Delete event mutation
   const deleteEventMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/events/${id}`);
+      await apiRequest("DELETE", `/api/direct/events/${id}`);
       return id;
     },
     onSuccess: () => {
