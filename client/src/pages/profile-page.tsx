@@ -64,9 +64,9 @@ export default function ProfilePage() {
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      fullName: user?.fullName || '',
+      fullName: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username || '',
       email: user?.email || '',
-      phone: user?.phone || '',
+      phone: user?.phoneNumber || '',
     },
   });
   
@@ -187,13 +187,17 @@ export default function ProfilePage() {
                     <div className="flex flex-col items-center mb-6">
                       <Avatar className="h-20 w-20 mb-4">
                         <AvatarFallback className="bg-primary text-white text-xl">
-                          {getInitials(user.fullName)}
+                          {getInitials(user.firstName && user.lastName 
+                            ? `${user.firstName} ${user.lastName}` 
+                            : user.username)}
                         </AvatarFallback>
                       </Avatar>
-                      <h2 className="text-xl font-bold">{user.fullName}</h2>
+                      <h2 className="text-xl font-bold">{user.firstName && user.lastName 
+                        ? `${user.firstName} ${user.lastName}` 
+                        : user.username}</h2>
                       <p className="text-sm text-neutral-500">{user.email}</p>
                       
-                      {user.isAdmin && (
+                      {user.role === 'admin' && (
                         <CustomTag className="mt-2 bg-accent text-white">Admin</CustomTag>
                       )}
                     </div>

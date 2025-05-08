@@ -33,6 +33,7 @@ import AdminBookings from "@/pages/admin/admin-bookings";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import ScrollToTop from "@/lib/scroll-to-top";
 
 function Router() {
   return (
@@ -77,6 +78,7 @@ function App() {
       <ThemeProvider defaultTheme="light" storageKey="travel-ease-theme">
         <AuthProvider>
           <TooltipProvider>
+            <ScrollToTop />
             <Toaster />
             <Router />
           </TooltipProvider>
