@@ -124,29 +124,41 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
   });
 
   const handleSubmit = (data: HotelFormValues) => {
-    // Format the data for database storage
-    const formattedData = {
-      ...data,
-      destinationId: parseInt(data.destinationId),
-      // Convert form text fields to proper JSON strings for DB storage
-      amenities: JSON.stringify(stringToArray(data.amenitiesList || "")),
-      languagesSpoken: JSON.stringify(stringToArray(data.languagesList || "")),
-      nearbyAttractions: JSON.stringify(stringToArray(data.attractionsList || "")),
-      policies: data.policiesList,
-      roomTypes: data.roomTypesList,
-      imageGallery: JSON.stringify(data.imageGalleryUrls || []),
-    };
-    
-    // Remove temporary form-only fields before submission
-    delete formattedData.amenitiesList;
-    delete formattedData.languagesList;
-    delete formattedData.attractionsList;
-    delete formattedData.policiesList;
-    delete formattedData.roomTypesList;
-    delete formattedData.imageGalleryUrls;
-    
-    console.log("Submitting hotel data:", formattedData);
-    onSubmit(formattedData);
+    try {
+      console.log("Form submission started with raw data:", data);
+      
+      // Format the data for database storage
+      const formattedData = {
+        ...data,
+        destinationId: parseInt(data.destinationId),
+        // Convert form text fields to proper JSON strings for DB storage
+        amenities: JSON.stringify(stringToArray(data.amenitiesList || "")),
+        languagesSpoken: JSON.stringify(stringToArray(data.languagesList || "")),
+        nearbyAttractions: JSON.stringify(stringToArray(data.attractionsList || "")),
+        policies: data.policiesList,
+        roomTypes: data.roomTypesList,
+        imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+        // Convert numeric fields explicitly
+        rating: typeof data.rating === 'string' ? parseInt(data.rating) : data.rating,
+        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
+        userRating: typeof data.userRating === 'string' ? parseFloat(data.userRating) : data.userRating,
+      };
+      
+      // Remove temporary form-only fields before submission
+      const finalData = {...formattedData};
+      delete finalData.amenitiesList;
+      delete finalData.languagesList;
+      delete finalData.attractionsList;
+      delete finalData.policiesList;
+      delete finalData.roomTypesList;
+      delete finalData.imageGalleryUrls;
+      
+      console.log("Submitting hotel data:", finalData);
+      onSubmit(finalData);
+    } catch (error) {
+      console.error("Error in hotel form submission:", error);
+      alert("Error submitting form. Check console for details.");
+    }
   };
 
   // Handle image gallery inputs

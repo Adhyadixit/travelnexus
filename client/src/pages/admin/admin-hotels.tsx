@@ -147,10 +147,33 @@ export default function AdminHotels() {
   const handleFormSubmit = async (data: any) => {
     console.log('Form submit handler called with data:', data);
     setIsSubmitting(true);
+    
     try {
       if (editingHotel) {
         console.log(`Updating hotel ${editingHotel.id} with data:`, data);
-        await updateHotelMutation.mutateAsync({ id: editingHotel.id, data });
+        
+        // Manual direct API call instead of using mutation
+        const response = await fetch(`/api/direct/hotels/${editingHotel.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Failed to update hotel: ${errorText}`);
+        }
+        
+        // Handle success
+        queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
+        setOpenDialog(false);
+        setEditingHotel(null);
+        toast({
+          title: "Success",
+          description: "Hotel updated successfully",
+        });
       } else {
         console.log('Creating new hotel with data:', data);
         await createHotelMutation.mutateAsync(data);
