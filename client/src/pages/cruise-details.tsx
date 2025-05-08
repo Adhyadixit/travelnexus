@@ -274,7 +274,7 @@ export default function CruiseDetails() {
   return (
     <Layout>
       {/* Header Section */}
-      <div className="bg-gradient-to-b from-blue-900/90 to-blue-800/90 text-neutral-800">
+      <div className="bg-gradient-to-b from-blue-900/90 to-blue-800/90 text-white">
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-start gap-6">
             <div>
