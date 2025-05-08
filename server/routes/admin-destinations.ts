@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { storage } from "../storage";
 import { isAuthenticated, isAdmin } from "../auth";
-import { insertDestinationSchema } from "@shared/schema";
+import { insertDestinationSchema, destinations } from "@shared/schema";
 import { deleteImage } from "../cloudinary";
+import { db } from "../db";
 
 const router = Router();
 
@@ -11,22 +12,21 @@ const router = Router();
  * @desc Get all destinations for admin
  * @access Private (Admin only)
  */
-router.get("/api/destinations/admin", (req, res) => {
+router.get("/api/destinations/admin", async (req, res) => {
   try {
     console.log("Session:", req.session);
     console.log("Is authenticated:", req.isAuthenticated());
     console.log("User:", req.user);
     
-    // For now, bypass the auth check to see if we can get data
-    storage.getAllDestinations()
-      .then(destinations => {
-        console.log("Destinations fetched successfully:", destinations.length);
-        res.json(destinations);
-      })
-      .catch(err => {
-        console.error("Error in storage.getAllDestinations():", err);
-        res.status(500).json({ error: "Database error: " + err.message });
-      });
+    // Direct DB access for testing
+    try {
+      const results = await db.select().from(destinations);
+      console.log("DIRECT DB QUERY SUCCESS:", results.length);
+      res.json(results);
+    } catch (dbErr: any) {
+      console.error("DIRECT DB QUERY ERROR:", dbErr);
+      res.status(500).json({ error: "Direct DB Error: " + dbErr.message });
+    }
   } catch (error: any) {
     console.error("Error in route handler:", error);
     console.error("Stack trace:", error.stack);

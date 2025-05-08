@@ -51,18 +51,20 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             const Icon = item.icon;
             
             return (
-              <Link key={item.href} href={item.href}>
-                <a
-                  className={`flex items-center px-4 py-3 text-sm rounded-md transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-neutral-600 hover:bg-neutral-100"
-                  }`}
-                >
-                  <Icon className="h-5 w-5 mr-3" />
-                  {item.label}
-                </a>
-              </Link>
+              <div key={item.href}>
+                <Link href={item.href}>
+                  <div
+                    className={`flex items-center px-4 py-3 text-sm rounded-md transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-neutral-600 hover:bg-neutral-100"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5 mr-3" />
+                    {item.label}
+                  </div>
+                </Link>
+              </div>
             );
           })}
         </nav>
