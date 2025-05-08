@@ -55,7 +55,8 @@ import {
   Utensils, 
   User, 
   Users, 
-  X 
+  X,
+  Briefcase
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -891,7 +892,7 @@ export default function PackageDetails() {
                   if (similarPackages.length === 0) {
                     return (
                       <div className="text-center py-8 bg-neutral-50 rounded-lg">
-                        <Briefcase className="w-12 h-12 text-neutral-300 mx-auto mb-2" />
+                        <Plane className="w-12 h-12 text-neutral-300 mx-auto mb-2" />
                         <p className="text-neutral-500">No similar packages available in {destination.country}</p>
                       </div>
                     );
