@@ -375,10 +375,19 @@ export const insertHotelSchema = createInsertSchema(hotels).pick({
   description: true,
   address: true,
   imageUrl: true,
+  imageGallery: true,
   rating: true,
   price: true,
   amenities: true,
+  userRating: true,
+  checkIn: true,
+  checkOut: true,
+  policies: true,
+  languagesSpoken: true,
+  nearbyAttractions: true,
   featured: true,
+  freeCancellation: true,
+  roomTypes: true,
 });
 
 export const insertDriverSchema = createInsertSchema(drivers).pick({
