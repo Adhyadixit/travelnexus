@@ -903,40 +903,74 @@ export default function HotelDetails() {
               </div>
             </section>
             
-            {/* Similar Hotels (Optional) */}
+            {/* Similar Hotels in the Same Destination */}
             <section>
               <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <div className="aspect-[4/3]">
-                      <img 
-                        src={hotel.imageUrl} // Replace with actual similar hotel images
-                        alt={`Similar Hotel ${i}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-bold text-lg mb-1">Similar Hotel {i}</h3>
-                      <div className="flex mb-2">
-                        {[...Array(hotel.rating - 1)].map((_, i) => (
-                          <Star key={i} className="text-secondary w-4 h-4 fill-current" />
-                        ))}
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <div className="text-neutral-600">Downtown Area</div>
-                        <div className="font-bold">{formatCurrency(hotel.price * 0.9)}</div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
+              {hotel.destinationId && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {isLoadingSimilarHotels ? (
+                    // Loading skeletons
+                    [...Array(3)].map((_, i) => (
+                      <Card key={i} className="overflow-hidden">
+                        <div className="aspect-[4/3] bg-neutral-200 animate-pulse"></div>
+                        <CardContent className="p-4">
+                          <div className="h-6 bg-neutral-200 animate-pulse rounded mb-2"></div>
+                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-1/2 mb-2"></div>
+                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-3/4"></div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    // Actual similar hotels
+                    similarHotels?.filter(h => h.id !== parseInt(id)).slice(0, 3).map((similarHotel) => (
+                      <Card key={similarHotel.id} className="overflow-hidden">
+                        <Link to={`/hotels/${similarHotel.id}`}>
+                          <div className="aspect-[4/3] overflow-hidden">
+                            <img 
+                              src={similarHotel.imageUrl}
+                              alt={similarHotel.name}
+                              className="w-full h-full object-cover transition-transform hover:scale-105"
+                            />
+                          </div>
+                        </Link>
+                        <CardContent className="p-4">
+                          <Link to={`/hotels/${similarHotel.id}`}>
+                            <h3 className="font-bold text-lg mb-1 hover:text-primary transition-colors">{similarHotel.name}</h3>
+                          </Link>
+                          <div className="flex mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-4 h-4 ${
+                                  i < similarHotel.rating ? "text-yellow-400 fill-current" : "text-neutral-300"
+                                }`} 
+                              />
+                            ))}
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <div className="text-neutral-600">{hotel.destination?.name}</div>
+                            <div className="font-bold">{formatCurrency(similarHotel.price)}</div>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="p-4 pt-0">
+                          <Link to={`/hotels/${similarHotel.id}`} className="w-full">
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
+              
+              {similarHotels?.length === 0 && (
+                <div className="text-center p-8 bg-neutral-50 rounded-lg">
+                  <p className="text-neutral-600">No similar hotels found in this destination.</p>
+                </div>
+              )}
             </section>
           </div>
           
