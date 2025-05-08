@@ -537,6 +537,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin CRUD operations for hotels
   app.post("/api/admin/hotels", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const hotel = await storage.createHotel(req.body);
       res.status(201).json(hotel);
@@ -546,6 +550,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/hotels/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const hotel = await storage.updateHotel(parseInt(req.params.id), req.body);
       if (!hotel) {
@@ -558,6 +566,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/admin/hotels/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       await storage.deleteHotel(parseInt(req.params.id));
       res.status(204).send();
@@ -568,6 +580,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin CRUD operations for drivers
   app.post("/api/admin/drivers", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const driver = await storage.createDriver(req.body);
       res.status(201).json(driver);
@@ -577,6 +593,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/drivers/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const driver = await storage.updateDriver(parseInt(req.params.id), req.body);
       if (!driver) {
@@ -589,6 +609,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/admin/drivers/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       await storage.deleteDriver(parseInt(req.params.id));
       res.status(204).send();
@@ -599,6 +623,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin CRUD operations for cruises
   app.post("/api/admin/cruises", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const cruise = await storage.createCruise(req.body);
       res.status(201).json(cruise);
@@ -608,6 +636,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/cruises/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const cruise = await storage.updateCruise(parseInt(req.params.id), req.body);
       if (!cruise) {
@@ -620,6 +652,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/admin/cruises/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       await storage.deleteCruise(parseInt(req.params.id));
       res.status(204).send();
@@ -630,6 +666,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin CRUD operations for events
   app.post("/api/admin/events", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const event = await storage.createEvent(req.body);
       res.status(201).json(event);
@@ -639,6 +679,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/events/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const event = await storage.updateEvent(parseInt(req.params.id), req.body);
       if (!event) {
@@ -651,6 +695,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/admin/events/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       await storage.deleteEvent(parseInt(req.params.id));
       res.status(204).send();
@@ -661,6 +709,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin booking management
   app.get("/api/admin/bookings", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const allBookings = await storage.getAllBookings();
       res.json(allBookings);
@@ -670,6 +722,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.put("/api/admin/bookings/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
     try {
       const booking = await storage.updateBooking(parseInt(req.params.id), req.body);
       if (!booking) {
