@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Plus, X, AlertCircle } from "lucide-react";
 import RoomImagesManager from "@/components/rooms/room-images-manager";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 // Extend the insert schema for form validation
 const hotelFormSchema = insertHotelSchema.extend({
@@ -419,9 +420,14 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image URL</FormLabel>
+                      <FormLabel>Main Image</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter primary image URL" {...field} />
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          disabled={isSubmitting}
+                          folder="hotels"
+                        />
                       </FormControl>
                       <FormDescription>
                         This is the main image displayed in listings and at the top of the details page
@@ -457,18 +463,26 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       name={`imageGalleryUrls.${index}`}
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-medium">Gallery Image {index + 1}</p>
+                              <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="icon"
+                                onClick={() => removeImageFromGallery(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                             <FormControl>
-                              <Input placeholder={`Gallery image ${index + 1}`} {...field} />
+                              <ImageUpload
+                                value={field.value}
+                                onChange={field.onChange}
+                                disabled={isSubmitting}
+                                folder="hotels"
+                              />
                             </FormControl>
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
-                              size="icon"
-                              onClick={() => removeImageFromGallery(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
                           </div>
                         </FormItem>
                       )}

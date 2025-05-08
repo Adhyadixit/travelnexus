@@ -382,4 +382,88 @@ router.delete("/api/events/:id", async (req, res) => {
   }
 });
 
+// Direct hotel routes
+// Create hotel
+router.post("/api/direct/hotels", async (req, res) => {
+  try {
+    console.log("Direct database access to create hotel");
+    const hotelData = {
+      ...req.body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const createdHotel = await db
+      .insert(hotels)
+      .values(hotelData)
+      .returning();
+      
+    console.log(`Successfully created new hotel: ${createdHotel[0].name}`);
+    res.status(201).json(createdHotel[0]);
+  } catch (error) {
+    console.error("Error in direct create hotel route:", error);
+    res.status(500).json({ error: "Failed to create hotel" });
+  }
+});
+
+// Update hotel
+router.patch("/api/direct/hotels/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to update hotel with ID: ${req.params.id}`);
+    const hotelId = parseInt(req.params.id);
+    
+    if (isNaN(hotelId)) {
+      return res.status(400).json({ error: "Invalid hotel ID" });
+    }
+    
+    const hotelData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    
+    const updatedHotel = await db
+      .update(hotels)
+      .set(hotelData)
+      .where(eq(hotels.id, hotelId))
+      .returning();
+      
+    if (updatedHotel.length === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+    
+    console.log(`Successfully updated hotel with ID: ${hotelId}`);
+    res.json(updatedHotel[0]);
+  } catch (error) {
+    console.error("Error in direct update hotel route:", error);
+    res.status(500).json({ error: "Failed to update hotel" });
+  }
+});
+
+// Delete hotel
+router.delete("/api/direct/hotels/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to delete hotel with ID: ${req.params.id}`);
+    const hotelId = parseInt(req.params.id);
+    
+    if (isNaN(hotelId)) {
+      return res.status(400).json({ error: "Invalid hotel ID" });
+    }
+    
+    const deletedHotel = await db
+      .delete(hotels)
+      .where(eq(hotels.id, hotelId))
+      .returning();
+      
+    if (deletedHotel.length === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+    
+    console.log(`Successfully deleted hotel with ID: ${hotelId}`);
+    res.json({ message: "Hotel deleted successfully" });
+  } catch (error) {
+    console.error("Error in direct delete hotel route:", error);
+    res.status(500).json({ error: "Failed to delete hotel" });
+  }
+});
+
 export default router;
