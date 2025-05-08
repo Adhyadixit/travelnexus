@@ -52,22 +52,22 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
 
   return (
     <div className={cn(
-      "bg-white rounded-lg shadow-lg p-3 md:p-6 w-full max-w-5xl mx-auto",
+      "bg-white rounded-lg shadow-lg p-2 md:p-6 w-full max-w-5xl mx-auto",
       className
     )}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className={cn(
-          isCompact ? "flex flex-wrap items-end gap-2" : "space-y-3"
+          isCompact ? "flex flex-wrap items-end gap-2" : "flex flex-row flex-wrap items-end gap-1 md:gap-2"
         )}>
           <div className={cn(
-            "grid gap-2 md:gap-4",
-            isCompact ? "grid-cols-1 md:grid-cols-5 w-full" : "grid-cols-1 md:grid-cols-4"
+            "flex flex-row flex-wrap gap-1 md:gap-4",
+            isCompact ? "md:grid-cols-5 w-full" : "w-full md:grid md:grid-cols-4"
           )}>
             <FormField
               control={form.control}
               name="destination"
               render={({ field }) => (
-                <FormItem className={isCompact ? "md:col-span-2" : ""}>
+                <FormItem className={isCompact ? "md:col-span-2" : "w-full md:w-auto flex-1 min-w-[100px]"}>
                   <FormLabel className={cn(
                     "text-neutral-600 font-medium text-xs md:text-sm",
                     isCompact && "text-xs"
@@ -89,7 +89,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               control={form.control}
               name="checkIn"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-[120px] md:w-auto">
                   <FormLabel className={cn(
                     "text-neutral-600 font-medium text-xs md:text-sm",
                     isCompact && "text-xs"
@@ -102,7 +102,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-3 text-left font-normal h-8 md:h-10 text-sm",
+                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -133,7 +133,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               control={form.control}
               name="checkOut"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-[120px] md:w-auto">
                   <FormLabel className={cn(
                     "text-neutral-600 font-medium text-xs md:text-sm",
                     isCompact && "text-xs"
@@ -146,7 +146,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-3 text-left font-normal h-8 md:h-10 text-sm",
+                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -179,7 +179,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               control={form.control}
               name="travelers"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="w-[100px] md:w-auto">
                   <FormLabel className={cn(
                     "text-neutral-600 font-medium text-xs md:text-sm",
                     isCompact && "text-xs"
@@ -188,8 +188,8 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-8 md:h-10 text-sm">
-                        <SelectValue placeholder="Select travelers" />
+                      <SelectTrigger className="h-8 md:h-10 text-xs md:text-sm">
+                        <SelectValue placeholder="Select" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -211,13 +211,13 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               "flex items-center text-xs md:text-sm",
               isCompact
                 ? "py-1 h-8 md:h-10 md:mt-0 mt-1"
-                : "px-4 md:px-8 py-2 md:py-3 bg-secondary hover:bg-secondary-dark w-full md:w-auto md:mx-auto mt-2 md:mt-4"
+                : "px-3 md:px-8 py-2 md:py-3 bg-secondary hover:bg-secondary-dark md:w-auto h-8 md:h-10 ml-1 md:ml-0 md:mx-auto"
             )}
-            size={isCompact ? "sm" : "default"}
-            variant={isCompact ? "default" : "secondary"}
+            size="sm"
+            variant="secondary"
           >
-            <Search className="mr-1 h-3 w-3 md:h-4 md:w-4" />
-            Search
+            <Search className="md:mr-1 h-3 w-3 md:h-4 md:w-4" />
+            <span className="hidden md:inline ml-1">Search</span>
           </Button>
         </form>
       </Form>

@@ -20,9 +20,9 @@ export function ImageBanner({
   children
 }: ImageBannerProps) {
   const heightClass = {
-    sm: 'h-40 md:h-52',
-    md: 'h-56 md:h-72',
-    lg: 'h-64 md:h-96',
+    sm: 'min-h-[10rem] md:min-h-[13rem]',
+    md: 'min-h-[14rem] md:min-h-[18rem]',
+    lg: 'min-h-[16rem] md:min-h-[24rem]',
   }[height];
 
   return (
