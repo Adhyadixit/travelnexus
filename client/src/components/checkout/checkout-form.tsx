@@ -29,6 +29,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { InquiryForm } from "@/components/inquiry-form";
 
 // Extend the booking schema for checkout form
 const checkoutFormSchema = z.object({
@@ -199,7 +200,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
             </CardDescription>
           </div>
           <div className="space-y-4 w-full max-w-md">
-            <InquiryForm
+            <InquiryForm 
               productName={item.name}
               defaultSubject={`Payment issue with ${item.name}`}
               triggerButtonText="Inquire About Payment Options"
