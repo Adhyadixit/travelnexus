@@ -199,6 +199,137 @@ async function updateTables() {
       console.error('Error creating reviews table:', error);
     }
 
+    // Create conversation_status enum if it doesn't exist
+    try {
+      await db.execute(sql`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'conversation_status') THEN
+            CREATE TYPE conversation_status AS ENUM ('open', 'closed', 'pending');
+          END IF;
+        END
+        $$;
+      `);
+      console.log('Created conversation_status enum if it did not exist');
+    } catch (error) {
+      console.error('Error creating conversation_status enum:', error);
+    }
+
+    // Create message_type enum if it doesn't exist
+    try {
+      await db.execute(sql`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'message_type') THEN
+            CREATE TYPE message_type AS ENUM ('text', 'image', 'file');
+          END IF;
+        END
+        $$;
+      `);
+      console.log('Created message_type enum if it did not exist');
+    } catch (error) {
+      console.error('Error creating message_type enum:', error);
+    }
+
+    // Create guest_users table if it doesn't exist
+    try {
+      const guestUsersTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'guest_users'
+        );
+      `);
+      
+      const guestUsersExist = guestUsersTableExists.rows[0]?.exists;
+      
+      if (!guestUsersExist) {
+        await db.execute(sql`
+          CREATE TABLE guest_users (
+            id SERIAL PRIMARY KEY,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone_number TEXT NOT NULL,
+            session_id TEXT NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created guest_users table');
+      } else {
+        console.log('Guest users table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating guest_users table:', error);
+    }
+
+    // Create conversations table if it doesn't exist
+    try {
+      const conversationsTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'conversations'
+        );
+      `);
+      
+      const conversationsExist = conversationsTableExists.rows[0]?.exists;
+      
+      if (!conversationsExist) {
+        await db.execute(sql`
+          CREATE TABLE conversations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+            guest_user_id INTEGER REFERENCES guest_users(id) ON DELETE CASCADE,
+            item_type TEXT,
+            item_id INTEGER,
+            subject TEXT,
+            status conversation_status DEFAULT 'open' NOT NULL,
+            last_message_at TIMESTAMP DEFAULT NOW() NOT NULL,
+            read_by_user BOOLEAN DEFAULT TRUE,
+            read_by_admin BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+            updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created conversations table');
+      } else {
+        console.log('Conversations table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating conversations table:', error);
+    }
+
+    // Create messages table if it doesn't exist
+    try {
+      const messagesTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'messages'
+        );
+      `);
+      
+      const messagesExist = messagesTableExists.rows[0]?.exists;
+      
+      if (!messagesExist) {
+        await db.execute(sql`
+          CREATE TABLE messages (
+            id SERIAL PRIMARY KEY,
+            conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+            sender_id INTEGER NOT NULL,
+            sender_type TEXT NOT NULL,
+            content TEXT NOT NULL,
+            message_type message_type DEFAULT 'text' NOT NULL,
+            file_url TEXT,
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created messages table');
+      } else {
+        console.log('Messages table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating messages table:', error);
+    }
+
     console.log('All database schema updates completed successfully!');
   } catch (error) {
     console.error('Error updating database schema:', error);

@@ -594,3 +594,111 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+
+// Guest Users table (for chat and guest checkout)
+export const guestUsers = pgTable('guest_users', {
+  id: serial("id").primaryKey(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  sessionId: text("session_id").notNull().unique(), // To identify guest users during their session
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Guest user relations
+export const guestUsersRelations = relations(guestUsers, ({ many }) => ({
+  conversations: many(conversations),
+}));
+
+// Conversation status enum
+export const conversationStatusEnum = pgEnum('conversation_status', ['open', 'closed', 'pending']);
+
+// Conversations table (for live chat)
+export const conversations = pgTable('conversations', {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  guestUserId: integer("guest_user_id").references(() => guestUsers.id, { onDelete: 'cascade' }),
+  itemType: text("item_type"), // hotel, package, cruise, driver, event (optional - if the chat is about a specific item)
+  itemId: integer("item_id"), // The ID of the item being inquired about (optional)
+  subject: text("subject"), // Subject or topic of the conversation
+  status: conversationStatusEnum("status").default('open').notNull(),
+  lastMessageAt: timestamp("last_message_at").defaultNow().notNull(),
+  readByUser: boolean("read_by_user").default(true), // Whether the latest message has been read by the user
+  readByAdmin: boolean("read_by_admin").default(false), // Whether the latest message has been read by the admin
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Conversation relations
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  user: one(users, {
+    fields: [conversations.userId],
+    references: [users.id],
+  }),
+  guestUser: one(guestUsers, {
+    fields: [conversations.guestUserId],
+    references: [guestUsers.id],
+  }),
+  messages: many(messages),
+}));
+
+// Message type enum
+export const messageTypeEnum = pgEnum('message_type', ['text', 'image', 'file']);
+
+// Messages table (for live chat)
+export const messages = pgTable('messages', {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").references(() => conversations.id, { onDelete: 'cascade' }).notNull(),
+  senderId: integer("sender_id").notNull(), // ID of the user or admin who sent the message
+  senderType: text("sender_type").notNull(), // "user", "guest", or "admin"
+  content: text("content").notNull(),
+  messageType: messageTypeEnum("message_type").default('text').notNull(),
+  fileUrl: text("file_url"), // URL to attached file if any
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Message relations
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+}));
+
+// Insert schemas for chat functionality
+export const insertGuestUserSchema = createInsertSchema(guestUsers).pick({
+  firstName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: true,
+  sessionId: true,
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  userId: true,
+  guestUserId: true,
+  itemType: true,
+  itemId: true,
+  subject: true,
+  status: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).pick({
+  conversationId: true,
+  senderId: true,
+  senderType: true,
+  content: true,
+  messageType: true,
+  fileUrl: true,
+});
+
+// Types for chat functionality
+export type GuestUser = typeof guestUsers.$inferSelect;
+export type InsertGuestUser = z.infer<typeof insertGuestUserSchema>;
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
