@@ -121,34 +121,40 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
   });
 
   const handleSubmit = (data: PackageFormValues) => {
-    // Format the data for database storage
-    const formattedData = {
-      ...data,
-      destinationId: parseInt(data.destinationId),
-      // Convert form text fields to proper JSON strings for DB storage
-      included: stringToArray(data.includedItems || ""),
-      excluded: stringToArray(data.excludedItems || ""),
-      itinerary: data.itineraryText,
-      hotels: data.hotelsText,
-      citiesCovered: stringToArray(data.citiesCoveredText || ""), 
-      meals: data.mealsText,
-      startingDates: stringToArray(data.startingDatesText || ""),
-      highlights: stringToArray(data.highlightsText || ""),
-      imageGallery: JSON.stringify(data.imageGalleryUrls || []),
-    };
-    
-    // Remove temporary form-only fields before submission
-    delete formattedData.includedItems;
-    delete formattedData.excludedItems;
-    delete formattedData.itineraryText;
-    delete formattedData.hotelsText;
-    delete formattedData.citiesCoveredText;
-    delete formattedData.mealsText;
-    delete formattedData.startingDatesText;
-    delete formattedData.highlightsText;
-    delete formattedData.imageGalleryUrls;
-    
-    onSubmit(formattedData);
+    try {
+      // Format the data for database storage
+      console.log("Form data before formatting:", data);
+      const formattedData = {
+        ...data,
+        destinationId: parseInt(data.destinationId),
+        // Convert form text fields to proper JSON strings for DB storage
+        included: stringToArray(data.includedItems || ""),
+        excluded: stringToArray(data.excludedItems || ""),
+        itinerary: data.itineraryText,
+        hotels: data.hotelsText,
+        citiesCovered: stringToArray(data.citiesCoveredText || ""), 
+        meals: data.mealsText,
+        startingDates: stringToArray(data.startingDatesText || ""),
+        highlights: stringToArray(data.highlightsText || ""),
+        imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+      };
+      
+      // Remove temporary form-only fields before submission
+      delete formattedData.includedItems;
+      delete formattedData.excludedItems;
+      delete formattedData.itineraryText;
+      delete formattedData.hotelsText;
+      delete formattedData.citiesCoveredText;
+      delete formattedData.mealsText;
+      delete formattedData.startingDatesText;
+      delete formattedData.highlightsText;
+      delete formattedData.imageGalleryUrls;
+      
+      console.log("Formatted data for submission:", formattedData);
+      onSubmit(formattedData);
+    } catch (error) {
+      console.error("Error in package form submission:", error);
+    }
   };
 
   // Handle image gallery inputs

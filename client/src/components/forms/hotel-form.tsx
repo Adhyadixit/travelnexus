@@ -123,28 +123,34 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
   });
 
   const handleSubmit = (data: HotelFormValues) => {
-    // Format the data for database storage
-    const formattedData = {
-      ...data,
-      destinationId: parseInt(data.destinationId),
-      // Convert form text fields to proper JSON strings for DB storage
-      amenities: stringToArray(data.amenitiesList || ""),
-      languagesSpoken: stringToArray(data.languagesList || ""),
-      nearbyAttractions: stringToArray(data.attractionsList || ""),
-      policies: data.policiesList,
-      roomTypes: data.roomTypesList,
-      imageGallery: JSON.stringify(data.imageGalleryUrls || []),
-    };
-    
-    // Remove temporary form-only fields before submission
-    delete formattedData.amenitiesList;
-    delete formattedData.languagesList;
-    delete formattedData.attractionsList;
-    delete formattedData.policiesList;
-    delete formattedData.roomTypesList;
-    delete formattedData.imageGalleryUrls;
-    
-    onSubmit(formattedData);
+    try {
+      // Format the data for database storage
+      console.log("Form data before formatting:", data);
+      const formattedData = {
+        ...data,
+        destinationId: parseInt(data.destinationId),
+        // Convert form text fields to proper JSON strings for DB storage
+        amenities: stringToArray(data.amenitiesList || ""),
+        languagesSpoken: stringToArray(data.languagesList || ""),
+        nearbyAttractions: stringToArray(data.attractionsList || ""),
+        policies: data.policiesList,
+        roomTypes: data.roomTypesList,
+        imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+      };
+      
+      // Remove temporary form-only fields before submission
+      delete formattedData.amenitiesList;
+      delete formattedData.languagesList;
+      delete formattedData.attractionsList;
+      delete formattedData.policiesList;
+      delete formattedData.roomTypesList;
+      delete formattedData.imageGalleryUrls;
+      
+      console.log("Formatted data for submission:", formattedData);
+      onSubmit(formattedData);
+    } catch (error) {
+      console.error("Error in hotel form submission:", error);
+    }
   };
 
   // Handle image gallery inputs
