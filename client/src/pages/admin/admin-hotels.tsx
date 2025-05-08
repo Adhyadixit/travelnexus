@@ -203,7 +203,10 @@ export default function AdminHotels() {
     {
       accessorKey: "pricePerNight",
       header: "Price / Night",
-      cell: ({ row }) => <div className="font-medium">${(row.getValue("pricePerNight") as number).toLocaleString()}</div>,
+      cell: ({ row }) => {
+        const price = row.getValue("pricePerNight") as number | undefined;
+        return <div className="font-medium">${price ? price.toLocaleString() : 0}</div>;
+      },
     },
     {
       id: "actions",

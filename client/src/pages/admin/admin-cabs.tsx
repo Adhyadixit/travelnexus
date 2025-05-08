@@ -179,7 +179,7 @@ export default function AdminCabs() {
       cell: ({ row }) => <div className="font-medium">#{row.getValue("id")}</div>,
     },
     {
-      accessorKey: "driverName",
+      accessorKey: "name",
       header: "Driver",
       cell: ({ row }) => {
         const cab = row.original;
@@ -187,10 +187,10 @@ export default function AdminCabs() {
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={cab.profileImageUrl} alt={cab.driverName} />
-              <AvatarFallback>{cab.driverName.charAt(0)}</AvatarFallback>
+              <AvatarImage src={cab.imageUrl} alt={cab.name} />
+              <AvatarFallback>{cab.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <div className="font-medium">{cab.driverName}</div>
+            <div className="font-medium">{cab.name}</div>
           </div>
         );
       },
@@ -211,26 +211,32 @@ export default function AdminCabs() {
       },
     },
     {
-      accessorKey: "vehicleModel",
-      header: "Vehicle",
+      accessorKey: "type",
+      header: "Vehicle Type",
       cell: ({ row }) => {
         return (
           <div className="flex items-center gap-2">
             <Car className="h-4 w-4 text-muted-foreground" />
-            <span>{row.getValue("vehicleModel")}</span>
+            <span>{row.getValue("type") || "N/A"}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "languages",
-      header: "Languages",
-      cell: ({ row }) => formatLanguages(row.getValue("languages")),
+      accessorKey: "seats",
+      header: "Seats",
+      cell: ({ row }) => {
+        const seats = row.getValue("seats") as number | undefined;
+        return <div>{seats || "N/A"}</div>;
+      },
     },
     {
-      accessorKey: "dailyRate",
+      accessorKey: "pricePerDay",
       header: "Daily Rate",
-      cell: ({ row }) => <div className="font-medium">${(row.getValue("dailyRate") as number).toLocaleString()}</div>,
+      cell: ({ row }) => {
+        const price = row.getValue("pricePerDay") as number | undefined;
+        return <div className="font-medium">${price ? price.toLocaleString() : 0}</div>;
+      },
     },
     {
       accessorKey: "rating",
