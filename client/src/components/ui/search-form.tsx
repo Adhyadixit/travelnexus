@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -32,7 +32,7 @@ interface SearchFormProps {
 }
 
 export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
@@ -45,7 +45,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
   function onSubmit(data: SearchFormValues) {
     // In a real application, this would use the search parameters
     // For now, we'll just navigate to the destinations page
-    navigate("/destinations");
+    setLocation("/destinations");
   }
 
   const isCompact = variant === "compact";

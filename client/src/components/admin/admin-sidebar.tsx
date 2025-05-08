@@ -16,12 +16,12 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 
 export default function AdminSidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { logoutMutation } = useAuth();
   
   const handleLogout = async () => {
     await logoutMutation.mutateAsync();
-    window.location.href = '/';
+    setLocation('/');
   };
   
   const menuItems = [

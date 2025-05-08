@@ -7,16 +7,16 @@ import { Helmet } from 'react-helmet';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   
   // Redirect if not logged in or not admin
   useEffect(() => {
     if (!user) {
-      navigate("/admin-auth");
+      setLocation("/admin-auth");
     } else if (!user.isAdmin) {
-      navigate("/");
+      setLocation("/");
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
   
   if (!user || !user.isAdmin) {
     return null;

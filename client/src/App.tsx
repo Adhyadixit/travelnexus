@@ -22,7 +22,7 @@ import BookingsPage from "@/pages/bookings-page";
 import BookingDetails from "@/pages/booking-details";
 import CheckoutPage from "@/pages/checkout-page";
 import ProfilePage from "@/pages/profile-page";
-import AdminAuth from "@/pages/admin/admin-auth";
+import AdminAuth from "@/pages/admin/admin-auth-page";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import AdminPackages from "@/pages/admin/admin-packages";
 import AdminHotels from "@/pages/admin/admin-hotels";

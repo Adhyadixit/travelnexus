@@ -7,7 +7,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { Booking } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,7 +42,7 @@ interface PaymentFormProps {
 
 export function PaymentForm({ bookingId, totalAmount, itemName, onSuccess }: PaymentFormProps) {
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const [showBillingAddress, setShowBillingAddress] = useState(false);
 
   const form = useForm<PaymentFormValues>({
@@ -74,7 +74,7 @@ export function PaymentForm({ bookingId, totalAmount, itemName, onSuccess }: Pay
         description: `Your booking for ${itemName} has been confirmed.`,
       });
       if (onSuccess) onSuccess(data);
-      else navigate("/bookings");
+      else setLocation("/bookings");
     },
     onError: (error: Error) => {
       toast({

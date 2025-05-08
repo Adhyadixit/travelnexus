@@ -25,7 +25,7 @@ const loginSchema = z.object({
 });
 
 export default function AdminAuthPage() {
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const { user, loginMutation } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
@@ -33,12 +33,12 @@ export default function AdminAuthPage() {
   useEffect(() => {
     if (user) {
       if (user.isAdmin) {
-        navigate("/admin/dashboard");
+        setLocation("/admin/dashboard");
       } else {
         setErrorMessage("You don't have admin permissions.");
       }
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
   
   // Login Form
   const form = useForm<LoginData>({
@@ -143,7 +143,7 @@ export default function AdminAuthPage() {
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Button variant="link" className="text-sm text-muted-foreground" onClick={() => navigate("/")}>
+          <Button variant="link" className="text-sm text-muted-foreground" onClick={() => setLocation("/")}>
             Return to main site
           </Button>
         </CardFooter>

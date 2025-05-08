@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Helmet } from 'react-helmet';
 
 export default function CheckoutPage() {
-  const [location, navigate] = useLocation();
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -59,14 +59,14 @@ export default function CheckoutPage() {
   // If item type or id is missing, redirect to home
   useEffect(() => {
     if (!itemType || !itemId) {
-      navigate("/");
+      setLocation("/");
       toast({
         title: "Invalid Request",
         description: "Missing item information. Please try again.",
         variant: "destructive",
       });
     }
-  }, [itemType, itemId, navigate, toast]);
+  }, [itemType, itemId, setLocation, toast]);
   
   // Handle booking submission
   const handleBookingSubmit = async (bookingData: any) => {
