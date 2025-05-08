@@ -937,29 +937,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations", async (req, res) => {
     try {
       // Handle both authenticated users and guest users
-      let conversationData;
-      
-      if (req.isAuthenticated()) {
-        // For logged-in users
-        conversationData = {
-          userId: req.user!.id,
-          itemType: req.body.itemType, // hotel, package, cruise, etc.
-          itemId: req.body.itemId,
-          subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
-          status: 'open',
-        };
-      } else if (req.body.guestUserId) {
-        // For guest users
-        conversationData = {
-          guestUserId: req.body.guestUserId,
-          itemType: req.body.itemType,
-          itemId: req.body.itemId,
-          subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
-          status: 'open',
-        };
-      } else {
+      if (!req.isAuthenticated() && !req.body.guestUserId) {
         return res.status(400).json({ error: "Either login or provide guest user ID" });
       }
+      
+      // Create conversation with the correct status enum value
+      const conversationData = {
+        userId: req.isAuthenticated() ? req.user!.id : null,
+        guestUserId: !req.isAuthenticated() ? req.body.guestUserId : null,
+        itemType: req.body.itemType,
+        itemId: req.body.itemId,
+        subject: req.body.subject || `Inquiry about ${req.body.itemType} #${req.body.itemId}`,
+        status: 'open' as const, // Type assertion to match the enum
+      };
       
       const conversation = await storage.createConversation(conversationData);
       res.status(201).json(conversation);
@@ -996,13 +986,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create the message
+      const isAdmin = req.isAuthenticated() && req.user!.role === 'admin';
+      let senderId = 0;
+      let senderType = '';
+      
+      if (req.isAuthenticated()) {
+        senderId = req.user!.id;
+        senderType = isAdmin ? 'admin' : 'user';
+      } else if (conversation.guestUserId) {
+        senderId = conversation.guestUserId;
+        senderType = 'guest';
+      }
+      
       const messageData = {
         conversationId,
+        senderId,
+        senderType,
         content: req.body.content,
-        isFromAdmin: req.isAuthenticated() && req.user!.role === 'admin',
-        readByAdmin: req.isAuthenticated() && req.user!.role === 'admin',
-        readByUser: req.isAuthenticated() && req.user!.role !== 'admin',
         messageType: req.body.messageType || 'text',
+        fileUrl: req.body.fileUrl,
       };
       
       const message = await storage.createMessage(messageData);
