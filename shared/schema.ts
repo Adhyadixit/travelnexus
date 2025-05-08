@@ -6,6 +6,10 @@ import { relations } from "drizzle-orm";
 // User role enum
 export const roleEnum = pgEnum('role', ['user', 'admin']);
 
+// Define the totalAmount field alias for totalPrice in bookings
+// This helps with compatibility in components that expect totalAmount
+export const totalAmount = (booking: { totalPrice: number }) => booking.totalPrice;
+
 // Users table
 export const users = pgTable('users', {
   id: serial("id").primaryKey(),
@@ -113,6 +117,31 @@ export const drivers = pgTable('drivers', {
 export const driversRelations = relations(drivers, ({ one, many }) => ({
   destination: one(destinations, {
     fields: [drivers.destinationId],
+    references: [destinations.id],
+  }),
+  bookings: many(bookings),
+}));
+
+// Cabs table
+export const cabs = pgTable('cabs', {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  destinationId: integer("destination_id").references(() => destinations.id, { onDelete: 'cascade' }),
+  description: text("description").notNull(),
+  imageUrl: text("image_url").notNull(),
+  type: text("type").notNull(), // sedan, suv, luxury, etc.
+  pricePerDay: doublePrecision("price_per_day").notNull(),
+  seats: integer("seats").notNull(),
+  features: text("features").notNull(), // JSON string of features
+  available: boolean("available").default(true),
+  rating: doublePrecision("rating"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Cab relations
+export const cabsRelations = relations(cabs, ({ one, many }) => ({
+  destination: one(destinations, {
+    fields: [cabs.destinationId],
     references: [destinations.id],
   }),
   bookings: many(bookings),
@@ -289,6 +318,18 @@ export const insertEventSchema = createInsertSchema(events).pick({
   capacity: true,
 });
 
+export const insertCabSchema = createInsertSchema(cabs).pick({
+  name: true,
+  destinationId: true,
+  description: true,
+  imageUrl: true,
+  type: true,
+  pricePerDay: true,
+  seats: true,
+  features: true,
+  available: true,
+});
+
 export const insertBookingSchema = createInsertSchema(bookings).pick({
   userId: true,
   bookingType: true,
@@ -305,6 +346,40 @@ export const insertBookingSchema = createInsertSchema(bookings).pick({
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
+// Extend User with computed fullName property
+export interface UserWithFullName extends User {
+  fullName: string;
+  phone: string | null;
+}
+
+// Helper function to get full name from user
+export function getUserWithFullName(user: User): UserWithFullName {
+  return {
+    ...user,
+    fullName: user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName}`
+      : user.username,
+    phone: user.phoneNumber
+  };
+}
+
+// Extend Booking with computed properties
+export interface BookingWithExtras extends Booking {
+  totalAmount: number;
+  transactionId?: string;
+  specialRequests?: string;
+}
+
+// Helper function to transform Booking to BookingWithExtras
+export function getBookingWithExtras(booking: Booking): BookingWithExtras {
+  return {
+    ...booking,
+    totalAmount: booking.totalPrice,
+    transactionId: `TR-${booking.id}-${Date.now().toString().slice(-6)}`,
+    specialRequests: ''
+  };
+}
+
 export type Destination = typeof destinations.$inferSelect;
 export type InsertDestination = z.infer<typeof insertDestinationSchema>;
 
@@ -316,6 +391,9 @@ export type InsertHotel = z.infer<typeof insertHotelSchema>;
 
 export type Driver = typeof drivers.$inferSelect;
 export type InsertDriver = z.infer<typeof insertDriverSchema>;
+
+export type Cab = typeof cabs.$inferSelect;
+export type InsertCab = z.infer<typeof insertCabSchema>;
 
 export type Cruise = typeof cruises.$inferSelect;
 export type InsertCruise = z.infer<typeof insertCruiseSchema>;

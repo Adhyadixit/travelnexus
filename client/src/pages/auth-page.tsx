@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
-import { useNavigate, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { DesktopLayout } from "@/components/layout/desktop-layout";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,16 +14,16 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<string>("login");
   
   const { user } = useAuth();
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const [location] = useLocation();
   
   // If user is already logged in, redirect to home or the page they were trying to access
   useEffect(() => {
     if (user) {
       const redirectTo = new URLSearchParams(window.location.search).get("redirect");
-      navigate(redirectTo || "/");
+      setLocation(redirectTo || "/");
     }
-  }, [user, navigate]);
+  }, [user, setLocation]);
   
   return (
     <Layout>

@@ -17,3 +17,26 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+// Add useMediaQuery function that's being imported in the components
+export function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    const mediaQuery = window.matchMedia(query)
+    const handler = (event: MediaQueryListEvent) => {
+      setMatches(event.matches)
+    }
+    
+    // Set initial value
+    setMatches(mediaQuery.matches)
+    
+    // Add event listener
+    mediaQuery.addEventListener("change", handler)
+    
+    // Cleanup
+    return () => mediaQuery.removeEventListener("change", handler)
+  }, [query])
+
+  return matches
+}
