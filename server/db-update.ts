@@ -5,6 +5,22 @@ async function updateTables() {
   try {
     console.log('Starting database schema update...');
 
+    // Create hotel_type enum if it doesn't exist
+    try {
+      await db.execute(sql`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'hotel_type') THEN
+            CREATE TYPE hotel_type AS ENUM ('hotel', 'resort', 'villa', 'independent_house');
+          END IF;
+        END
+        $$;
+      `);
+      console.log('Created hotel_type enum if it did not exist');
+    } catch (error) {
+      console.error('Error creating hotel_type enum:', error);
+    }
+
     // Add new fields to hotels table
     await db.execute(sql`
       ALTER TABLE hotels 
@@ -16,7 +32,8 @@ async function updateTables() {
       ADD COLUMN IF NOT EXISTS languages_spoken TEXT,
       ADD COLUMN IF NOT EXISTS nearby_attractions TEXT,
       ADD COLUMN IF NOT EXISTS free_cancellation BOOLEAN DEFAULT false,
-      ADD COLUMN IF NOT EXISTS room_types TEXT;
+      ADD COLUMN IF NOT EXISTS room_types TEXT,
+      ADD COLUMN IF NOT EXISTS hotel_type hotel_type DEFAULT 'hotel';
     `);
     console.log('Updated hotels table');
 
@@ -141,6 +158,46 @@ async function updateTables() {
       ADD COLUMN IF NOT EXISTS additional_services TEXT;
     `);
     console.log('Updated bookings table');
+    
+    // Create reviews table if it doesn't exist
+    try {
+      const reviewsTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'reviews'
+        );
+      `);
+      
+      const reviewsExist = reviewsTableExists.rows[0]?.exists;
+      
+      if (!reviewsExist) {
+        await db.execute(sql`
+          CREATE TABLE reviews (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            item_type TEXT NOT NULL,
+            item_id INTEGER NOT NULL,
+            rating INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            comment TEXT NOT NULL,
+            date_of_stay TIMESTAMP,
+            images TEXT,
+            helpful_votes INTEGER DEFAULT 0,
+            verified BOOLEAN DEFAULT FALSE,
+            response TEXT,
+            response_date TIMESTAMP,
+            status TEXT DEFAULT 'approved',
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+            updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created reviews table');
+      } else {
+        console.log('Reviews table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating reviews table:', error);
+    }
 
     console.log('All database schema updates completed successfully!');
   } catch (error) {
