@@ -145,13 +145,23 @@ export default function AdminHotels() {
   
   // Handle form submission
   const handleFormSubmit = async (data: any) => {
+    console.log('Form submit handler called with data:', data);
     setIsSubmitting(true);
     try {
       if (editingHotel) {
+        console.log(`Updating hotel ${editingHotel.id} with data:`, data);
         await updateHotelMutation.mutateAsync({ id: editingHotel.id, data });
       } else {
+        console.log('Creating new hotel with data:', data);
         await createHotelMutation.mutateAsync(data);
       }
+    } catch (error) {
+      console.error('Error in form submission:', error);
+      toast({
+        title: "Submission Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
