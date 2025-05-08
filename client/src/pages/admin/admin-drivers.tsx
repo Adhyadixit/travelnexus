@@ -200,18 +200,18 @@ export default function AdminDrivers() {
     if (driver) {
       setSelectedDriver(driver);
       form.reset({
-        name: driver.name,
-        photoUrl: driver.photoUrl,
-        carModel: driver.carModel,
-        carYear: driver.carYear,
-        licensePlate: driver.licensePlate,
-        rating: driver.rating,
-        pricePerDay: driver.pricePerDay,
-        phone: driver.phone,
-        email: driver.email,
-        description: driver.description,
-        destinationId: driver.destinationId,
-        availability: driver.availability,
+        name: driver.name || "",
+        photoUrl: driver.photoUrl || "",
+        carModel: driver.carModel || "",
+        carYear: driver.carYear || 2020,
+        licensePlate: driver.licensePlate || "",
+        rating: driver.rating || 4.5,
+        pricePerDay: driver.pricePerDay || 50,
+        phone: driver.phone || "",
+        email: driver.email || "",
+        description: driver.description || "",
+        destinationId: driver.destinationId || (destinations.length > 0 ? destinations[0].id : 0),
+        availability: driver.availability || "available",
       });
     } else {
       setSelectedDriver(null);
@@ -349,8 +349,8 @@ export default function AdminDrivers() {
                             ${driver.pricePerDay}/day
                           </TableCell>
                           <TableCell>
-                            <Badge variant={driver.availability === "available" ? "default" : "secondary"}>
-                              {driver.availability.charAt(0).toUpperCase() + driver.availability.slice(1)}
+                            <Badge variant={(driver.availability && driver.availability === "available") ? "default" : "secondary"}>
+                              {driver.availability ? driver.availability.charAt(0).toUpperCase() + driver.availability.slice(1) : "Unknown"}
                             </Badge>
                           </TableCell>
                           <TableCell>
