@@ -73,23 +73,23 @@ export function DesktopLayout({
       <header className="bg-white shadow-sm sticky top-0 z-30">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <Link href="/">
-              <a className="text-2xl font-heading font-bold text-primary">
-                TravelEase<span className="text-secondary">.</span>
-              </a>
+            <Link href="/" className="text-2xl font-heading font-bold text-primary">
+              TravelEase<span className="text-secondary">.</span>
             </Link>
             
             <nav className="hidden md:flex items-center space-x-6 ml-10">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <a className={cn(
+                <Link 
+                  key={link.href} 
+                  href={link.href}
+                  className={cn(
                     "font-medium transition-colors",
                     location === link.href
                       ? "text-primary"
                       : "text-neutral-700 hover:text-primary"
-                  )}>
-                    {link.label}
-                  </a>
+                  )}
+                >
+                  {link.label}
                 </Link>
               ))}
             </nav>
@@ -119,28 +119,22 @@ export function DesktopLayout({
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">
-                      <a className="w-full flex items-center cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        Profile
-                      </a>
+                    <Link href="/profile" className="w-full flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/bookings">
-                      <a className="w-full flex items-center cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        My Bookings
-                      </a>
+                    <Link href="/bookings" className="w-full flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      My Bookings
                     </Link>
                   </DropdownMenuItem>
                   {user.role === 'admin' && (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin/dashboard">
-                        <a className="w-full flex items-center cursor-pointer">
-                          <User className="mr-2 h-4 w-4" />
-                          Admin Dashboard
-                        </a>
+                      <Link href="/admin/dashboard" className="w-full flex items-center cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        Admin Dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -152,7 +146,7 @@ export function DesktopLayout({
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link href="/auth">
+              <Link href="/auth" className="block">
                 <Button className="flex items-center">
                   <LogIn className="mr-2 h-4 w-4" />
                   Sign In
@@ -170,25 +164,24 @@ export function DesktopLayout({
               <SheetContent side="right">
                 <div className="flex flex-col h-full py-6">
                   <div className="flex items-center justify-between mb-6">
-                    <Link href="/">
-                      <a className="text-2xl font-heading font-bold text-primary">
-                        TravelEase<span className="text-secondary">.</span>
-                      </a>
+                    <Link href="/" className="text-2xl font-heading font-bold text-primary">
+                      TravelEase<span className="text-secondary">.</span>
                     </Link>
                   </div>
                   
                   <nav className="flex flex-col space-y-4">
                     {navLinks.map((link) => (
                       <SheetClose asChild key={link.href}>
-                        <Link href={link.href}>
-                          <a className={cn(
+                        <Link 
+                          href={link.href}
+                          className={cn(
                             "font-medium py-2 transition-colors",
                             location === link.href
                               ? "text-primary"
                               : "text-neutral-700 hover:text-primary"
-                          )}>
-                            {link.label}
-                          </a>
+                          )}
+                        >
+                          {link.label}
                         </Link>
                       </SheetClose>
                     ))}
@@ -198,7 +191,7 @@ export function DesktopLayout({
                     {user ? (
                       <>
                         <SheetClose asChild>
-                          <Link href="/profile">
+                          <Link href="/profile" className="block">
                             <Button variant="outline" className="w-full mb-2">
                               <User className="mr-2 h-4 w-4" />
                               Profile
@@ -216,7 +209,7 @@ export function DesktopLayout({
                       </>
                     ) : (
                       <SheetClose asChild>
-                        <Link href="/auth">
+                        <Link href="/auth" className="block">
                           <Button className="w-full">
                             <LogIn className="mr-2 h-4 w-4" />
                             Sign In
