@@ -482,6 +482,194 @@ export class DatabaseStorage implements IStorage {
     
     return result;
   }
+
+  // Guest User operations
+  async createGuestUser(guestData: InsertGuestUser): Promise<GuestUser> {
+    const [newGuestUser] = await db
+      .insert(guestUsers)
+      .values(guestData)
+      .returning();
+    return newGuestUser;
+  }
+
+  async getGuestUserBySessionId(sessionId: string): Promise<GuestUser | undefined> {
+    const [guestUser] = await db
+      .select()
+      .from(guestUsers)
+      .where(eq(guestUsers.sessionId, sessionId));
+    return guestUser;
+  }
+
+  async getGuestUser(id: number): Promise<GuestUser | undefined> {
+    const [guestUser] = await db
+      .select()
+      .from(guestUsers)
+      .where(eq(guestUsers.id, id));
+    return guestUser;
+  }
+  
+  // Chat operations
+  async createConversation(conversationData: InsertConversation): Promise<Conversation> {
+    const [newConversation] = await db
+      .insert(conversations)
+      .values(conversationData)
+      .returning();
+    return newConversation;
+  }
+  
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+    return conversation;
+  }
+  
+  async getConversationsByUser(userId: number): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.userId, userId))
+      .orderBy(desc(conversations.updatedAt));
+  }
+  
+  async getConversationsByGuestUser(guestUserId: number): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.guestUserId, guestUserId))
+      .orderBy(desc(conversations.updatedAt));
+  }
+  
+  async getAllConversations(): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .orderBy(desc(conversations.updatedAt));
+  }
+  
+  async getActiveConversations(): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.status, 'open'))
+      .orderBy(desc(conversations.updatedAt));
+  }
+  
+  async updateConversation(id: number, data: Partial<InsertConversation>): Promise<Conversation | undefined> {
+    const [updatedConversation] = await db
+      .update(conversations)
+      .set(data)
+      .where(eq(conversations.id, id))
+      .returning();
+    return updatedConversation;
+  }
+  
+  async closeConversation(id: number): Promise<Conversation | undefined> {
+    const [closedConversation] = await db
+      .update(conversations)
+      .set({ status: 'closed', updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+    return closedConversation;
+  }
+  
+  async deleteConversation(id: number): Promise<void> {
+    await db
+      .delete(conversations)
+      .where(eq(conversations.id, id));
+  }
+  
+  // Message operations
+  async createMessage(messageData: InsertMessage): Promise<Message> {
+    const [newMessage] = await db
+      .insert(messages)
+      .values(messageData)
+      .returning();
+      
+    // Update the conversation's updatedAt timestamp
+    const conversationId = messageData.conversationId;
+    await db
+      .update(conversations)
+      .set({ updatedAt: new Date() })
+      .where(eq(conversations.id, conversationId));
+      
+    return newMessage;
+  }
+  
+  async getMessagesByConversation(conversationId: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(asc(messages.createdAt));
+  }
+  
+  async getUnreadMessageCountForAdmin(): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.readByAdmin, false),
+          eq(messages.isFromAdmin, false)
+        )
+      );
+    return result[0].count;
+  }
+  
+  async getUnreadMessageCountForUser(userId: number): Promise<number> {
+    // First get all conversations for this user
+    const userConversations = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.userId, userId));
+      
+    if (userConversations.length === 0) {
+      return 0;
+    }
+    
+    // Get conversation IDs
+    const conversationIds = userConversations.map(c => c.id);
+    
+    // Count unread messages in all these conversations
+    const result = await db
+      .select({ count: count() })
+      .from(messages)
+      .where(
+        and(
+          eq(messages.readByUser, false),
+          eq(messages.isFromAdmin, true),
+          sql`${messages.conversationId} IN (${conversationIds.join(',')})`
+        )
+      );
+      
+    return result[0].count;
+  }
+  
+  async markMessagesAsReadByAdmin(conversationId: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ readByAdmin: true })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.isFromAdmin, false)
+        )
+      );
+  }
+  
+  async markMessagesAsReadByUser(conversationId: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ readByUser: true })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          eq(messages.isFromAdmin, true)
+        )
+      );
+  }
 }
 
 export const storage = new DatabaseStorage();
