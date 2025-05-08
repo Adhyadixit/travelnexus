@@ -1428,77 +1428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin destinations CRUD operations
-  app.get("/api/destinations/admin", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const destinations = await storage.getAllDestinations();
-      res.json(destinations);
-    } catch (error: any) {
-      console.error("Error fetching destinations:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  app.post("/api/destinations/admin", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const validated = insertDestinationSchema.safeParse(req.body);
-      if (!validated.success) {
-        return res.status(400).json({ error: validated.error.message });
-      }
-      
-      const destination = await storage.createDestination(validated.data);
-      res.status(201).json(destination);
-    } catch (error: any) {
-      console.error("Error creating destination:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  app.put("/api/destinations/admin/:id", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const id = parseInt(req.params.id);
-      const validated = insertDestinationSchema.safeParse(req.body);
-      if (!validated.success) {
-        return res.status(400).json({ error: validated.error.message });
-      }
-      
-      const destination = await storage.updateDestination(id, validated.data);
-      if (!destination) {
-        return res.status(404).json({ error: "Destination not found" });
-      }
-      
-      res.json(destination);
-    } catch (error: any) {
-      console.error("Error updating destination:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
-  
-  app.delete("/api/destinations/admin/:id", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const id = parseInt(req.params.id);
-      await storage.deleteDestination(id);
-      res.status(204).send();
-    } catch (error: any) {
-      console.error("Error deleting destination:", error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // Routes moved to a separate file (server/routes/admin-destinations.ts)
 
   // Seed the database with initial data
   try {

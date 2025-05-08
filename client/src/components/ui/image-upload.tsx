@@ -12,6 +12,7 @@ interface ImageUploadProps {
   value: string;
   folder?: string;
   className?: string;
+  multiple?: boolean;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -21,8 +22,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   value,
   folder = "travelease",
   className,
+  multiple = false,
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,34 +34,42 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (!file) return;
     
     setIsUploading(true);
+    setError(null);
     
     try {
       const fileReader = new FileReader();
       
       fileReader.onload = async () => {
         if (typeof fileReader.result === "string") {
-          const response = await apiRequest("POST", "/api/upload-image", {
-            file: fileReader.result,
-            folder,
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            onChange(data.url);
-            if (onUpload) {
-              onUpload(data);
+          try {
+            const response = await apiRequest("POST", "/api/upload-image", {
+              file: fileReader.result,
+              folder,
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+              onChange(data.url);
+              if (onUpload) {
+                onUpload(data);
+              }
+            } else {
+              setError(data.error || "Upload failed");
+              console.error("Upload failed:", data.error);
             }
-          } else {
-            console.error("Upload failed:", data.error);
+          } catch (err) {
+            setError("Error uploading image. Please try again.");
+            console.error("Error uploading image:", err);
+          } finally {
+            setIsUploading(false);
           }
-          
-          setIsUploading(false);
         }
       };
       
       fileReader.readAsDataURL(file);
     } catch (error) {
+      setError("Error reading file. Please try again.");
       console.error("Error uploading file:", error);
       setIsUploading(false);
     }
