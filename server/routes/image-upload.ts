@@ -9,7 +9,7 @@ const router = Router();
  * @desc Upload an image to Cloudinary
  * @access Private (Admin only)
  */
-router.post("/upload-image", async (req, res) => {
+router.post("/api/upload-image", async (req, res) => {
   try {
     const { file, folder } = req.body;
     

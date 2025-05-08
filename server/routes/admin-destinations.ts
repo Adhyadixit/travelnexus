@@ -52,7 +52,7 @@ router.get("/api/destinations/admin/:id", async (req, res) => {
  * @desc Create a new destination
  * @access Private (Admin only)
  */
-router.post("/destinations/admin", async (req, res) => {
+router.post("/api/destinations/admin", async (req, res) => {
   try {
     // Validate request body against schema
     const validationResult = insertDestinationSchema.safeParse(req.body);
@@ -77,7 +77,7 @@ router.post("/destinations/admin", async (req, res) => {
  * @desc Update a destination
  * @access Private (Admin only)
  */
-router.put("/destinations/admin/:id", async (req, res) => {
+router.put("/api/destinations/admin/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     
@@ -117,7 +117,7 @@ router.put("/destinations/admin/:id", async (req, res) => {
  * @desc Delete a destination
  * @access Private (Admin only)
  */
-router.delete("/destinations/admin/:id", async (req, res) => {
+router.delete("/api/destinations/admin/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     
