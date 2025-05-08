@@ -45,10 +45,10 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="py-10 bg-primary text-white">
+    <section className="py-10 bg-primary text-neutral-800">
       <div className="container mx-auto px-4 text-center">
         <h2 className="text-2xl md:text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
-        <p className="text-neutral-100 mb-6 max-w-xl mx-auto">
+        <p className="text-neutral-700 mb-6 max-w-xl mx-auto">
           Get exclusive travel deals, insider tips, and updates on our latest offers delivered straight to your inbox.
         </p>
         <form onSubmit={handleSubmit} className="max-w-md mx-auto flex flex-col md:flex-row gap-3">
@@ -62,7 +62,7 @@ export default function NewsletterSection() {
           />
           <Button 
             type="submit" 
-            className="px-6 py-3 bg-secondary text-white font-medium rounded-lg hover:bg-secondary-dark transition-colors whitespace-nowrap"
+            className="px-6 py-3 bg-secondary text-neutral-800 font-medium rounded-lg hover:bg-secondary-dark transition-colors whitespace-nowrap"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Subscribing...' : 'Subscribe'}
