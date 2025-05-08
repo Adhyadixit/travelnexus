@@ -33,6 +33,20 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     
     if (!file) return;
     
+    // Check file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setError(`File is too large. Maximum size is 5MB. Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      return;
+    }
+    
+    // Check file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setError('Invalid file type. Please upload a PNG, JPG, or WEBP image.');
+      return;
+    }
+    
     setIsUploading(true);
     setError(null);
     
@@ -94,6 +108,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         className="hidden"
         onChange={handleFileChange}
         disabled={disabled || isUploading}
+        multiple={multiple}
       />
       
       {value ? (
@@ -129,13 +144,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             <div className="flex flex-col items-center gap-2">
               <Upload className="h-8 w-8 text-gray-500" />
               <p className="text-sm text-gray-500 text-center">
-                Click to upload an image
+                Click to upload an image from your device
                 <br />
                 <span className="text-xs">PNG, JPG or WEBP (max 5MB)</span>
               </p>
             </div>
           )}
         </div>
+      )}
+      
+      {error && (
+        <p className="text-sm text-red-500 mt-1">{error}</p>
       )}
       
       {!value && !isUploading && (
@@ -154,7 +173,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           ) : (
             <>
               <Upload className="h-4 w-4 mr-2" />
-              Upload Image
+              Select from device
             </>
           )}
         </Button>
