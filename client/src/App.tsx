@@ -30,6 +30,7 @@ import AdminCabs from "@/pages/admin/admin-cabs";
 import AdminCruises from "@/pages/admin/admin-cruises";
 import AdminEvents from "@/pages/admin/admin-events";
 import AdminBookings from "@/pages/admin/admin-bookings";
+import AdminSettings from "@/pages/admin/admin-settings";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";

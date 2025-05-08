@@ -378,12 +378,10 @@ export default function AdminCruises() {
                 <p className="text-muted-foreground mb-4">
                   {searchQuery ? "Try a different search term" : "Add your first cruise to get started"}
                 </p>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setIsCreateDialogOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add New Cruise
-                  </Button>
-                </DialogTrigger>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Cruise
+                </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
