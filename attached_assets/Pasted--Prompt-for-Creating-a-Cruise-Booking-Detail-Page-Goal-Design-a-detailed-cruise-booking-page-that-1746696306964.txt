@@ -1,0 +1,163 @@
+✅ Prompt for Creating a Cruise Booking Detail Page:
+Goal: Design a detailed cruise booking page that showcases ship details, itineraries, cabin types, inclusions, port schedules, pricing by cabin class and passenger type, and allows for seamless booking. The design should be immersive and visually rich to reflect the premium nature of cruises.
+
+🔹 Page Structure:
+1. Header Section
+
+Cruise title (e.g., “7-Night Mediterranean Cruise – MSC Fantasia”)
+
+Departure port & return port
+
+Dates of sailing
+
+Duration (e.g., 7 Nights / 8 Days)
+
+Cruise line logo (e.g., Royal Caribbean, Carnival)
+
+Star rating & customer reviews
+
+“Book Now” & “Enquire” buttons
+
+“Limited Cabins Left” badge (optional urgency cue)
+
+2. Hero Image & Video Carousel
+
+6–10 high-quality images:
+
+Ship exterior & decks, cabins, restaurants, pool, entertainment
+
+Optional promo video of cruise experience
+
+3. Cruise Highlights
+
+Route summary (e.g., Barcelona → Marseille → Rome → Athens → Mykonos → Venice)
+
+Days at sea vs. port visits
+
+Departure date & boarding time
+
+Ship name, build year, guest capacity, crew size
+
+Family-friendly / adults-only badge
+
+4. Cabin Types & Pricing
+Show each type of cabin with:
+
+Cabin name (Inside, Ocean View, Balcony, Suite)
+
+Image + floor plan (if available)
+
+Features (bed type, view, balcony, bathroom, TV, etc.)
+
+Pricing per person (with or without taxes)
+
+Availability indicator (e.g., "3 cabins left")
+
+“View Details” + “Book Now” button for each
+
+5. Itinerary (Port Schedule)
+
+Day-by-day breakdown:
+
+Day #
+
+Port of Call
+
+Arrival/Departure Time
+
+Activity Suggestions (optional)
+
+Sea day label if applicable
+
+Interactive map of route (optional)
+
+6. What's Included / Excluded
+✅ Inclusions:
+
+Accommodation
+
+All meals (buffet, dining rooms)
+
+Entertainment & shows
+
+On-board activities
+
+Port taxes
+
+❌ Exclusions:
+
+Alcoholic drinks
+
+Shore excursions
+
+Gratuities/service charges
+
+Flights to departure port (if not included)
+
+7. Onboard Experience
+
+Dining options (images of restaurants, cuisines offered)
+
+Entertainment (shows, casinos, kids clubs)
+
+Pools, spas, gyms
+
+Kids/family activities
+
+Health & safety protocols
+
+8. Customer Reviews
+
+Overall cruise rating (and breakdown: food, comfort, entertainment, cleanliness, etc.)
+
+Real guest reviews + photos
+
+Filter by cabin type, traveler type (family, solo, couple)
+
+9. Booking Options / Add-ons
+
+Select # of guests by type (adult, child, senior)
+
+Choose cabin type
+
+Travel insurance add-on
+
+Pre-cruise hotel (optional)
+
+Airport pickup (if flights included)
+
+10. Final Booking Summary
+
+Total pricing based on selections
+
+Taxes & fees
+
+“Pay in installments” option
+
+Proceed to checkout CTA
+
+11. FAQ Section
+
+Visa required for ports?
+
+Can I bring my own alcohol?
+
+What happens if I miss the ship?
+
+Are there COVID/vaccination requirements?
+
+12. Related Cruises / Other Destinations
+
+Carousel of similar itineraries
+
+“Other sailings from this port” or “Other cruise lines”
+
+✨ Design & Feel:
+Visual and immersive
+
+Use wave-like separators, soft blues/navy/white colors
+
+Responsive carousel for cabins and route
+
+Call-to-action always accessible (floating/sticky on mobile)
+
