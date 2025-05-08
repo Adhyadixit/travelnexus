@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,28 +8,6 @@ import {
 export function BottomNavigation() {
   const [location] = useLocation();
   const { user } = useAuth();
-  const [isVisible, setIsVisible] = useState(true);
-  const [prevScrollPos, setPrevScrollPos] = useState(0);
-
-  // Always keep visible on certain pages
-  const alwaysVisible = ['/profile'].includes(location);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      // Don't hide on specific pages regardless of scroll
-      if (alwaysVisible) {
-        setIsVisible(true);
-        return;
-      }
-      
-      const currentScrollPos = window.scrollY;
-      setIsVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
-      setPrevScrollPos(currentScrollPos);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevScrollPos, alwaysVisible]);
 
   // Don't show bottom navigation on admin pages
   if (location.startsWith('/admin')) {
@@ -39,10 +16,7 @@ export function BottomNavigation() {
 
   return (
     <nav 
-      className={cn(
-        "fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center z-50 py-2 px-4 transition-transform duration-300 md:hidden",
-        isVisible ? "translate-y-0" : "translate-y-full"
-      )}
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center z-50 py-2 px-4 md:hidden"
     >
       <Link href="/" className={cn(
         "flex flex-col items-center",

@@ -87,6 +87,15 @@ export default function PackageDetails() {
     enabled: !!packageData?.destinationId,
   });
   
+  // Fetch all packages to filter for similar packages
+  const {
+    data: allPackages,
+    isLoading: isLoadingAllPackages
+  } = useQuery<Package[]>({
+    queryKey: ['/api/packages'],
+    enabled: !!destination,
+  });
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
