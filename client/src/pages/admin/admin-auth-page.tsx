@@ -32,7 +32,7 @@ export default function AdminAuthPage() {
   // Redirect if already logged in and is admin
   useEffect(() => {
     if (user) {
-      if (user.isAdmin) {
+      if (user.role === 'admin') {
         setLocation("/admin/dashboard");
       } else {
         setErrorMessage("You don't have admin permissions.");
@@ -57,7 +57,7 @@ export default function AdminAuthPage() {
         setErrorMessage(error.message || "Login failed. Please check your credentials.");
       },
       onSuccess: (user) => {
-        if (!user.isAdmin) {
+        if (user.role !== 'admin') {
           setErrorMessage("You don't have admin permissions.");
         }
       },
