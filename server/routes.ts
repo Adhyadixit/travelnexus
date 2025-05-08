@@ -1425,6 +1425,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register our custom routes
   app.use(imageUploadRoutes);
   app.use(adminDestinationsRoutes);
+  app.use(adminCruisesRoutes);
+  app.use(adminDriversRoutes);
+  app.use(adminEventsRoutes);
+  app.use(adminHotelsRoutes);
+  app.use(adminPackagesRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

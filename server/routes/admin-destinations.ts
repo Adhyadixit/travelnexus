@@ -11,7 +11,7 @@ const router = Router();
  * @desc Get all destinations for admin
  * @access Private (Admin only)
  */
-router.get("/api/destinations/admin", async (req, res) => {
+router.get("/api/destinations/admin", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const destinations = await storage.getAllDestinations();
     res.json(destinations);
@@ -26,7 +26,7 @@ router.get("/api/destinations/admin", async (req, res) => {
  * @desc Get a destination by ID for admin
  * @access Private (Admin only)
  */
-router.get("/api/destinations/admin/:id", async (req, res) => {
+router.get("/api/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     
@@ -52,7 +52,7 @@ router.get("/api/destinations/admin/:id", async (req, res) => {
  * @desc Create a new destination
  * @access Private (Admin only)
  */
-router.post("/api/destinations/admin", async (req, res) => {
+router.post("/api/destinations/admin", isAuthenticated, isAdmin, async (req, res) => {
   try {
     // Validate request body against schema
     const validationResult = insertDestinationSchema.safeParse(req.body);
