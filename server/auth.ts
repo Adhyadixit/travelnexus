@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
@@ -26,6 +26,22 @@ async function comparePasswords(supplied: string, stored: string) {
   const hashedBuf = Buffer.from(hashed, "hex");
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
+}
+
+// Authentication middleware for protecting routes
+export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  return res.status(401).json({ message: "Authentication required" });
+}
+
+// Admin role middleware for protecting admin routes
+export function isAdmin(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated() && req.user.role === 'admin') {
+    return next();
+  }
+  return res.status(403).json({ message: "Access denied: Admin only" });
 }
 
 export function setupAuth(app: Express) {
@@ -110,27 +126,4 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
   });
-
-  // Admin auth check middleware
-  function isAdmin(req: any, res: any, next: any) {
-    if (req.isAuthenticated() && req.user.role === 'admin') {
-      return next();
-    }
-    res.status(403).json({ message: "Access denied: Admin only" });
-  }
-
-  // Authentication check middleware
-  function isAuthenticated(req: any, res: any, next: any) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ message: "Authentication required" });
-  }
-
-  // Apply admin middleware to all admin routes
-  app.use('/api/admin/*', isAdmin);
-  
-  // Export middleware for use in other route files
-  (global as any).isAdmin = isAdmin;
-  (global as any).isAuthenticated = isAuthenticated;
 }

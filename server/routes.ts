@@ -1,10 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth } from "./auth";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth";
 import { db } from "./db";
 import { seed } from "./seed";
 import { uploadImage } from "./cloudinary";
+import imageUploadRoutes from "./routes/image-upload";
+import adminDestinationsRoutes from "./routes/admin-destinations";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";

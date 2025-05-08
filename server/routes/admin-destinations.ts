@@ -1,67 +1,165 @@
 import { Router } from "express";
 import { storage } from "../storage";
+import { isAuthenticated, isAdmin } from "../auth";
 import { insertDestinationSchema } from "@shared/schema";
+import { deleteImage } from "../cloudinary";
 
 const router = Router();
-const isAdmin = (global as any).isAdmin;
 
-// Get all destinations (admin only)
-router.get("/api/destinations/admin", isAdmin, async (req, res) => {
+/**
+ * @route GET /api/destinations/admin
+ * @desc Get all destinations for admin
+ * @access Private (Admin only)
+ */
+router.get("/destinations/admin", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const destinations = await storage.getAllDestinations();
     res.json(destinations);
   } catch (error: any) {
     console.error("Error fetching destinations:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || "Failed to fetch destinations" });
   }
 });
 
-// Create a new destination (admin only)
-router.post("/api/destinations/admin", isAdmin, async (req, res) => {
-  try {
-    const validated = insertDestinationSchema.safeParse(req.body);
-    if (!validated.success) {
-      return res.status(400).json({ error: validated.error.message });
-    }
-
-    const destination = await storage.createDestination(validated.data);
-    res.status(201).json(destination);
-  } catch (error: any) {
-    console.error("Error creating destination:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Update a destination (admin only)
-router.put("/api/destinations/admin/:id", isAdmin, async (req, res) => {
+/**
+ * @route GET /api/destinations/admin/:id
+ * @desc Get a destination by ID for admin
+ * @access Private (Admin only)
+ */
+router.get("/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const validated = insertDestinationSchema.safeParse(req.body);
-    if (!validated.success) {
-      return res.status(400).json({ error: validated.error.message });
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid destination ID" });
     }
-
-    const destination = await storage.updateDestination(id, validated.data);
+    
+    const destination = await storage.getDestination(id);
+    
     if (!destination) {
       return res.status(404).json({ error: "Destination not found" });
     }
-
+    
     res.json(destination);
   } catch (error: any) {
-    console.error("Error updating destination:", error);
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching destination:", error);
+    res.status(500).json({ error: error.message || "Failed to fetch destination" });
   }
 });
 
-// Delete a destination (admin only)
-router.delete("/api/destinations/admin/:id", isAdmin, async (req, res) => {
+/**
+ * @route POST /api/destinations/admin
+ * @desc Create a new destination
+ * @access Private (Admin only)
+ */
+router.post("/destinations/admin", isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    // Validate request body against schema
+    const validationResult = insertDestinationSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        error: "Invalid destination data", 
+        details: validationResult.error.errors 
+      });
+    }
+    
+    const destination = await storage.createDestination(validationResult.data);
+    res.status(201).json(destination);
+  } catch (error: any) {
+    console.error("Error creating destination:", error);
+    res.status(500).json({ error: error.message || "Failed to create destination" });
+  }
+});
+
+/**
+ * @route PUT /api/destinations/admin/:id
+ * @desc Update a destination
+ * @access Private (Admin only)
+ */
+router.put("/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid destination ID" });
+    }
+    
+    // Validate request body against schema
+    const validationResult = insertDestinationSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      return res.status(400).json({ 
+        error: "Invalid destination data", 
+        details: validationResult.error.errors 
+      });
+    }
+    
+    // Check if destination exists
+    const existingDestination = await storage.getDestination(id);
+    
+    if (!existingDestination) {
+      return res.status(404).json({ error: "Destination not found" });
+    }
+    
+    // Update destination
+    const updatedDestination = await storage.updateDestination(id, validationResult.data);
+    
+    res.json(updatedDestination);
+  } catch (error: any) {
+    console.error("Error updating destination:", error);
+    res.status(500).json({ error: error.message || "Failed to update destination" });
+  }
+});
+
+/**
+ * @route DELETE /api/destinations/admin/:id
+ * @desc Delete a destination
+ * @access Private (Admin only)
+ */
+router.delete("/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid destination ID" });
+    }
+    
+    // Check if destination exists
+    const destination = await storage.getDestination(id);
+    
+    if (!destination) {
+      return res.status(404).json({ error: "Destination not found" });
+    }
+    
+    // Extract the public ID from the image URL if it exists and is from Cloudinary
+    if (destination.imageUrl && destination.imageUrl.includes('cloudinary.com')) {
+      try {
+        // Parse the URL to get the public ID
+        const parts = destination.imageUrl.split('/');
+        const filename = parts[parts.length - 1];
+        const publicId = filename.split('.')[0];
+        
+        if (publicId) {
+          // We don't want to fail the delete operation if image deletion fails
+          try {
+            await deleteImage(publicId);
+          } catch (err) {
+            console.error('Error deleting image from Cloudinary:', err);
+          }
+        }
+      } catch (err) {
+        console.error('Error parsing image URL to get public ID:', err);
+      }
+    }
+    
+    // Delete destination
     await storage.deleteDestination(id);
-    res.status(204).send();
+    
+    res.status(204).end();
   } catch (error: any) {
     console.error("Error deleting destination:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || "Failed to delete destination" });
   }
 });
 
