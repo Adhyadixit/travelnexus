@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -20,7 +20,7 @@ export default function EventDetails() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const Layout = isMobile ? MobileLayout : DesktopLayout;
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   
   // State for booking
@@ -46,7 +46,7 @@ export default function EventDetails() {
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
-      navigate(`/auth?redirect=/events/${id}`);
+      setLocation(`/auth?redirect=/events/${id}`);
       return;
     }
     
@@ -54,7 +54,7 @@ export default function EventDetails() {
       return;
     }
     
-    navigate(`/checkout/event/${id}?startDate=${event.date}&endDate=${event.date}&guests=${ticketCount}`);
+    setLocation(`/checkout/event/${id}?startDate=${event.date}&endDate=${event.date}&guests=${ticketCount}`);
   };
   
   // Format event date and time

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -23,7 +23,7 @@ export default function PackageDetails() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const Layout = isMobile ? MobileLayout : DesktopLayout;
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   
   // State for booking
@@ -50,7 +50,7 @@ export default function PackageDetails() {
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
-      navigate(`/auth?redirect=/packages/${id}`);
+      setLocation(`/auth?redirect=/packages/${id}`);
       return;
     }
     
@@ -62,7 +62,7 @@ export default function PackageDetails() {
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (packageData?.duration || 0));
     
-    navigate(`/checkout/package/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}`);
+    setLocation(`/checkout/package/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}`);
   };
   
   // Parse included items

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -22,7 +22,7 @@ export default function CabDetails() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const Layout = isMobile ? MobileLayout : DesktopLayout;
-  const [, navigate] = useNavigate();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   
   // State for booking
@@ -41,7 +41,7 @@ export default function CabDetails() {
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
-      navigate(`/auth?redirect=/cabs/${id}`);
+      setLocation(`/auth?redirect=/cabs/${id}`);
       return;
     }
     
@@ -49,7 +49,7 @@ export default function CabDetails() {
       return;
     }
     
-    navigate(`/checkout/driver/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=1`);
+    setLocation(`/checkout/driver/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=1`);
   };
   
   // Update end date when start date or days change

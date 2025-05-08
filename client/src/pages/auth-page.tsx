@@ -52,11 +52,11 @@ export default function AuthPage() {
               </TabsList>
               
               <TabsContent value="login">
-                <LoginForm onSuccess={() => navigate("/")} />
+                <LoginForm onSuccess={() => setLocation("/")} />
               </TabsContent>
               
               <TabsContent value="register">
-                <RegisterForm onSuccess={() => navigate("/")} />
+                <RegisterForm onSuccess={() => setLocation("/")} />
               </TabsContent>
             </Tabs>
           </div>
