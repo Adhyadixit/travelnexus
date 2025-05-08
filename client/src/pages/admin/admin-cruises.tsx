@@ -35,12 +35,12 @@ export default function AdminCruises() {
   const [selectedCruise, setSelectedCruise] = useState<Cruise | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Fetch all cruises
+  // Fetch all cruises with direct database access
   const { 
     data: cruises = [],
     isLoading
   } = useQuery<Cruise[]>({
-    queryKey: ["/api/cruises/admin"],
+    queryKey: ["/api/direct/cruises"],
   });
   
   // Create form
