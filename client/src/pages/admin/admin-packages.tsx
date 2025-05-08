@@ -80,7 +80,7 @@ export default function AdminPackages() {
   
   // Fetch packages
   const { data: packages = [], isLoading: isLoadingPackages } = useQuery<Package[]>({
-    queryKey: ["/api/packages"],
+    queryKey: ["/api/direct/packages"],
   });
   
   // Fetch destinations for dropdown
@@ -91,11 +91,12 @@ export default function AdminPackages() {
   // Setup mutations
   const createPackageMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/admin/packages", data);
+      const res = await apiRequest("POST", "/api/direct/packages", data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/packages"] }); // Also invalidate regular endpoint for frontend
       setOpenDialog(false);
       toast({
         title: "Success",
@@ -113,11 +114,12 @@ export default function AdminPackages() {
   
   const updatePackageMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await apiRequest("PUT", `/api/admin/packages/${id}`, data);
+      const res = await apiRequest("PATCH", `/api/direct/packages/${id}`, data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/packages"] }); // Also invalidate regular endpoint for frontend
       setOpenDialog(false);
       setEditingPackage(null);
       toast({
@@ -136,10 +138,11 @@ export default function AdminPackages() {
   
   const deletePackageMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/packages/${id}`);
+      await apiRequest("DELETE", `/api/direct/packages/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/packages"] }); // Also invalidate regular endpoint for frontend
       toast({
         title: "Success",
         description: "Package deleted successfully",

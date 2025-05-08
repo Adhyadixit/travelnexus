@@ -413,4 +413,180 @@ router.delete("/api/direct/events/:id", async (req, res) => {
   }
 });
 
+// Direct create package route
+router.post("/api/direct/packages", async (req, res) => {
+  try {
+    console.log("Direct database access to create package");
+    
+    const packageData = {
+      ...req.body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    console.log("Creating package with data:", packageData);
+    
+    const createdPackage = await db
+      .insert(packages)
+      .values(packageData)
+      .returning();
+      
+    console.log(`Successfully created new package: ${createdPackage[0].name}`);
+    res.status(201).json(createdPackage[0]);
+  } catch (error) {
+    console.error("Error in direct create package route:", error);
+    res.status(500).json({ error: "Failed to create package" });
+  }
+});
+
+// Direct update package route
+router.patch("/api/direct/packages/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to update package with ID: ${req.params.id}`);
+    const packageId = parseInt(req.params.id);
+    
+    if (isNaN(packageId)) {
+      return res.status(400).json({ error: "Invalid package ID" });
+    }
+    
+    const packageData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    
+    console.log("Updating package with data:", packageData);
+    
+    const updatedPackage = await db
+      .update(packages)
+      .set(packageData)
+      .where(eq(packages.id, packageId))
+      .returning();
+      
+    if (updatedPackage.length === 0) {
+      return res.status(404).json({ error: "Package not found" });
+    }
+    
+    console.log(`Successfully updated package with ID: ${packageId}`);
+    res.json(updatedPackage[0]);
+  } catch (error) {
+    console.error("Error in direct update package route:", error);
+    res.status(500).json({ error: "Failed to update package" });
+  }
+});
+
+// Direct delete package route
+router.delete("/api/direct/packages/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to delete package with ID: ${req.params.id}`);
+    const packageId = parseInt(req.params.id);
+    
+    if (isNaN(packageId)) {
+      return res.status(400).json({ error: "Invalid package ID" });
+    }
+    
+    const deletedPackage = await db
+      .delete(packages)
+      .where(eq(packages.id, packageId))
+      .returning();
+      
+    if (deletedPackage.length === 0) {
+      return res.status(404).json({ error: "Package not found" });
+    }
+    
+    console.log(`Successfully deleted package with ID: ${packageId}`);
+    res.json({ message: "Package deleted successfully" });
+  } catch (error) {
+    console.error("Error in direct delete package route:", error);
+    res.status(500).json({ error: "Failed to delete package" });
+  }
+});
+
+// Direct create hotel route
+router.post("/api/direct/hotels", async (req, res) => {
+  try {
+    console.log("Direct database access to create hotel");
+    
+    const hotelData = {
+      ...req.body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    console.log("Creating hotel with data:", hotelData);
+    
+    const createdHotel = await db
+      .insert(hotels)
+      .values(hotelData)
+      .returning();
+      
+    console.log(`Successfully created new hotel: ${createdHotel[0].name}`);
+    res.status(201).json(createdHotel[0]);
+  } catch (error) {
+    console.error("Error in direct create hotel route:", error);
+    res.status(500).json({ error: "Failed to create hotel" });
+  }
+});
+
+// Direct update hotel route
+router.patch("/api/direct/hotels/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to update hotel with ID: ${req.params.id}`);
+    const hotelId = parseInt(req.params.id);
+    
+    if (isNaN(hotelId)) {
+      return res.status(400).json({ error: "Invalid hotel ID" });
+    }
+    
+    const hotelData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    
+    console.log("Updating hotel with data:", hotelData);
+    
+    const updatedHotel = await db
+      .update(hotels)
+      .set(hotelData)
+      .where(eq(hotels.id, hotelId))
+      .returning();
+      
+    if (updatedHotel.length === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+    
+    console.log(`Successfully updated hotel with ID: ${hotelId}`);
+    res.json(updatedHotel[0]);
+  } catch (error) {
+    console.error("Error in direct update hotel route:", error);
+    res.status(500).json({ error: "Failed to update hotel" });
+  }
+});
+
+// Direct delete hotel route
+router.delete("/api/direct/hotels/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to delete hotel with ID: ${req.params.id}`);
+    const hotelId = parseInt(req.params.id);
+    
+    if (isNaN(hotelId)) {
+      return res.status(400).json({ error: "Invalid hotel ID" });
+    }
+    
+    const deletedHotel = await db
+      .delete(hotels)
+      .where(eq(hotels.id, hotelId))
+      .returning();
+      
+    if (deletedHotel.length === 0) {
+      return res.status(404).json({ error: "Hotel not found" });
+    }
+    
+    console.log(`Successfully deleted hotel with ID: ${hotelId}`);
+    res.json({ message: "Hotel deleted successfully" });
+  } catch (error) {
+    console.error("Error in direct delete hotel route:", error);
+    res.status(500).json({ error: "Failed to delete hotel" });
+  }
+});
+
 export default router;

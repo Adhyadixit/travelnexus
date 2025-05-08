@@ -69,7 +69,7 @@ export default function AdminHotels() {
   
   // Fetch hotels
   const { data: hotels = [], isLoading: isLoadingHotels } = useQuery<Hotel[]>({
-    queryKey: ["/api/hotels"],
+    queryKey: ["/api/direct/hotels"],
   });
   
   // Fetch destinations for dropdown
@@ -80,11 +80,12 @@ export default function AdminHotels() {
   // Setup mutations
   const createHotelMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/admin/hotels", data);
+      const res = await apiRequest("POST", "/api/direct/hotels", data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] }); // Also invalidate regular endpoint for frontend
       setOpenDialog(false);
       toast({
         title: "Success",
@@ -102,11 +103,12 @@ export default function AdminHotels() {
   
   const updateHotelMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await apiRequest("PUT", `/api/admin/hotels/${id}`, data);
+      const res = await apiRequest("PATCH", `/api/direct/hotels/${id}`, data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] }); // Also invalidate regular endpoint for frontend
       setOpenDialog(false);
       setEditingHotel(null);
       toast({
@@ -125,10 +127,11 @@ export default function AdminHotels() {
   
   const deleteHotelMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/hotels/${id}`);
+      await apiRequest("DELETE", `/api/direct/hotels/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/hotels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/hotels"] }); // Also invalidate regular endpoint for frontend
       toast({
         title: "Success",
         description: "Hotel deleted successfully",
