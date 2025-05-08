@@ -25,7 +25,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Plus, X } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2, Plus, X, AlertCircle } from "lucide-react";
+import RoomImagesManager from "@/components/rooms/room-images-manager";
 
 // Extend the insert schema for form validation
 const hotelFormSchema = insertHotelSchema.extend({
