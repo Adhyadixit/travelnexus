@@ -329,6 +329,72 @@ async function updateTables() {
     } catch (error) {
       console.error('Error creating messages table:', error);
     }
+    
+    // Create hotel_room_types table if it doesn't exist
+    try {
+      const roomTypesTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'hotel_room_types'
+        );
+      `);
+      
+      const roomTypesExist = roomTypesTableExists.rows[0]?.exists;
+      
+      if (!roomTypesExist) {
+        await db.execute(sql`
+          CREATE TABLE hotel_room_types (
+            id SERIAL PRIMARY KEY,
+            hotel_id INTEGER NOT NULL REFERENCES hotels(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            price DOUBLE PRECISION NOT NULL,
+            capacity INTEGER NOT NULL,
+            amenities TEXT NOT NULL,
+            cancellation_policy TEXT,
+            featured BOOLEAN DEFAULT FALSE,
+            active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created hotel_room_types table');
+      } else {
+        console.log('Hotel room types table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating hotel_room_types table:', error);
+    }
+    
+    // Create hotel_room_images table if it doesn't exist
+    try {
+      const roomImagesTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'hotel_room_images'
+        );
+      `);
+      
+      const roomImagesExist = roomImagesTableExists.rows[0]?.exists;
+      
+      if (!roomImagesExist) {
+        await db.execute(sql`
+          CREATE TABLE hotel_room_images (
+            id SERIAL PRIMARY KEY,
+            room_type_id INTEGER NOT NULL REFERENCES hotel_room_types(id) ON DELETE CASCADE,
+            image_url TEXT NOT NULL,
+            display_order INTEGER DEFAULT 0,
+            caption TEXT,
+            featured BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created hotel_room_images table');
+      } else {
+        console.log('Hotel room images table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating hotel_room_images table:', error);
+    }
 
     console.log('All database schema updates completed successfully!');
   } catch (error) {

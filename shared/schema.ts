@@ -116,6 +116,32 @@ export const hotels = pgTable('hotels', {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Hotel room types table (separate from JSON for better management)
+export const hotelRoomTypes = pgTable('hotel_room_types', {
+  id: serial("id").primaryKey(),
+  hotelId: integer("hotel_id").notNull().references(() => hotels.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: doublePrecision("price").notNull(),
+  capacity: integer("capacity").notNull(), // Number of guests
+  amenities: text("amenities").notNull(), // JSON string of room amenities
+  cancellationPolicy: text("cancellation_policy"),
+  featured: boolean("featured").default(false),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Hotel room images table (separate from room types for better management)
+export const hotelRoomImages = pgTable('hotel_room_images', {
+  id: serial("id").primaryKey(),
+  roomTypeId: integer("room_type_id").notNull().references(() => hotelRoomTypes.id, { onDelete: 'cascade' }),
+  imageUrl: text("image_url").notNull(),
+  displayOrder: integer("display_order").default(0), // For ordering images
+  caption: text("caption"),
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Hotel relations
 export const hotelsRelations = relations(hotels, ({ one, many }) => ({
   destination: one(destinations, {
@@ -123,6 +149,24 @@ export const hotelsRelations = relations(hotels, ({ one, many }) => ({
     references: [destinations.id],
   }),
   bookings: many(bookings),
+  roomTypes: many(hotelRoomTypes)
+}));
+
+// Hotel room types relations
+export const hotelRoomTypesRelations = relations(hotelRoomTypes, ({ one, many }) => ({
+  hotel: one(hotels, {
+    fields: [hotelRoomTypes.hotelId],
+    references: [hotels.id],
+  }),
+  images: many(hotelRoomImages)
+}));
+
+// Hotel room images relations
+export const hotelRoomImagesRelations = relations(hotelRoomImages, ({ one }) => ({
+  roomType: one(hotelRoomTypes, {
+    fields: [hotelRoomImages.roomTypeId],
+    references: [hotelRoomTypes.id],
+  })
 }));
 
 // Drivers for cab bookings
@@ -594,6 +638,33 @@ export const insertReviewSchema = createInsertSchema(reviews).pick({
 
 export type Review = typeof reviews.$inferSelect;
 export type InsertReview = z.infer<typeof insertReviewSchema>;
+
+// Hotel Room Types and Room Images schemas
+export const insertHotelRoomTypeSchema = createInsertSchema(hotelRoomTypes).pick({
+  hotelId: true,
+  name: true,
+  description: true,
+  price: true,
+  capacity: true,
+  amenities: true,
+  cancellationPolicy: true,
+  featured: true,
+  active: true,
+});
+
+export const insertHotelRoomImageSchema = createInsertSchema(hotelRoomImages).pick({
+  roomTypeId: true,
+  imageUrl: true,
+  displayOrder: true,
+  caption: true,
+  featured: true,
+});
+
+export type HotelRoomType = typeof hotelRoomTypes.$inferSelect;
+export type InsertHotelRoomType = z.infer<typeof insertHotelRoomTypeSchema>;
+
+export type HotelRoomImage = typeof hotelRoomImages.$inferSelect;
+export type InsertHotelRoomImage = z.infer<typeof insertHotelRoomImageSchema>;
 
 // Guest Users table (for chat and guest checkout)
 export const guestUsers = pgTable('guest_users', {

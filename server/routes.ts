@@ -11,6 +11,7 @@ import {
   bookings, bookingTypeEnum,
   destinations, packages, hotels, drivers, cruises, events, users, reviews,
   guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
+  hotelRoomTypes, hotelRoomImages
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
