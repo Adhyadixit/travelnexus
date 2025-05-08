@@ -686,78 +686,8 @@ export default function HotelDetails() {
             
             {/* Guest Reviews Section */}
             <section className="mb-10">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-heading font-bold">Guest Reviews</h2>
-                <div className="flex items-center">
-                  <div className="bg-primary text-white font-bold w-10 h-10 rounded-md flex items-center justify-center mr-2">
-                    {averageRating.toFixed(1)}
-                  </div>
-                  <div>
-                    <div className="font-medium">
-                      {averageRating >= 9 ? 'Exceptional' : 
-                       averageRating >= 8 ? 'Excellent' : 
-                       averageRating >= 7 ? 'Very Good' : 
-                       averageRating >= 6 ? 'Good' : 'Average'}
-                    </div>
-                    <div className="text-sm text-neutral-600">
-                      {HOTEL_REVIEWS.length} reviews
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Rating Breakdown */}
-              <div className="bg-neutral-50 p-4 rounded-lg mb-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {['Cleanliness', 'Location', 'Staff', 'Comfort', 'Value', 'Amenities'].map((category) => {
-                    const categoryKey = category.toLowerCase() as keyof typeof HOTEL_REVIEWS[0]['categories'];
-                    const avgScore = HOTEL_REVIEWS.reduce((sum, review) => sum + review.categories[categoryKey], 0) / HOTEL_REVIEWS.length;
-                    
-                    return (
-                      <div key={category} className="flex justify-between items-center">
-                        <span className="text-neutral-700">{category}</span>
-                        <div className="flex items-center">
-                          <span className="font-medium mr-2">{avgScore.toFixed(1)}</span>
-                          <div className="bg-primary h-2 w-16 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-primary-foreground h-full" 
-                              style={{ width: `${(10 - avgScore) * 10}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              
-              {/* Reviews List */}
-              <div className="space-y-6">
-                {HOTEL_REVIEWS.map((review) => (
-                  <Card key={review.id} className="p-4">
-                    <div className="flex justify-between mb-3">
-                      <div>
-                        <h4 className="font-bold">{review.author}</h4>
-                        <div className="text-sm text-neutral-500">
-                          Stayed on {new Date(review.date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        <div className="bg-primary text-white font-bold w-8 h-8 rounded-md flex items-center justify-center mr-1">
-                          {review.rating.toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-neutral-700">{review.comment}</p>
-                    <div className="flex justify-end mt-3">
-                      <Button variant="ghost" size="sm" className="text-neutral-600">
-                        <ThumbsUp className="w-4 h-4 mr-1" />
-                        Helpful
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <h2 className="text-2xl font-heading font-bold mb-6">Guest Reviews</h2>
+              <ReviewsSection itemType="hotel" itemId={parseInt(id)} />
             </section>
             
             {/* Map Section */}
