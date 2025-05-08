@@ -13,10 +13,14 @@ const router = Router();
  */
 router.get("/api/events/admin", isAuthenticated, isAdmin, async (req, res) => {
   try {
+    console.log("User authenticated:", req.isAuthenticated());
+    console.log("User role:", req.user?.role);
+    console.log("User:", req.user);
     const events = await storage.getAllEvents();
     res.json(events);
   } catch (error: any) {
     console.error("Error fetching events:", error);
+    console.error("Stack trace:", error.stack);
     res.status(500).json({ error: error.message || "Failed to fetch event" });
   }
 });

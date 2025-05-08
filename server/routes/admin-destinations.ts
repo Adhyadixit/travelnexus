@@ -17,6 +17,7 @@ router.get("/api/destinations/admin", isAuthenticated, isAdmin, async (req, res)
     res.json(destinations);
   } catch (error: any) {
     console.error("Error fetching destinations:", error);
+    console.error("Stack trace:", error.stack);
     res.status(500).json({ error: error.message || "Failed to fetch destinations" });
   }
 });
