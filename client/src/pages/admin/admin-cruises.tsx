@@ -173,7 +173,7 @@ export default function AdminCruises() {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cruises/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/cruises"] });
       toast({
         title: "Success",
         description: "Cruise deleted successfully",
