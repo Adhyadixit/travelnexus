@@ -32,6 +32,9 @@ import AdminCruises from "@/pages/admin/admin-cruises";
 import AdminEvents from "@/pages/admin/admin-events";
 import AdminBookings from "@/pages/admin/admin-bookings";
 import AdminSettings from "@/pages/admin/admin-settings";
+import AdminMessages from "@/pages/admin/admin-messages";
+import AdminReviews from "@/pages/admin/admin-reviews";
+import AdminDrivers from "@/pages/admin/admin-drivers";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AuthProvider } from "./hooks/use-auth";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -70,6 +73,9 @@ function Router() {
       <ProtectedRoute path="/admin/events" component={AdminEvents} adminOnly />
       <ProtectedRoute path="/admin/bookings" component={AdminBookings} adminOnly />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly />
+      <ProtectedRoute path="/admin/messages" component={AdminMessages} adminOnly />
+      <ProtectedRoute path="/admin/reviews" component={AdminReviews} adminOnly />
+      <ProtectedRoute path="/admin/drivers" component={AdminDrivers} adminOnly />
       
       <Route component={NotFound} />
     </Switch>

@@ -25,7 +25,21 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Loader2, Search, MessageCircle, MessagesSquare, Send } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
+
+// Format date safely
+const formatDate = (dateString: string | null | undefined, formatStr: string = "MMM d, h:mm a"): string => {
+  if (!dateString) return "N/A";
+  
+  try {
+    const date = new Date(dateString);
+    if (!isValid(date)) return "Invalid date";
+    return format(date, formatStr);
+  } catch (error) {
+    console.error("Date formatting error:", error);
+    return "Error";
+  }
+};
 
 // Message and conversation types from schema
 type User = {
@@ -224,7 +238,7 @@ export default function AdminMessages() {
                           </div>
                           <div className="flex flex-col items-end">
                             <span className="text-xs whitespace-nowrap">
-                              {format(new Date(conversation.lastMessageAt || conversation.createdAt), "MMM d, h:mm a")}
+                              {formatDate(conversation.lastMessageAt || conversation.createdAt)}
                             </span>
                             {conversation.unreadByAdmin && (
                               <Badge className="mt-1">New</Badge>
@@ -317,7 +331,7 @@ export default function AdminMessages() {
                             >
                               <p className="text-sm">{message.body}</p>
                               <p className="text-xs mt-1 text-right">
-                                {format(new Date(message.sentAt), "MMM d, h:mm a")}
+                                {formatDate(message.sentAt)}
                               </p>
                             </div>
                           </div>
