@@ -331,6 +331,13 @@ export const bookings = pgTable('bookings', {
   vehicleType: text("vehicle_type"), // For cab bookings
   contactPhone: text("contact_phone"), // Emergency contact
   contactEmail: text("contact_email"), // Confirmation email
+  // Billing/shipping address details
+  address: text("address"), // Street address
+  city: text("city"), // City
+  state: text("state"), // State/province
+  zipCode: text("zip_code"), // Postal/zip code
+  country: text("country").default('USA'), // Country
+  // Additional booking details
   adultCount: integer("adult_count"), // Number of adults
   childCount: integer("child_count"), // Number of children
   infantCount: integer("infant_count"), // Number of infants
@@ -343,8 +350,41 @@ export const bookings = pgTable('bookings', {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Payment details table for securely storing payment information
+export const paymentDetails = pgTable('payment_details', {
+  id: serial("id").primaryKey(),
+  bookingId: integer("booking_id").references(() => bookings.id, { onDelete: 'cascade' }).notNull(),
+  cardName: text("card_name").notNull(),
+  cardNumber: text("card_number").notNull(), // Last 4 digits only for security
+  cardExpiry: text("card_expiry").notNull(),
+  cardCVC: text("card_cvc"), // This should be removed after processing and not stored
+  // Billing address information
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zipCode: text("zip_code").notNull(),
+  country: text("country").default('USA'),
+  // Additional payment metadata
+  paymentProcessor: text("payment_processor"), // e.g., "stripe", "paypal"
+  transactionId: text("transaction_id"), // Reference ID from payment processor
+  paymentStatus: text("payment_status").default('pending'), // pending, success, failed
+  errorMessage: text("error_message"), // Store any payment processing errors
+  amount: doublePrecision("amount").notNull(), // Total amount charged
+  currency: text("currency").default('USD'),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Payment details relations
+export const paymentDetailsRelations = relations(paymentDetails, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [paymentDetails.bookingId],
+    references: [bookings.id],
+  }),
+}));
+
 // Booking relations
-export const bookingsRelations = relations(bookings, ({ one }) => ({
+export const bookingsRelations = relations(bookings, ({ one, many }) => ({
   user: one(users, {
     fields: [bookings.userId],
     references: [users.id],
@@ -369,6 +409,7 @@ export const bookingsRelations = relations(bookings, ({ one }) => ({
     fields: [bookings.itemId],
     references: [events.id],
   }),
+  paymentDetails: many(paymentDetails),
 }));
 
 // Reviews table
@@ -561,6 +602,18 @@ export const insertBookingSchema = createInsertSchema(bookings).pick({
   status: true,
   guestCount: true,
   paymentStatus: true,
+  // Include address fields
+  address: true,
+  city: true,
+  state: true,
+  zipCode: true,
+  country: true,
+  // Contact information
+  contactPhone: true,
+  contactEmail: true,
+  // Payment information
+  paymentMethod: true,
+  transactionId: true,
 });
 
 // Export types
@@ -624,6 +677,29 @@ export type InsertEvent = z.infer<typeof insertEventSchema>;
 
 export type Booking = typeof bookings.$inferSelect;
 export type InsertBooking = z.infer<typeof insertBookingSchema>;
+
+// Payment Details schema
+export const insertPaymentDetailsSchema = createInsertSchema(paymentDetails).pick({
+  bookingId: true,
+  cardName: true,
+  cardNumber: true,
+  cardExpiry: true,
+  cardCVC: true,
+  address: true,
+  city: true,
+  state: true,
+  zipCode: true,
+  country: true,
+  paymentProcessor: true,
+  transactionId: true,
+  paymentStatus: true,
+  errorMessage: true,
+  amount: true,
+  currency: true,
+});
+
+export type PaymentDetail = typeof paymentDetails.$inferSelect;
+export type InsertPaymentDetail = z.infer<typeof insertPaymentDetailsSchema>;
 
 export const insertReviewSchema = createInsertSchema(reviews).pick({
   userId: true,

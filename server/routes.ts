@@ -13,6 +13,7 @@ import adminEventsRoutes from "./routes/admin-events";
 import adminHotelsRoutes from "./routes/admin-hotels";
 import adminPackagesRoutes from "./routes/admin-packages";
 import directDatabaseRoutes from "./routes/direct-database";
+import paymentDetailsRoutes from "./routes/payment-details";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
