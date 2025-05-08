@@ -262,7 +262,7 @@ export default function ProfilePage() {
                         Sign out
                       </Button>
                       
-                      {user.isAdmin && (
+                      {user.role === 'admin' && (
                         <Button 
                           asChild
                           variant="default" 

@@ -12,8 +12,17 @@ export function BottomNavigation() {
   const [isVisible, setIsVisible] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
+  // Always keep visible on certain pages
+  const alwaysVisible = ['/profile'].includes(location);
+
   useEffect(() => {
     const handleScroll = () => {
+      // Don't hide on specific pages regardless of scroll
+      if (alwaysVisible) {
+        setIsVisible(true);
+        return;
+      }
+      
       const currentScrollPos = window.scrollY;
       setIsVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
       setPrevScrollPos(currentScrollPos);
@@ -21,7 +30,7 @@ export function BottomNavigation() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [prevScrollPos]);
+  }, [prevScrollPos, alwaysVisible]);
 
   // Don't show bottom navigation on admin pages
   if (location.startsWith('/admin')) {
