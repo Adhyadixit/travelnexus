@@ -11,8 +11,20 @@ const router = Router();
  * @desc Get all destinations for admin
  * @access Private (Admin only)
  */
-router.get("/api/destinations/admin", isAuthenticated, isAdmin, async (req, res) => {
+router.get("/api/destinations/admin", async (req, res) => {
   try {
+    console.log("Session:", req.session);
+    console.log("Is authenticated:", req.isAuthenticated());
+    console.log("User:", req.user);
+    
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: "Not authorized - admin only" });
+    }
+    
     const destinations = await storage.getAllDestinations();
     res.json(destinations);
   } catch (error: any) {
