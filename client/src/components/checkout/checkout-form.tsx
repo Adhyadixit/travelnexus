@@ -56,7 +56,7 @@ interface BookingItem {
   name: string;
   price: number;
   image: string;
-  type: "package" | "hotel" | "cab" | "cruise" | "event";
+  type: "package" | "hotel" | "driver" | "cruise" | "event";
   duration?: number;
 }
 
@@ -72,7 +72,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  const needsEndDate = item.type === 'hotel' || item.type === 'cab';
+  const needsEndDate = item.type === 'hotel' || item.type === 'driver';
   
   let endDate: Date | undefined;
   if (item.duration) {
@@ -97,7 +97,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
   const handlePayment = async (values: CheckoutFormValues) => {
     const { cardName, cardNumber, cardExpiry, cardCVC, ...bookingData } = values;
     
-    // Calculate total price based on days if hotel or cab
+    // Calculate total price based on days if hotel or driver
     let totalPrice = item.price;
     if (needsEndDate && values.endDate) {
       const days = Math.ceil((values.endDate.getTime() - values.startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -273,9 +273,9 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                           <SelectValue placeholder="Select number of travelers" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="text-neutral-800">
                         {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                          <SelectItem key={num} value={num.toString()}>
+                          <SelectItem key={num} value={num.toString()} className="text-neutral-800">
                             {num} {num === 1 ? 'Person' : 'People'}
                           </SelectItem>
                         ))}
