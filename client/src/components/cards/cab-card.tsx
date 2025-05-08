@@ -39,7 +39,7 @@ export default function CabCard({ cab, destinationName, destinationCountry }: Ca
             <div className="flex items-center">
               <Star className="text-secondary h-4 w-4 mr-1 fill-current" />
               <span className="text-neutral-700 font-medium text-sm">{cab.rating?.toFixed(1) || "New"}</span>
-              {cab.reviewCount > 0 && (
+              {cab.reviewCount != null && cab.reviewCount > 0 && (
                 <span className="text-neutral-500 text-xs ml-1">({cab.reviewCount})</span>
               )}
             </div>
@@ -65,7 +65,7 @@ export default function CabCard({ cab, destinationName, destinationCountry }: Ca
             <p className="text-lg font-heading font-bold">${cab.dailyRate.toLocaleString()}</p>
           </div>
           <Link href={`/cabs/${cab.id}`}>
-            <Button size="sm" className="bg-primary text-white hover:bg-primary-dark transition-colors">
+            <Button size="sm" className="bg-primary text-neutral-800 hover:bg-primary-dark transition-colors font-medium">
               Book Driver
             </Button>
           </Link>

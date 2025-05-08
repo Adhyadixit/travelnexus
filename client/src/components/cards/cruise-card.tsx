@@ -52,7 +52,7 @@ export default function CruiseCard({ cruise }: CruiseCardProps) {
         <div className="flex items-center mb-4">
           <Star className="text-secondary h-4 w-4 mr-1 fill-current" />
           <span className="text-neutral-700 font-medium text-sm">{cruise.rating?.toFixed(1) || "New"}</span>
-          {cruise.reviewCount > 0 && (
+          {cruise.reviewCount != null && cruise.reviewCount > 0 && (
             <span className="text-neutral-500 text-sm ml-1">({cruise.reviewCount} reviews)</span>
           )}
         </div>
@@ -63,7 +63,7 @@ export default function CruiseCard({ cruise }: CruiseCardProps) {
             <span className="text-neutral-500 text-xs">per person</span>
           </div>
           <Link href={`/cruises/${cruise.id}`}>
-            <Button size="sm" className="bg-primary text-white hover:bg-primary-dark transition-colors">
+            <Button size="sm" className="bg-primary text-neutral-800 hover:bg-primary-dark transition-colors font-medium">
               Book Cruise
             </Button>
           </Link>

@@ -43,10 +43,10 @@ export default function HotelCard({ hotel, destinationName, destinationCountry }
         <div className="flex justify-between items-center">
           <div>
             <span className="text-neutral-500 text-xs">Per night from</span>
-            <p className="text-lg font-heading font-bold">${hotel.pricePerNight.toLocaleString()}</p>
+            <p className="text-lg font-heading font-bold">${hotel.price.toLocaleString()}</p>
           </div>
           <Link href={`/hotels/${hotel.id}`}>
-            <Button size="sm" className="bg-primary text-white hover:bg-primary-dark transition-colors">
+            <Button size="sm" className="bg-primary text-neutral-800 hover:bg-primary-dark transition-colors font-medium">
               Book Now
             </Button>
           </Link>
