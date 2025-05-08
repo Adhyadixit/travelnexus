@@ -86,7 +86,7 @@ export default function AnalyticsSection() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${bookingStats?.totalSales.toLocaleString()}</div>
+                <div className="text-2xl font-bold">${bookingStats?.totalSales ? bookingStats.totalSales.toLocaleString() : '0'}</div>
                 <p className="text-xs text-muted-foreground">+10% from last month</p>
               </CardContent>
             </Card>
@@ -157,16 +157,26 @@ export default function AnalyticsSection() {
                         dataKey="day" 
                         tick={{ fontSize: 12 }}
                         tickFormatter={(value) => {
-                          const date = new Date(value);
-                          return `${date.getMonth() + 1}/${date.getDate()}`;
+                          if (!value) return '';
+                          try {
+                            const date = new Date(value);
+                            return `${date.getMonth() + 1}/${date.getDate()}`;
+                          } catch (e) {
+                            return '';
+                          }
                         }}
                       />
                       <YAxis />
                       <Tooltip 
                         formatter={(value) => [`$${Number(value).toLocaleString()}`, "Sales"]}
                         labelFormatter={(label) => {
-                          const date = new Date(label);
-                          return date.toLocaleDateString();
+                          if (!label) return '';
+                          try {
+                            const date = new Date(label);
+                            return date.toLocaleDateString();
+                          } catch (e) {
+                            return '';
+                          }
                         }}
                       />
                       <Line
