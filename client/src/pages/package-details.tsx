@@ -298,7 +298,7 @@ export default function PackageDetails() {
                     <div className="flex items-center">
                       <Star className="text-secondary w-4 h-4 fill-current mr-1" />
                       <span className="font-medium">{packageData.rating.toFixed(1)}</span>
-                      {packageData.reviewCount > 0 && (
+                      {packageData.reviewCount && packageData.reviewCount > 0 && (
                         <span className="text-neutral-500 text-sm ml-1">({packageData.reviewCount} reviews)</span>
                       )}
                     </div>
@@ -336,7 +336,7 @@ export default function PackageDetails() {
               
               <div className="flex flex-col items-center text-center">
                 <div className="bg-primary/10 p-2 rounded-full mb-2">
-                  <Palace className="w-5 h-5 text-primary" />
+                  <Building className="w-5 h-5 text-primary" />
                 </div>
                 <div className="text-sm font-medium mb-1">Cities Covered</div>
                 <div className="text-xs text-neutral-500">
@@ -471,7 +471,7 @@ export default function PackageDetails() {
                 
                 <ul className="space-y-3">
                   {excludedItems.length > 0 ? (
-                    excludedItems.map((item, index) => (
+                    excludedItems.map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <MinusCircle className="w-4 h-4 text-red-500 mt-1 mr-2" />
                         <span>{item}</span>
@@ -483,7 +483,7 @@ export default function PackageDetails() {
                       "Travel insurance",
                       "Activities not mentioned in the itinerary",
                       "Tips and gratuities"
-                    ].map((item, index) => (
+                    ].map((item: string, index: number) => (
                       <li key={index} className="flex items-start">
                         <MinusCircle className="w-4 h-4 text-red-500 mt-1 mr-2" />
                         <span>{item}</span>
@@ -500,7 +500,7 @@ export default function PackageDetails() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {highlights.length > 0 ? (
-                  highlights.map((highlight, index) => (
+                  highlights.map((highlight: string, index: number) => (
                     <div key={index} className="flex items-start">
                       <Sparkles className="w-5 h-5 text-secondary mt-0.5 mr-3" />
                       <span>{highlight}</span>
@@ -513,7 +513,7 @@ export default function PackageDetails() {
                     "Explore iconic landmarks and hidden gems",
                     "Experience local culture and cuisine",
                     "Professional, knowledgeable tour guides"
-                  ].map((highlight, index) => (
+                  ].map((highlight: string, index: number) => (
                     <div key={index} className="flex items-start">
                       <Sparkles className="w-5 h-5 text-secondary mt-0.5 mr-3" />
                       <span>{highlight}</span>
@@ -902,7 +902,7 @@ export default function PackageDetails() {
           
           {/* Booking sidebar */}
           <div>
-            <Card>
+            <Card className="sticky top-6">
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book This Package</h2>
                 
