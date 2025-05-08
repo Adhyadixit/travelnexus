@@ -197,7 +197,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
@@ -206,6 +206,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                               date < new Date()
                             }
                             initialFocus
+                            className="text-neutral-800"
                           />
                         </PopoverContent>
                       </Popover>
@@ -240,7 +241,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
+                          <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                             <Calendar
                               mode="single"
                               selected={field.value}
@@ -249,6 +250,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                                 date <= form.getValues().startDate
                               }
                               initialFocus
+                              className="text-neutral-800"
                             />
                           </PopoverContent>
                         </Popover>

@@ -139,13 +139,14 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
+                        className="text-neutral-800"
                       />
                     </PopoverContent>
                   </Popover>
@@ -183,7 +184,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                       <Calendar
                         mode="single"
                         selected={field.value}
@@ -192,6 +193,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                           date < (form.getValues().checkIn || new Date())
                         }
                         initialFocus
+                        className="text-neutral-800"
                       />
                     </PopoverContent>
                   </Popover>
@@ -216,12 +218,12 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <SelectValue placeholder="Select" className="text-neutral-800" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="1 Adult">1 Adult</SelectItem>
-                      <SelectItem value="2 Adults">2 Adults</SelectItem>
-                      <SelectItem value="2 Adults, 1 Child">2 Adults, 1 Child</SelectItem>
-                      <SelectItem value="2 Adults, 2 Children">2 Adults, 2 Children</SelectItem>
-                      <SelectItem value="Family Pack">Family Pack</SelectItem>
+                    <SelectContent className="text-neutral-800">
+                      <SelectItem value="1 Adult" className="text-neutral-800">1 Adult</SelectItem>
+                      <SelectItem value="2 Adults" className="text-neutral-800">2 Adults</SelectItem>
+                      <SelectItem value="2 Adults, 1 Child" className="text-neutral-800">2 Adults, 1 Child</SelectItem>
+                      <SelectItem value="2 Adults, 2 Children" className="text-neutral-800">2 Adults, 2 Children</SelectItem>
+                      <SelectItem value="Family Pack" className="text-neutral-800">Family Pack</SelectItem>
                     </SelectContent>
                   </Select>
                 </FormItem>
