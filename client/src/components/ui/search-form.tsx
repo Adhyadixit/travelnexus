@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { CalendarIcon, Search } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Destination } from "@shared/schema";
 
 const searchFormSchema = z.object({
   destination: z.string().min(1, "Destination is required"),
@@ -33,6 +34,15 @@ interface SearchFormProps {
 
 export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
   const [, setLocation] = useLocation();
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  
+  // Fetch destinations from API
+  useEffect(() => {
+    fetch('/api/destinations')
+      .then(response => response.json())
+      .then(data => setDestinations(data))
+      .catch(error => console.error('Error fetching destinations:', error));
+  }, []);
   
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
@@ -75,11 +85,24 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                     Destination
                   </FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Where to?" 
-                      {...field} 
-                      className="w-full h-8 md:h-10 text-sm"
-                    />
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger className="w-full h-8 md:h-10 text-sm">
+                        <SelectValue placeholder="Where to?" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {destinations.map((destination) => (
+                          <SelectItem 
+                            key={destination.id} 
+                            value={destination.name}
+                          >
+                            {destination.name}, {destination.country}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                 </FormItem>
               )}
