@@ -24,6 +24,7 @@ import CheckoutPage from "@/pages/checkout-page";
 import ProfilePage from "@/pages/profile-page";
 import AdminAuth from "@/pages/admin/admin-auth-page";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
+import AdminDestinations from "@/pages/admin/admin-destinations";
 import AdminPackages from "@/pages/admin/admin-packages";
 import AdminHotels from "@/pages/admin/admin-hotels";
 import AdminCabs from "@/pages/admin/admin-cabs";
@@ -61,6 +62,7 @@ function Router() {
       
       <Route path="/admin-auth" component={AdminAuth} />
       <ProtectedRoute path="/admin/dashboard" component={AdminDashboard} adminOnly />
+      <ProtectedRoute path="/admin/destinations" component={AdminDestinations} adminOnly />
       <ProtectedRoute path="/admin/packages" component={AdminPackages} adminOnly />
       <ProtectedRoute path="/admin/hotels" component={AdminHotels} adminOnly />
       <ProtectedRoute path="/admin/cabs" component={AdminCabs} adminOnly />

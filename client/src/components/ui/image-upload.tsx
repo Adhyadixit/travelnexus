@@ -1,105 +1,139 @@
-import { useState, useRef, ChangeEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, X, Upload as UploadIcon, Image as ImageIcon } from 'lucide-react';
+import React, { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Upload, X } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
-  onImageSelect: (dataUrl: string) => void;
-  previewUrl?: string | null;
-  isUploading?: boolean;
+  disabled?: boolean;
+  onChange: (url: string) => void;
+  onUpload?: (data: { url: string; publicId: string }) => void;
+  value: string;
+  folder?: string;
   className?: string;
-  label?: string;
 }
 
-export function ImageUpload({
-  onImageSelect,
-  previewUrl,
-  isUploading = false,
-  className = '',
-  label = 'Image',
-}: ImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(previewUrl || null);
+export const ImageUpload: React.FC<ImageUploadProps> = ({
+  disabled,
+  onChange,
+  onUpload,
+  value,
+  folder = "travelease",
+  className,
+}) => {
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    
     if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File is too large. Maximum size is 5MB.');
-      return;
+    
+    setIsUploading(true);
+    
+    try {
+      const fileReader = new FileReader();
+      
+      fileReader.onload = async () => {
+        if (typeof fileReader.result === "string") {
+          const response = await apiRequest("POST", "/api/upload-image", {
+            file: fileReader.result,
+            folder,
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            onChange(data.url);
+            if (onUpload) {
+              onUpload(data);
+            }
+          } else {
+            console.error("Upload failed:", data.error);
+          }
+          
+          setIsUploading(false);
+        }
+      };
+      
+      fileReader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      setIsUploading(false);
     }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setPreview(result);
-      onImageSelect(result);
-    };
-    reader.readAsDataURL(file);
   };
 
-  const clearImage = () => {
-    setPreview(null);
+  const handleButtonClick = () => {
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.click();
     }
-    onImageSelect('');
+  };
+
+  const handleRemoveImage = () => {
+    onChange("");
   };
 
   return (
-    <div className={`space-y-2 ${className}`}>
-      <Label htmlFor="image-upload">{label}</Label>
-      
-      {preview ? (
-        <div className="relative border rounded-md overflow-hidden">
-          <img 
-            src={preview} 
-            alt="Preview"
-            className="w-full h-48 object-cover"
-          />
-          <button
-            type="button"
-            onClick={clearImage}
-            className="absolute top-2 right-2 bg-neutral-800/70 text-white rounded-full p-1"
-            disabled={isUploading}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ) : (
-        <div 
-          className="border-2 border-dashed rounded-md p-4 text-center bg-neutral-50 cursor-pointer hover:bg-neutral-100 transition-colors"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <div className="flex flex-col items-center justify-center py-4">
-            <ImageIcon className="h-8 w-8 text-neutral-400 mb-2" />
-            <p className="text-sm text-neutral-500">Click to select an image</p>
-            <p className="text-xs text-neutral-400 mt-1">
-              JPG, PNG or GIF, max 5MB
-            </p>
-          </div>
-        </div>
-      )}
-      
+    <div className={cn("flex flex-col gap-4", className)}>
       <Input
-        id="image-upload"
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        onChange={handleFileChange}
         className="hidden"
-        disabled={isUploading}
+        onChange={handleFileChange}
+        disabled={disabled || isUploading}
       />
       
-      {!preview && (
-        <Button 
-          type="button" 
-          variant="outline" 
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
+      {value ? (
+        <div className="relative rounded-md overflow-hidden w-full h-60">
+          <div className="absolute top-2 right-2 z-10">
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              onClick={handleRemoveImage}
+              disabled={disabled || isUploading}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <img
+            src={value}
+            alt="Uploaded image"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div
+          className="border-2 border-dashed border-gray-300 rounded-md p-12 flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition"
+          onClick={handleButtonClick}
+        >
+          {isUploading ? (
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-gray-500">Uploading...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <Upload className="h-8 w-8 text-gray-500" />
+              <p className="text-sm text-gray-500 text-center">
+                Click to upload an image
+                <br />
+                <span className="text-xs">PNG, JPG or WEBP (max 5MB)</span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {!value && !isUploading && (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleButtonClick}
+          disabled={disabled || isUploading}
+          className="mt-2"
         >
           {isUploading ? (
             <>
@@ -108,12 +142,12 @@ export function ImageUpload({
             </>
           ) : (
             <>
-              <UploadIcon className="h-4 w-4 mr-2" />
-              Browse...
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Image
             </>
           )}
         </Button>
       )}
     </div>
   );
-}
+};

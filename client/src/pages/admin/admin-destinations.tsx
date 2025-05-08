@@ -1,286 +1,275 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
-import AdminLayout from "@/components/layout/admin-layout";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Pencil, Trash } from "lucide-react";
+import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
+import { AdminLayout } from "@/components/layout/admin-layout";
 import DestinationForm from "@/components/forms/destination-form";
-import { type Destination } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Destination, insertDestinationSchema } from "@shared/schema";
+import { z } from "zod";
+
+type FormMode = "create" | "edit" | null;
 
 export default function AdminDestinations() {
   const { toast } = useToast();
-  const { user } = useAuth();
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<FormMode>(null);
   const [selectedDestination, setSelectedDestination] = useState<Destination | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [destinationToDelete, setDestinationToDelete] = useState<Destination | null>(null);
 
-  // Fetch all destinations
+  // Fetch destinations
   const {
     data: destinations,
-    isLoading: isLoadingDestinations,
-    error: destinationsError,
+    isLoading,
+    error,
   } = useQuery<Destination[]>({
     queryKey: ["/api/destinations/admin"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/destinations/admin");
-      return res.json();
-    },
-    enabled: !!user,
+    enabled: true,
   });
 
-  // Create a new destination
-  const createDestinationMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/destinations/admin", data);
-      return res.json();
+  // Create destination mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof insertDestinationSchema>) => {
+      const response = await apiRequest("POST", "/api/destinations/admin", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create destination");
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/destinations/admin"] });
       queryClient.invalidateQueries({ queryKey: ["/api/destinations"] });
-      setIsFormOpen(false);
       toast({
-        title: "Destination created",
-        description: "The destination has been created successfully.",
+        title: "Success",
+        description: "Destination created successfully",
       });
+      setFormMode(null);
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to create destination",
-        description: error.message || "An error occurred while creating the destination.",
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Update an existing destination
-  const updateDestinationMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await apiRequest("PUT", `/api/destinations/admin/${id}`, data);
-      return res.json();
+  // Update destination mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: z.infer<typeof insertDestinationSchema>;
+    }) => {
+      const response = await apiRequest("PUT", `/api/destinations/admin/${id}`, data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update destination");
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/destinations/admin"] });
       queryClient.invalidateQueries({ queryKey: ["/api/destinations"] });
-      setIsFormOpen(false);
+      toast({
+        title: "Success",
+        description: "Destination updated successfully",
+      });
+      setFormMode(null);
       setSelectedDestination(null);
-      toast({
-        title: "Destination updated",
-        description: "The destination has been updated successfully.",
-      });
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to update destination",
-        description: error.message || "An error occurred while updating the destination.",
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Delete a destination
-  const deleteDestinationMutation = useMutation({
+  // Delete destination mutation
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/destinations/admin/${id}`);
+      const response = await apiRequest("DELETE", `/api/destinations/admin/${id}`);
+      if (!response.ok && response.status !== 204) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete destination");
+      }
+      return true;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/destinations/admin"] });
       queryClient.invalidateQueries({ queryKey: ["/api/destinations"] });
       toast({
-        title: "Destination deleted",
-        description: "The destination has been deleted successfully.",
+        title: "Success",
+        description: "Destination deleted successfully",
       });
+      setDeleteDialogOpen(false);
+      setDestinationToDelete(null);
     },
     onError: (error: Error) => {
       toast({
-        title: "Failed to delete destination",
-        description: error.message || "An error occurred while deleting the destination.",
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const handleCreateDestination = (data: any) => {
-    createDestinationMutation.mutate(data);
+  const handleCreateDestination = (data: z.infer<typeof insertDestinationSchema>) => {
+    createMutation.mutate(data);
   };
 
-  const handleUpdateDestination = (data: any) => {
+  const handleUpdateDestination = (data: z.infer<typeof insertDestinationSchema>) => {
     if (selectedDestination) {
-      updateDestinationMutation.mutate({
+      updateMutation.mutate({
         id: selectedDestination.id,
         data,
       });
     }
   };
 
+  const handleDeleteDestination = () => {
+    if (destinationToDelete) {
+      deleteMutation.mutate(destinationToDelete.id);
+    }
+  };
+
   const handleEditDestination = (destination: Destination) => {
     setSelectedDestination(destination);
-    setIsFormOpen(true);
+    setFormMode("edit");
   };
 
-  const closeForm = () => {
-    setIsFormOpen(false);
-    setSelectedDestination(null);
+  const handleOpenDeleteDialog = (destination: Destination) => {
+    setDestinationToDelete(destination);
+    setDeleteDialogOpen(true);
   };
-
-  if (!user) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Destinations</h1>
-          <p className="text-neutral-500">
-            Manage travel destinations available on the platform
-          </p>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold tracking-tight">Destinations</h1>
+          <Button onClick={() => setFormMode("create")}>
+            <Plus className="h-4 w-4 mr-2" /> Add Destination
+          </Button>
         </div>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Add Destination
-        </Button>
+
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="bg-destructive/10 p-4 rounded-md text-destructive">
+            Failed to load destinations
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {destinations?.map((destination) => (
+              <div key={destination.id} className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="h-40 overflow-hidden">
+                  <img
+                    src={destination.imageUrl}
+                    alt={destination.name}
+                    className="w-full h-full object-cover transition-transform hover:scale-105"
+                  />
+                </div>
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-lg font-semibold">{destination.name}</h2>
+                      <p className="text-neutral-600">{destination.country}</p>
+                    </div>
+                    {destination.featured && (
+                      <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-neutral-600 mt-2 line-clamp-2">
+                    {destination.description}
+                  </p>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditDestination(destination)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleOpenDeleteDialog(destination)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <Separator className="my-6" />
-
-      {isLoadingDestinations ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      ) : destinationsError ? (
-        <div className="text-destructive">
-          Error loading destinations. Please try again.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destinations?.map((destination) => (
-            <Card key={destination.id} className="overflow-hidden">
-              <div className="aspect-video relative">
-                <img
-                  src={destination.imageUrl}
-                  alt={destination.name}
-                  className="w-full h-full object-cover"
-                />
-                {destination.featured && (
-                  <Badge className="absolute top-2 right-2 bg-primary">
-                    Featured
-                  </Badge>
-                )}
-              </div>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl flex justify-between items-center">
-                  {destination.name}
-                </CardTitle>
-                <CardDescription>{destination.country}</CardDescription>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <p className="text-sm line-clamp-2">{destination.description}</p>
-              </CardContent>
-              <CardFooter className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEditDestination(destination)}
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="text-destructive">
-                      <Trash className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will permanently delete the destination "{destination.name}".
-                        This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deleteDestinationMutation.mutate(destination.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {deleteDestinationMutation.isPending ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          "Delete"
-                        )}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      {/* Create/Edit Form Dialog */}
+      <Dialog open={formMode !== null} onOpenChange={(open) => !open && setFormMode(null)}>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
-              {selectedDestination ? "Edit Destination" : "Add New Destination"}
+              {formMode === "create" ? "Add New Destination" : "Edit Destination"}
             </DialogTitle>
-            <DialogDescription>
-              {selectedDestination
-                ? "Update the details of this destination"
-                : "Fill in the details to create a new destination"}
-            </DialogDescription>
           </DialogHeader>
-          <DestinationForm
-            initialData={selectedDestination || undefined}
-            onSubmit={
-              selectedDestination
-                ? handleUpdateDestination
-                : handleCreateDestination
-            }
-            isSubmitting={
-              createDestinationMutation.isPending ||
-              updateDestinationMutation.isPending
-            }
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={closeForm}>
+          {formMode === "create" && (
+            <DestinationForm
+              onSubmit={handleCreateDestination}
+              isSubmitting={createMutation.isPending}
+            />
+          )}
+          {formMode === "edit" && selectedDestination && (
+            <DestinationForm
+              initialData={selectedDestination}
+              onSubmit={handleUpdateDestination}
+              isSubmitting={updateMutation.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+          </DialogHeader>
+          <p className="py-4">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold">{destinationToDelete?.name}</span>? This action cannot
+            be undone.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
-          </DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteDestination}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </AdminLayout>
