@@ -430,7 +430,7 @@ export default function HotelDetails() {
                 <span className="text-xs ml-1">/10</span>
               </div>
             )}
-            {hotel.reviewCount > 0 && (
+            {typeof hotel.reviewCount === 'number' && hotel.reviewCount > 0 && (
                 <div className="text-neutral-600">
                   {hotel.reviewCount} reviews
                 </div>

@@ -27,6 +27,7 @@ import {
   parseItinerary, 
   truncateText 
 } from "@/lib/utils";
+import { InquiryForm } from "@/components/inquiry-form";
 import { 
   Plane,
   Bus, 
@@ -306,12 +307,17 @@ export default function PackageDetails() {
                 </div>
                 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Button className="bg-primary hover:bg-primary/90">
+                  <Button 
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={handleBookNow}
+                  >
                     Book Now
                   </Button>
-                  <Button variant="outline">
-                    Enquire
-                  </Button>
+                  <InquiryForm
+                    productName={packageData.name}
+                    defaultSubject={`Inquiry about ${packageData.name} package`}
+                    triggerButtonText="Inquire Now"
+                  />
                 </div>
               </div>
               
@@ -982,6 +988,15 @@ export default function PackageDetails() {
                   >
                     Book Now
                   </Button>
+                  
+                  <div className="mt-3">
+                    <InquiryForm
+                      productName={packageData.name}
+                      defaultSubject={`Inquiry about ${packageData.name} package`}
+                      triggerButtonText="Need Help? Inquire Now"
+                      triggerButtonFullWidth={true}
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
