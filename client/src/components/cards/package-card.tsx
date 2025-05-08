@@ -12,11 +12,11 @@ interface PackageCardProps {
 export default function PackageCard({ pkg, destinationName }: PackageCardProps) {
   // Helper function to determine package status badge
   const getStatusBadge = () => {
-    if (pkg.reviewCount && pkg.reviewCount > 200) {
+    if (pkg.reviewCount != null && pkg.reviewCount > 200) {
       return { label: "Best Seller", color: "bg-secondary" };
     } else if (pkg.price > 1500) {
       return { label: "Premium", color: "bg-accent" };
-    } else if (pkg.rating && pkg.rating >= 4.8) {
+    } else if (pkg.rating != null && pkg.rating >= 4.8) {
       return { label: "Trending", color: "bg-primary-light" };
     }
     return null;
@@ -35,7 +35,7 @@ export default function PackageCard({ pkg, destinationName }: PackageCardProps) 
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-heading font-semibold text-lg">{pkg.name}</h3>
           {statusBadge && (
-            <Badge className={`${statusBadge.color} text-white`}>
+            <Badge className={`${statusBadge.color} text-neutral-800 font-medium`}>
               {statusBadge.label}
             </Badge>
           )}
@@ -44,7 +44,7 @@ export default function PackageCard({ pkg, destinationName }: PackageCardProps) 
         <div className="flex items-center mb-4">
           <Star className="text-secondary h-4 w-4 mr-1 fill-current" />
           <span className="text-neutral-700 font-medium text-sm">{pkg.rating?.toFixed(1) || "New"}</span>
-          {pkg.reviewCount > 0 && (
+          {pkg.reviewCount != null && pkg.reviewCount > 0 && (
             <span className="text-neutral-500 text-sm ml-1">({pkg.reviewCount} reviews)</span>
           )}
         </div>
@@ -58,7 +58,7 @@ export default function PackageCard({ pkg, destinationName }: PackageCardProps) 
             <p className="text-lg font-heading font-bold">${pkg.price.toLocaleString()}</p>
           </div>
           <Link href={`/packages/${pkg.id}`}>
-            <Button size="sm" className="bg-primary text-white hover:bg-primary-dark transition-colors">
+            <Button size="sm" className="bg-primary text-neutral-800 hover:bg-primary-dark transition-colors font-medium">
               View Details
             </Button>
           </Link>

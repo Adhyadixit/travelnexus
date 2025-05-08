@@ -12,7 +12,7 @@ interface CruiseCardProps {
 export default function CruiseCard({ cruise }: CruiseCardProps) {
   // Helper function to determine cruise status badge
   const getStatusBadge = () => {
-    if (cruise.reviewCount && cruise.reviewCount > 150) {
+    if (cruise.reviewCount != null && cruise.reviewCount > 150) {
       return { label: "Popular", color: "bg-secondary" };
     } else if (cruise.price > 2000) {
       return { label: "Luxury", color: "bg-accent" };
@@ -33,7 +33,7 @@ export default function CruiseCard({ cruise }: CruiseCardProps) {
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-heading font-semibold text-lg">{cruise.name}</h3>
           {statusBadge && (
-            <Badge className={`${statusBadge.color} text-white`}>
+            <Badge className={`${statusBadge.color} text-neutral-800 font-medium`}>
               {statusBadge.label}
             </Badge>
           )}
@@ -44,7 +44,7 @@ export default function CruiseCard({ cruise }: CruiseCardProps) {
           <span className="text-neutral-500 text-sm">{cruise.company}</span>
         </div>
         <div className="flex flex-col gap-1 mb-3 text-sm text-neutral-500">
-          <div>• {cruise.duration} days - {cruise.route}</div>
+          <div>• {cruise.duration} days - {cruise.departure}</div>
           {cruise.departureDate && (
             <div>• Departure: {format(new Date(cruise.departureDate), 'MMM d, yyyy')}</div>
           )}
