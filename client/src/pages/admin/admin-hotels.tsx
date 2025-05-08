@@ -62,7 +62,7 @@ export default function AdminHotels() {
   useEffect(() => {
     if (!user) {
       navigate("/admin-auth");
-    } else if (!user.isAdmin) {
+    } else if (user.role !== 'admin') {
       navigate("/");
     }
   }, [user, navigate]);
@@ -264,7 +264,7 @@ export default function AdminHotels() {
     },
   ];
   
-  if (!user || !user.isAdmin) {
+  if (!user || user.role !== 'admin') {
     return null;
   }
 
