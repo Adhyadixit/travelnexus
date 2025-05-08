@@ -550,9 +550,9 @@ export default function HotelDetails() {
                 <div>
                   <h3 className="text-xl font-heading font-bold mb-3">Languages Spoken</h3>
                   <div className="flex items-center mb-6">
-                    <LanguagesIcon className="w-5 h-5 text-primary mr-2" />
+                    <Languages className="w-5 h-5 text-primary mr-2" />
                     <div className="flex flex-wrap gap-2">
-                      {languages.map((language) => (
+                      {languages.map((language: string) => (
                         <Badge key={language} variant="outline" className="bg-neutral-50">
                           {language}
                         </Badge>
@@ -566,9 +566,9 @@ export default function HotelDetails() {
                   <div>
                     <h3 className="text-xl font-heading font-bold mb-3">Nearby Places of Interest</h3>
                     <ul className="space-y-2">
-                      {nearbyAttractions.map((attraction, index) => (
+                      {nearbyAttractions.map((attraction: {name: string, distance: string}, index: number) => (
                         <li key={index} className="flex items-start">
-                          <MapPinIcon className="w-4 h-4 text-primary mr-2 mt-0.5" />
+                          <MapPin className="w-4 h-4 text-primary mr-2 mt-0.5" />
                           <span>{attraction.name} - {attraction.distance}</span>
                         </li>
                       ))}
@@ -583,7 +583,7 @@ export default function HotelDetails() {
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
               
               <div className="space-y-6">
-                {roomTypes.map((room) => (
+                {roomTypes.map((room: any) => (
                   <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-4">
                       <div className="md:col-span-1">
@@ -610,9 +610,9 @@ export default function HotelDetails() {
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2 my-3">
-                          {room.amenities.map((amenity, index) => (
+                          {room.amenities.map((amenity: string, index: number) => (
                             <div key={index} className="flex items-center text-sm">
-                              {AMENITY_ICONS[amenity] || <CheckIcon className="w-4 h-4 text-primary mr-1" />}
+                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
                               <span className="ml-1">{amenity}</span>
                             </div>
                           ))}
@@ -620,7 +620,7 @@ export default function HotelDetails() {
                         
                         {room.cancellation && (
                           <div className="text-sm text-green-600 flex items-center mb-4">
-                            <CheckIcon className="w-4 h-4 mr-1" />
+                            <Check className="w-4 h-4 mr-1" />
                             <span>{room.cancellation}</span>
                           </div>
                         )}
@@ -648,9 +648,9 @@ export default function HotelDetails() {
                 <div>
                   <h3 className="text-lg font-bold mb-3">General</h3>
                   <ul className="space-y-2">
-                    {amenitiesList.filter(a => !a.includes('Wi-Fi') && !a.includes('Dining') && !a.includes('Pool') && !a.includes('Fitness')).slice(0, 6).map((amenity, idx) => (
+                    {amenitiesList.filter(a => !a.includes('Wi-Fi') && !a.includes('Dining') && !a.includes('Pool') && !a.includes('Fitness')).slice(0, 6).map((amenity: string, idx: number) => (
                       <li key={idx} className="flex items-center">
-                        <CheckIcon className="text-primary w-5 h-5 mr-2" />
+                        <Check className="text-primary w-5 h-5 mr-2" />
                         <span>{amenity}</span>
                       </li>
                     ))}
@@ -660,9 +660,9 @@ export default function HotelDetails() {
                 <div>
                   <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
                   <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Safe') || a.includes('Mini')).map((amenity, idx) => (
+                    {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Safe') || a.includes('Mini')).map((amenity: string, idx: number) => (
                       <li key={idx} className="flex items-center">
-                        <CheckIcon className="text-primary w-5 h-5 mr-2" />
+                        <Check className="text-primary w-5 h-5 mr-2" />
                         <span>{amenity}</span>
                       </li>
                     ))}
@@ -672,9 +672,9 @@ export default function HotelDetails() {
                 <div>
                   <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
                   <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking')).map((amenity, idx) => (
+                    {amenitiesList.filter(a => a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking')).map((amenity: string, idx: number) => (
                       <li key={idx} className="flex items-center">
-                        <CheckIcon className="text-primary w-5 h-5 mr-2" />
+                        <Check className="text-primary w-5 h-5 mr-2" />
                         <span>{amenity}</span>
                       </li>
                     ))}
@@ -780,9 +780,9 @@ export default function HotelDetails() {
               {/* Nearby Attractions */}
               {nearbyAttractions.length > 0 && (
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {nearbyAttractions.map((attraction, index) => (
+                  {nearbyAttractions.map((attraction: {name: string, distance: string}, index: number) => (
                     <div key={index} className="flex items-start">
-                      <MapPinIcon className="w-5 h-5 text-primary mr-2 mt-0.5" />
+                      <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
                       <div>
                         <div className="font-medium">{attraction.name}</div>
                         <div className="text-sm text-neutral-600">{attraction.distance}</div>
@@ -801,7 +801,7 @@ export default function HotelDetails() {
                 {HOTEL_FAQS.map((faq, index) => (
                   <Card key={index} className="p-4">
                     <div className="flex items-start">
-                      <HelpCircleIcon className="w-5 h-5 text-primary mr-3 mt-0.5" />
+                      <HelpCircle className="w-5 h-5 text-primary mr-3 mt-0.5" />
                       <div>
                         <h4 className="font-bold mb-1">{faq.question}</h4>
                         <p className="text-neutral-600">{faq.answer}</p>
