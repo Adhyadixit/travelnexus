@@ -28,7 +28,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Plus, X, AlertCircle } from "lucide-react";
 import RoomImagesManager from "@/components/rooms/room-images-manager";
-import { ImageUpload } from "@/components/ui/image-upload";
 
 // Extend the insert schema for form validation
 const hotelFormSchema = insertHotelSchema.extend({
@@ -124,41 +123,28 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
   });
 
   const handleSubmit = (data: HotelFormValues) => {
-    try {
-      console.log("Form submission started with raw data:", data);
-      
-      // Format the data for database storage
-      const formattedData = {
-        ...data,
-        destinationId: parseInt(data.destinationId),
-        // Convert form text fields to proper JSON strings for DB storage
-        amenities: JSON.stringify(stringToArray(data.amenitiesList || "")),
-        languagesSpoken: JSON.stringify(stringToArray(data.languagesList || "")),
-        nearbyAttractions: JSON.stringify(stringToArray(data.attractionsList || "")),
-        policies: data.policiesList,
-        roomTypes: data.roomTypesList,
-        imageGallery: JSON.stringify(data.imageGalleryUrls || []),
-        // Convert numeric fields explicitly
-        rating: typeof data.rating === 'string' ? parseInt(data.rating) : data.rating,
-        price: typeof data.price === 'string' ? parseFloat(data.price) : data.price,
-        userRating: typeof data.userRating === 'string' ? parseFloat(data.userRating) : data.userRating,
-      };
-      
-      // Remove temporary form-only fields before submission
-      const finalData = {...formattedData};
-      delete finalData.amenitiesList;
-      delete finalData.languagesList;
-      delete finalData.attractionsList;
-      delete finalData.policiesList;
-      delete finalData.roomTypesList;
-      delete finalData.imageGalleryUrls;
-      
-      console.log("Submitting hotel data:", finalData);
-      onSubmit(finalData);
-    } catch (error) {
-      console.error("Error in hotel form submission:", error);
-      alert("Error submitting form. Check console for details.");
-    }
+    // Format the data for database storage
+    const formattedData = {
+      ...data,
+      destinationId: parseInt(data.destinationId),
+      // Convert form text fields to proper JSON strings for DB storage
+      amenities: stringToArray(data.amenitiesList || ""),
+      languagesSpoken: stringToArray(data.languagesList || ""),
+      nearbyAttractions: stringToArray(data.attractionsList || ""),
+      policies: data.policiesList,
+      roomTypes: data.roomTypesList,
+      imageGallery: JSON.stringify(data.imageGalleryUrls || []),
+    };
+    
+    // Remove temporary form-only fields before submission
+    delete formattedData.amenitiesList;
+    delete formattedData.languagesList;
+    delete formattedData.attractionsList;
+    delete formattedData.policiesList;
+    delete formattedData.roomTypesList;
+    delete formattedData.imageGalleryUrls;
+    
+    onSubmit(formattedData);
   };
 
   // Handle image gallery inputs
@@ -433,14 +419,9 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image</FormLabel>
+                      <FormLabel>Main Image URL</FormLabel>
                       <FormControl>
-                        <ImageUpload
-                          value={field.value}
-                          onChange={field.onChange}
-                          disabled={isSubmitting}
-                          folder="hotels"
-                        />
+                        <Input placeholder="Enter primary image URL" {...field} />
                       </FormControl>
                       <FormDescription>
                         This is the main image displayed in listings and at the top of the details page
@@ -476,26 +457,18 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       name={`imageGalleryUrls.${index}`}
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium">Gallery Image {index + 1}</p>
-                              <Button 
-                                type="button" 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => removeImageFromGallery(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
+                          <div className="flex items-center gap-2">
                             <FormControl>
-                              <ImageUpload
-                                value={field.value}
-                                onChange={field.onChange}
-                                disabled={isSubmitting}
-                                folder="hotels"
-                              />
+                              <Input placeholder={`Gallery image ${index + 1}`} {...field} />
                             </FormControl>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => removeImageFromGallery(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
                         </FormItem>
                       )}

@@ -77,10 +77,10 @@ export default function AdminHotels() {
     queryKey: ["/api/destinations"],
   });
   
-  // Setup mutations - using direct database access to bypass authentication middleware issues
+  // Setup mutations
   const createHotelMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/direct/hotels", data);
+      const res = await apiRequest("POST", "/api/admin/hotels", data);
       return await res.json();
     },
     onSuccess: () => {
@@ -102,7 +102,7 @@ export default function AdminHotels() {
   
   const updateHotelMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await apiRequest("PATCH", `/api/direct/hotels/${id}`, data);
+      const res = await apiRequest("PUT", `/api/admin/hotels/${id}`, data);
       return await res.json();
     },
     onSuccess: () => {
@@ -125,7 +125,7 @@ export default function AdminHotels() {
   
   const deleteHotelMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/direct/hotels/${id}`);
+      await apiRequest("DELETE", `/api/admin/hotels/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
@@ -145,46 +145,13 @@ export default function AdminHotels() {
   
   // Handle form submission
   const handleFormSubmit = async (data: any) => {
-    console.log('Form submit handler called with data:', data);
     setIsSubmitting(true);
-    
     try {
       if (editingHotel) {
-        console.log(`Updating hotel ${editingHotel.id} with data:`, data);
-        
-        // Manual direct API call instead of using mutation
-        const response = await fetch(`/api/direct/hotels/${editingHotel.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to update hotel: ${errorText}`);
-        }
-        
-        // Handle success
-        queryClient.invalidateQueries({ queryKey: ["/api/hotels"] });
-        setOpenDialog(false);
-        setEditingHotel(null);
-        toast({
-          title: "Success",
-          description: "Hotel updated successfully",
-        });
+        await updateHotelMutation.mutateAsync({ id: editingHotel.id, data });
       } else {
-        console.log('Creating new hotel with data:', data);
         await createHotelMutation.mutateAsync(data);
       }
-    } catch (error) {
-      console.error('Error in form submission:', error);
-      toast({
-        title: "Submission Error",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive",
-      });
     } finally {
       setIsSubmitting(false);
     }
