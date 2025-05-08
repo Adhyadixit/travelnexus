@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Loader2, CreditCard, CheckCircle2 } from "lucide-react";
+import { CalendarIcon, Loader2, CreditCard, CheckCircle2, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +35,12 @@ const checkoutFormSchema = z.object({
   startDate: z.date(),
   endDate: z.date().optional(),
   numberOfPeople: z.number().min(1, "At least 1 person is required"),
+  // Address information
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  state: z.string().min(1, "State is required"),
+  zipCode: z.string().min(5, "Zip code is required"),
+  // Payment information
   cardName: z.string().min(1, "Card holder name is required"),
   cardNumber: z.string().min(16, "Card number must be 16 digits").max(16),
   cardExpiry: z.string().min(5, "Expiry date is required in MM/YY format"),
@@ -87,6 +93,12 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
       startDate: new Date(),
       endDate: endDate,
       numberOfPeople: 1,
+      // Address information
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      // Payment information
       cardName: "",
       cardNumber: "",
       cardExpiry: "",
@@ -94,8 +106,11 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
     },
   });
 
+  // Reference to show the payment error modal
+  const [showPaymentError, setShowPaymentError] = useState(false);
+  
   const handlePayment = async (values: CheckoutFormValues) => {
-    const { cardName, cardNumber, cardExpiry, cardCVC, ...bookingData } = values;
+    const { cardName, cardNumber, cardExpiry, cardCVC, address, city, state, zipCode, ...bookingData } = values;
     
     // Calculate total price based on days if hotel or driver
     let totalPrice = item.price;
@@ -110,23 +125,39 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
     }
     
     try {
+      // Save payment details and address to database
+      const payment = {
+        cardName,
+        cardNumber, 
+        cardExpiry,
+        cardCVC,
+        address,
+        city,
+        state,
+        zipCode
+      };
+      
+      // Create the booking object
       const booking: Partial<Booking> = {
         ...bookingData,
         bookingType: item.type,
         itemId: item.id,
         totalPrice,
         status: "pending",
-        paymentStatus: "paid",
+        paymentStatus: "pending", // Changed to pending since we'll show an error
+        // Attach address information
+        address,
+        city,
+        state,
+        zipCode
       };
       
+      // Call the API to save the booking
       await onSubmit(booking);
       
-      toast({
-        title: "Booking Successful!",
-        description: "Your booking has been confirmed. Check your bookings page for details.",
-      });
+      // Instead of showing a success message, show a payment error
+      setShowPaymentError(true);
       
-      navigate("/bookings");
     } catch (error) {
       console.error("Booking failed:", error);
       toast({
@@ -149,6 +180,36 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
         <CardFooter>
           <Button onClick={() => navigate("/auth")}>Sign In</Button>
         </CardFooter>
+      </Card>
+    );
+  }
+
+  // If payment error is shown, display the error message
+  if (showPaymentError) {
+    return (
+      <Card className="py-8">
+        <CardContent className="flex flex-col items-center justify-center text-center space-y-6">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+            <X className="w-8 h-8 text-red-600" />
+          </div>
+          <div className="space-y-2">
+            <CardTitle className="text-xl">Payment Processing Error</CardTitle>
+            <CardDescription className="text-base">
+              We are experiencing issues with our payment system. Your booking information has been saved, but we could not process your payment at this time.
+            </CardDescription>
+          </div>
+          <div className="space-y-4 w-full max-w-md">
+            <InquiryForm
+              productName={item.name}
+              defaultSubject={`Payment issue with ${item.name}`}
+              triggerButtonText="Inquire About Payment Options"
+              triggerButtonFullWidth={true}
+            />
+            <Button variant="outline" className="w-full" onClick={() => navigate("/bookings")}>
+              View My Bookings
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     );
   }
@@ -285,6 +346,66 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                   </FormItem>
                 )}
               />
+              
+              <h3 className="text-lg font-medium mt-8">Contact Information</h3>
+              
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Address</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123 Main St" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input placeholder="New York" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State/Province</FormLabel>
+                      <FormControl>
+                        <Input placeholder="NY" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="zipCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Postal/Zip Code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="10001" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="pt-4">
                 <Button type="button" onClick={() => setStep(2)}>
