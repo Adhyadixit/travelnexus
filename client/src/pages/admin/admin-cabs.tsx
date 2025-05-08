@@ -366,7 +366,7 @@ export default function AdminCabs() {
           <AdminDataTable
             columns={columns}
             data={cabs}
-            searchColumn="driverName"
+            searchColumn="name"
             searchPlaceholder="Search drivers..."
           />
         )}

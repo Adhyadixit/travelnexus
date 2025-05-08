@@ -242,7 +242,11 @@ export default function AdminPackages() {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
+        const status = row.getValue("status") as string | undefined;
+        
+        if (!status) {
+          return <Badge className="bg-neutral-500">Unknown</Badge>;
+        }
         
         return (
           <Badge className={status === "active" ? "bg-success" : "bg-neutral-500"}>
