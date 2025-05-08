@@ -67,6 +67,7 @@ function Router() {
       <ProtectedRoute path="/admin/cruises" component={AdminCruises} adminOnly />
       <ProtectedRoute path="/admin/events" component={AdminEvents} adminOnly />
       <ProtectedRoute path="/admin/bookings" component={AdminBookings} adminOnly />
+      <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly />
       
       <Route component={NotFound} />
     </Switch>
