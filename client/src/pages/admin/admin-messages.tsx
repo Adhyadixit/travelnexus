@@ -115,8 +115,7 @@ export default function AdminMessages() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ conversationId, message }: { conversationId: number; message: string }) => {
-      const response = await apiRequest("POST", "/api/messages", {
-        conversationId,
+      const response = await apiRequest("POST", `/api/conversations/${conversationId}/messages`, {
         body: message,
         type: "admin",
       });

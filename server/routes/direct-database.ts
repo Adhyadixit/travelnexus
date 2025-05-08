@@ -97,13 +97,33 @@ router.get("/api/direct/events", async (req, res) => {
   }
 });
 
-// Direct conversations route
+// Direct conversations route with user information
 router.get("/api/direct/conversations", async (req, res) => {
   try {
     console.log("Direct database access for conversations");
-    const allConversations = await db.select().from(conversations);
-    console.log(`Successfully fetched ${allConversations.length} conversations directly from DB`);
-    res.json(allConversations);
+    // Get conversations with user and guest user information
+    const allConversations = await db
+      .select({
+        conversation: conversations,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          username: users.username,
+          email: users.email,
+        },
+      })
+      .from(conversations)
+      .leftJoin(users, eq(conversations.userId, users.id));
+      
+    // Format the data for the client
+    const formattedConversations = allConversations.map(item => ({
+      ...item.conversation,
+      user: item.user && item.user.id ? item.user : null
+    }));
+    
+    console.log(`Successfully fetched ${formattedConversations.length} conversations directly from DB`);
+    res.json(formattedConversations);
   } catch (error) {
     console.error("Error in direct conversations route:", error);
     res.status(500).json({ error: "Failed to fetch conversations directly" });
@@ -116,14 +136,14 @@ router.get("/api/direct/messages", async (req, res) => {
     console.log("Direct database access for messages");
     const conversationId = req.query.conversationId;
     
-    let query = db.select().from(messages);
+    let allMessages;
     
     if (conversationId) {
       console.log(`Filtering messages for conversation ID: ${conversationId}`);
-      query = query.where(eq(messages.conversationId, Number(conversationId)));
+      allMessages = await db.select().from(messages).where(eq(messages.conversationId, Number(conversationId)));
+    } else {
+      allMessages = await db.select().from(messages);
     }
-    
-    const allMessages = await query;
     console.log(`Successfully fetched ${allMessages.length} messages directly from DB`);
     res.json(allMessages);
   } catch (error) {
