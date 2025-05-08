@@ -30,6 +30,7 @@ import { Loader2, Plus, X } from "lucide-react";
 // Extend the insert schema for form validation
 const packageFormSchema = insertPackageSchema.extend({
   // Convert some of the JSON string fields to more usable form types
+  destinationId: z.string(), // Store ID as string in form for select component
   imageGalleryUrls: z.array(z.string()).optional(),
   includedItems: z.string().optional(),
   excludedItems: z.string().optional(),
@@ -88,29 +89,29 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
   // Parse initial data for form
   const defaultValues: Partial<PackageFormValues> = {
     name: initialData?.name || "",
-    destinationId: initialData?.destinationId?.toString() || "",
+    destinationId: initialData?.destinationId ? initialData.destinationId.toString() : "",
     description: initialData?.description || "",
     imageUrl: initialData?.imageUrl || "",
-    imageGalleryUrls: parseJsonOrDefault(initialData?.imageGallery, []),
+    imageGalleryUrls: parseJsonOrDefault(initialData?.imageGallery || null, []),
     duration: initialData?.duration || 7,
     price: initialData?.price || 0,
-    includedItems: arrayToString(parseJsonOrDefault(initialData?.included, [])),
-    excludedItems: arrayToString(parseJsonOrDefault(initialData?.excluded, [])),
-    trending: initialData?.trending || false,
-    featured: initialData?.featured || false,
-    itineraryText: stringifyJsonSafely(parseJsonOrDefault(initialData?.itinerary, {})),
-    hotelsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.hotels, [])),
-    flightIncluded: initialData?.flightIncluded || false,
-    visaRequired: initialData?.visaRequired || false,
-    visaAssistance: initialData?.visaAssistance || false,
+    includedItems: arrayToString(parseJsonOrDefault(initialData?.included || null, [])),
+    excludedItems: arrayToString(parseJsonOrDefault(initialData?.excluded || null, [])),
+    trending: initialData?.trending ?? false,
+    featured: initialData?.featured ?? false,
+    itineraryText: stringifyJsonSafely(parseJsonOrDefault(initialData?.itinerary || null, {})),
+    hotelsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.hotels || null, [])),
+    flightIncluded: initialData?.flightIncluded ?? false,
+    visaRequired: initialData?.visaRequired ?? false,
+    visaAssistance: initialData?.visaAssistance ?? false,
     typeOfTour: initialData?.typeOfTour || "Group",
-    citiesCoveredText: arrayToString(parseJsonOrDefault(initialData?.citiesCovered, [])),
-    mealsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.meals, { breakfast: true, lunch: false, dinner: false })),
-    startingDatesText: arrayToString(parseJsonOrDefault(initialData?.startingDates, [])),
+    citiesCoveredText: arrayToString(parseJsonOrDefault(initialData?.citiesCovered || null, [])),
+    mealsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.meals || null, { breakfast: true, lunch: false, dinner: false })),
+    startingDatesText: arrayToString(parseJsonOrDefault(initialData?.startingDates || null, [])),
     travelMode: initialData?.travelMode || "Flight",
-    minTravelers: initialData?.minTravelers || 1,
-    customizable: initialData?.customizable || false,
-    highlightsText: arrayToString(parseJsonOrDefault(initialData?.highlights, [])),
+    minTravelers: initialData?.minTravelers ?? 1,
+    customizable: initialData?.customizable ?? false,
+    highlightsText: arrayToString(parseJsonOrDefault(initialData?.highlights || null, [])),
   };
 
   const form = useForm<PackageFormValues>({

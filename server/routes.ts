@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm";
 import {
   bookings, bookingTypeEnum,
-  destinations, packages, hotels, drivers, cruises, events,
+  destinations, packages, hotels, drivers, cruises, events, users,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -318,6 +318,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch analytics data" });
+    }
+  });
+
+  // Admin listing routes
+  app.get("/api/destinations/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allDestinations = await storage.getAllDestinations();
+      res.json(allDestinations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch destinations" });
+    }
+  });
+
+  app.get("/api/packages/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allPackages = await storage.getAllPackages();
+      res.json(allPackages);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch packages" });
+    }
+  });
+
+  app.get("/api/hotels/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allHotels = await storage.getAllHotels();
+      res.json(allHotels);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch hotels" });
+    }
+  });
+
+  app.get("/api/drivers/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allDrivers = await storage.getAllDrivers();
+      res.json(allDrivers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch drivers" });
+    }
+  });
+
+  app.get("/api/cruises/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allCruises = await storage.getAllCruises();
+      res.json(allCruises);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch cruises" });
+    }
+  });
+
+  app.get("/api/events/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allEvents = await storage.getAllEvents();
+      res.json(allEvents);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch events" });
+    }
+  });
+
+  app.get("/api/users/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      // This would typically come from storage but we don't have a method for it yet
+      const allUsers = await db.select().from(users);
+      res.json(allUsers);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/bookings/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allBookings = await storage.getAllBookings();
+      res.json(allBookings);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch bookings" });
+    }
+  });
+
+  // Admin specific analytics endpoints
+  app.get("/api/admin/analytics/booking-stats", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const bookingCounts = await storage.getBookingCountsByType();
+      res.json(bookingCounts);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch booking statistics" });
+    }
+  });
+
+  app.get("/api/admin/analytics/sales-data", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const revenueData = await storage.getRevenueData();
+      res.json(revenueData);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sales data" });
+    }
+  });
+
+  app.get("/api/admin/analytics/popular-destinations", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      // This would typically come from a specialized method but we'll mock it for now
+      const destinations = await storage.getFeaturedDestinations();
+      const popularDestinations = destinations.map(dest => ({
+        id: dest.id,
+        name: dest.name,
+        bookings: Math.floor(Math.random() * 100) + 1 // Mock data
+      }));
+      res.json(popularDestinations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch popular destinations" });
     }
   });
 
