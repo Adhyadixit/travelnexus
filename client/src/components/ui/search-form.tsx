@@ -89,14 +89,15 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
                     >
-                      <SelectTrigger className="w-full h-8 md:h-10 text-sm">
-                        <SelectValue placeholder="Where to?" />
+                      <SelectTrigger className="w-full h-8 md:h-10 text-sm text-neutral-800">
+                        <SelectValue placeholder="Where to?" className="text-neutral-800" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="text-neutral-800">
                         {destinations.map((destination) => (
                           <SelectItem 
                             key={destination.id} 
                             value={destination.name}
+                            className="text-neutral-800"
                           >
                             {destination.name}, {destination.country}
                           </SelectItem>
@@ -211,8 +212,8 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                   </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-8 md:h-10 text-xs md:text-sm">
-                        <SelectValue placeholder="Select" />
+                      <SelectTrigger className="h-8 md:h-10 text-xs md:text-sm text-neutral-800">
+                        <SelectValue placeholder="Select" className="text-neutral-800" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
