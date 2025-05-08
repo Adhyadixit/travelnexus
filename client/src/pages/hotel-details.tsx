@@ -540,7 +540,7 @@ export default function HotelDetails() {
                     {Object.entries(policies).map(([key, value]) => (
                       <li key={key} className="flex items-start">
                         <Info className="w-4 h-4 text-neutral-500 mr-2 mt-0.5" />
-                        <span><span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}:</span> {value}</span>
+                        <span><span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}:</span> {String(value)}</span>
                       </li>
                     ))}
                   </ul>
@@ -940,7 +940,7 @@ export default function HotelDetails() {
                         <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {roomTypes.map((room) => (
+                        {roomTypes.map((room: any) => (
                           <SelectItem key={room.id} value={room.id.toString()}>
                             {room.name} - {formatCurrency(room.price)}
                           </SelectItem>
@@ -953,10 +953,10 @@ export default function HotelDetails() {
                     <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
                       <div className="flex justify-between">
                         <span>Room </span>
-                        <span>{roomTypes.find(r => r.id === selectedRoom)?.name}</span>
+                        <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>{formatCurrency(roomTypes.find(r => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
+                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
                         <span>{formatCurrency(totalPrice)}</span>
                       </div>
                       <Separator className="my-2" />
@@ -978,7 +978,7 @@ export default function HotelDetails() {
                   
                   {hotel.freeCancellation && (
                     <div className="text-sm text-green-600 flex items-center justify-center mt-2">
-                      <CheckIcon className="w-4 h-4 mr-1" />
+                      <Check className="w-4 h-4 mr-1" />
                       <span>Free cancellation available</span>
                     </div>
                   )}
