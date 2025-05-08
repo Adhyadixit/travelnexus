@@ -7,6 +7,11 @@ import { seed } from "./seed";
 import { uploadImage } from "./cloudinary";
 import imageUploadRoutes from "./routes/image-upload";
 import adminDestinationsRoutes from "./routes/admin-destinations";
+import adminCruisesRoutes from "./routes/admin-cruises";
+import adminDriversRoutes from "./routes/admin-drivers";
+import adminEventsRoutes from "./routes/admin-events";
+import adminHotelsRoutes from "./routes/admin-hotels";
+import adminPackagesRoutes from "./routes/admin-packages";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
