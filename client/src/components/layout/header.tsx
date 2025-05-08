@@ -99,7 +99,7 @@ export default function Header() {
                 <DropdownMenuItem asChild>
                   <Link href="/bookings" className="cursor-pointer">My Bookings</Link>
                 </DropdownMenuItem>
-                {user.isAdmin && (
+                {user.role === 'admin' && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin/dashboard" className="cursor-pointer">Admin Dashboard</Link>
                   </DropdownMenuItem>
@@ -192,7 +192,7 @@ export default function Header() {
                     My Bookings
                   </Link>
                 </li>
-                {user.isAdmin && (
+                {user.role === 'admin' && (
                   <li>
                     <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)} className="block py-2 font-medium text-neutral-800">
                       Admin Dashboard
