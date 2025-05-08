@@ -299,4 +299,87 @@ router.post("/api/direct/payment-details", async (req, res) => {
   }
 });
 
+// Direct create event route
+router.post("/api/events", async (req, res) => {
+  try {
+    console.log("Direct database access to create event");
+    const eventData = {
+      ...req.body,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const createdEvent = await db
+      .insert(events)
+      .values(eventData)
+      .returning();
+      
+    console.log(`Successfully created new event: ${createdEvent[0].name}`);
+    res.status(201).json(createdEvent[0]);
+  } catch (error) {
+    console.error("Error in direct create event route:", error);
+    res.status(500).json({ error: "Failed to create event" });
+  }
+});
+
+// Direct update event route
+router.patch("/api/events/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to update event with ID: ${req.params.id}`);
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    const eventData = {
+      ...req.body,
+      updatedAt: new Date()
+    };
+    
+    const updatedEvent = await db
+      .update(events)
+      .set(eventData)
+      .where(eq(events.id, eventId))
+      .returning();
+      
+    if (updatedEvent.length === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+    
+    console.log(`Successfully updated event with ID: ${eventId}`);
+    res.json(updatedEvent[0]);
+  } catch (error) {
+    console.error("Error in direct update event route:", error);
+    res.status(500).json({ error: "Failed to update event" });
+  }
+});
+
+// Direct delete event route
+router.delete("/api/events/:id", async (req, res) => {
+  try {
+    console.log(`Direct database access to delete event with ID: ${req.params.id}`);
+    const eventId = parseInt(req.params.id);
+    
+    if (isNaN(eventId)) {
+      return res.status(400).json({ error: "Invalid event ID" });
+    }
+    
+    const deletedEvent = await db
+      .delete(events)
+      .where(eq(events.id, eventId))
+      .returning();
+      
+    if (deletedEvent.length === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+    
+    console.log(`Successfully deleted event with ID: ${eventId}`);
+    res.json({ message: "Event deleted successfully" });
+  } catch (error) {
+    console.error("Error in direct delete event route:", error);
+    res.status(500).json({ error: "Failed to delete event" });
+  }
+});
+
 export default router;

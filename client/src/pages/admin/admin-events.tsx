@@ -43,12 +43,12 @@ export default function AdminEvents() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Fetch all events
+  // Fetch all events using direct database access
   const { 
     data: events = [],
     isLoading: isLoadingEvents
   } = useQuery<Event[]>({
-    queryKey: ["/api/events/admin"],
+    queryKey: ["/api/direct/events"],
   });
   
   // Fetch all destinations
@@ -105,7 +105,7 @@ export default function AdminEvents() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/events"] });
       toast({
         title: "Success",
         description: "Event created successfully",
@@ -136,7 +136,7 @@ export default function AdminEvents() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/events"] });
       toast({
         title: "Success",
         description: "Event updated successfully",
@@ -160,7 +160,7 @@ export default function AdminEvents() {
       return id;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/events"] });
       toast({
         title: "Success",
         description: "Event deleted successfully",
