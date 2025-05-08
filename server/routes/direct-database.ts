@@ -114,7 +114,16 @@ router.get("/api/direct/conversations", async (req, res) => {
 router.get("/api/direct/messages", async (req, res) => {
   try {
     console.log("Direct database access for messages");
-    const allMessages = await db.select().from(messages);
+    const conversationId = req.query.conversationId;
+    
+    let query = db.select().from(messages);
+    
+    if (conversationId) {
+      console.log(`Filtering messages for conversation ID: ${conversationId}`);
+      query = query.where(eq(messages.conversationId, Number(conversationId)));
+    }
+    
+    const allMessages = await query;
     console.log(`Successfully fetched ${allMessages.length} messages directly from DB`);
     res.json(allMessages);
   } catch (error) {

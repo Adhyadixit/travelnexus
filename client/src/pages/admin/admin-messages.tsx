@@ -103,6 +103,12 @@ export default function AdminMessages() {
     error: messagesError,
   } = useQuery<Message[]>({
     queryKey: ["/api/direct/messages", selectedConversation?.id],
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      const res = await fetch(`/api/direct/messages?conversationId=${selectedConversation.id}`);
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return res.json();
+    },
     enabled: !!selectedConversation,
   });
 
