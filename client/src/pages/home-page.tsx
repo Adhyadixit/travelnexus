@@ -69,7 +69,7 @@ export default function HomePage() {
         subtitle="Discover amazing destinations, book your perfect stay, and create unforgettable memories."
         height="lg"
       >
-        <div className="mt-8">
+        <div className="mt-4 md:mt-8">
           <SearchForm />
         </div>
       </ImageBanner>

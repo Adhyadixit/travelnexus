@@ -15,7 +15,7 @@ export function MobileLayout({
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <main className={cn(
-        "flex-grow",
+        "flex-grow pt-0",
         withBottomPadding && "pb-16", // Add padding at the bottom for the navigation bar
         className
       )}>
