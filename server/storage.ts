@@ -18,6 +18,9 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 
+// Define SessionStore type to fix type error
+type SessionStore = session.Store;
+
 // PostgreSQL session store
 const PostgresSessionStore = connectPg(session);
 
@@ -121,31 +124,13 @@ export interface IStorage {
   markMessagesAsReadByUser(conversationId: number): Promise<void>;
 
   // Session store
-  sessionStore: session.SessionStore;
-
-  // Guest User operations
-  createGuestUser(guestData: InsertGuestUser): Promise<GuestUser>;
-  getGuestUserBySessionId(sessionId: string): Promise<GuestUser | undefined>;
-  getGuestUser(id: number): Promise<GuestUser | undefined>;
-
-  // Chat operations
-  createConversation(conversationData: InsertConversation): Promise<Conversation>;
-  getConversation(id: number): Promise<Conversation | undefined>;
-  getConversationsByUser(userId: number): Promise<Conversation[]>;
-  getConversationsByGuestUser(guestUserId: number): Promise<Conversation[]>;
-  getAllConversations(): Promise<Conversation[]>;
-  getActiveConversations(): Promise<Conversation[]>;
-  updateConversation(id: number, data: Partial<InsertConversation>): Promise<Conversation | undefined>;
-  deleteConversation(id: number): Promise<void>;
+  sessionStore: SessionStore;
   
-  // Message operations
-  createMessage(messageData: InsertMessage): Promise<Message>;
-  getMessagesByConversation(conversationId: number): Promise<Message[]>;
-  updateMessageReadStatus(conversationId: number, isAdmin: boolean): Promise<void>;
+  // Other methods are already defined above
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: SessionStore;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({
@@ -587,11 +572,20 @@ export class DatabaseStorage implements IStorage {
       .values(messageData)
       .returning();
       
-    // Update the conversation's updatedAt timestamp
+    // Update the conversation's lastMessageAt timestamp and read status
     const conversationId = messageData.conversationId;
+    
+    // Need to determine if message is from admin based on senderType
+    const isFromAdmin = messageData.senderType === 'admin';
+    
     await db
       .update(conversations)
-      .set({ updatedAt: new Date() })
+      .set({
+        lastMessageAt: new Date(),
+        updatedAt: new Date(),
+        readByUser: isFromAdmin ? false : true,  // If admin sent message, user hasn't read it
+        readByAdmin: isFromAdmin ? true : false  // If user/guest sent message, admin hasn't read it
+      })
       .where(eq(conversations.id, conversationId));
       
     return newMessage;
@@ -606,69 +600,51 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUnreadMessageCountForAdmin(): Promise<number> {
+    // Count conversations with unread messages for admin
     const result = await db
       .select({ count: count() })
-      .from(messages)
-      .where(
-        and(
-          eq(messages.readByAdmin, false),
-          eq(messages.isFromAdmin, false)
-        )
-      );
+      .from(conversations)
+      .where(eq(conversations.readByAdmin, false));
     return result[0].count;
   }
   
   async getUnreadMessageCountForUser(userId: number): Promise<number> {
-    // First get all conversations for this user
-    const userConversations = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.userId, userId));
-      
-    if (userConversations.length === 0) {
-      return 0;
-    }
-    
-    // Get conversation IDs
-    const conversationIds = userConversations.map(c => c.id);
-    
-    // Count unread messages in all these conversations
+    // Count conversations where user has unread messages
     const result = await db
       .select({ count: count() })
-      .from(messages)
+      .from(conversations)
       .where(
         and(
-          eq(messages.readByUser, false),
-          eq(messages.isFromAdmin, true),
-          sql`${messages.conversationId} IN (${conversationIds.join(',')})`
+          eq(conversations.userId, userId),
+          eq(conversations.readByUser, false)
         )
       );
-      
     return result[0].count;
   }
   
   async markMessagesAsReadByAdmin(conversationId: number): Promise<void> {
+    // Update the conversation to mark as read by admin
     await db
-      .update(messages)
+      .update(conversations)
       .set({ readByAdmin: true })
-      .where(
-        and(
-          eq(messages.conversationId, conversationId),
-          eq(messages.isFromAdmin, false)
-        )
-      );
+      .where(eq(conversations.id, conversationId));
   }
   
   async markMessagesAsReadByUser(conversationId: number): Promise<void> {
+    // Update the conversation to mark as read by user
     await db
-      .update(messages)
+      .update(conversations)
       .set({ readByUser: true })
-      .where(
-        and(
-          eq(messages.conversationId, conversationId),
-          eq(messages.isFromAdmin, true)
-        )
-      );
+      .where(eq(conversations.id, conversationId));
+  }
+  
+  // Combined method to satisfy the interface
+  async updateMessageReadStatus(conversationId: number, isAdmin: boolean): Promise<void> {
+    if (isAdmin) {
+      await this.markMessagesAsReadByAdmin(conversationId);
+    } else {
+      await this.markMessagesAsReadByUser(conversationId);
+    }
   }
 }
 
