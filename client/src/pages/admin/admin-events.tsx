@@ -244,13 +244,12 @@ export default function AdminEvents() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-heading font-bold">Manage Events</h1>
           
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Add New Event
+          </Button>
+          
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add New Event
-              </Button>
-            </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Event</DialogTitle>
@@ -477,12 +476,10 @@ export default function AdminEvents() {
                 <p className="text-muted-foreground mb-4">
                   {searchQuery ? "Try a different search term" : "Add your first event to get started"}
                 </p>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setIsCreateDialogOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add New Event
-                  </Button>
-                </DialogTrigger>
+                <Button onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Event
+                </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
