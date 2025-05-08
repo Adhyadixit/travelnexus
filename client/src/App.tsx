@@ -70,6 +70,7 @@ function Router() {
       <ProtectedRoute path="/admin/hotels" component={AdminHotels} adminOnly />
       <ProtectedRoute path="/admin/cabs" component={AdminCabs} adminOnly />
       <ProtectedRoute path="/admin/cruises" component={AdminCruises} adminOnly />
+      <Route path="/admin-cruises" component={AdminCruises} />
       <ProtectedRoute path="/admin/events" component={AdminEvents} adminOnly />
       <ProtectedRoute path="/admin/bookings" component={AdminBookings} adminOnly />
       <ProtectedRoute path="/admin/settings" component={AdminSettings} adminOnly />

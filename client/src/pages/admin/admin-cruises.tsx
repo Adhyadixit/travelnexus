@@ -37,12 +37,12 @@ export default function AdminCruises() {
   const [selectedCruise, setSelectedCruise] = useState<Cruise | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Fetch all cruises for admin panel
+  // Fetch all cruises using direct database access
   const { 
     data: cruises = [],
     isLoading
   } = useQuery<Cruise[]>({
-    queryKey: ["/api/cruises/admin"],
+    queryKey: ["/api/direct/cruises"],
   });
   
   // Create form
@@ -124,7 +124,7 @@ export default function AdminCruises() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cruises/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/cruises"] });
       toast({
         title: "Success",
         description: "Cruise created successfully",
@@ -149,7 +149,7 @@ export default function AdminCruises() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/cruises/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/cruises"] });
       toast({
         title: "Success",
         description: "Cruise updated successfully",
