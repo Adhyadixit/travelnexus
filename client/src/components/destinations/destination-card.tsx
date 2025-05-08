@@ -25,7 +25,7 @@ export function DestinationCard({ destination, className }: DestinationCardProps
             <p className="text-white text-sm opacity-90">{destination.country}</p>
           </div>
           {destination.featured && (
-            <div className="absolute top-2 right-2 bg-secondary text-white text-xs px-2 py-1 rounded-full">
+            <div className="absolute top-2 right-2 bg-secondary text-neutral-800 text-xs px-2 py-1 rounded-full font-medium">
               Featured
             </div>
           )}

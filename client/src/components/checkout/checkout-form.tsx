@@ -156,11 +156,11 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 1 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 1 ? 'bg-primary text-neutral-800 font-medium' : 'bg-muted text-muted-foreground'}`}>
           1
         </div>
         <div className="h-1 w-12 bg-muted flex-grow"></div>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 2 ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step === 2 ? 'bg-primary text-neutral-800 font-medium' : 'bg-muted text-muted-foreground'}`}>
           2
         </div>
       </div>

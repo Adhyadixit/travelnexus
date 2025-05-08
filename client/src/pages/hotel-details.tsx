@@ -872,13 +872,14 @@ export default function HotelDetails() {
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                         <Calendar
                           mode="single"
                           selected={startDate}
                           onSelect={setStartDate}
                           disabled={(date) => date < new Date()}
                           initialFocus
+                          className="text-neutral-800"
                         />
                       </PopoverContent>
                     </Popover>
@@ -900,7 +901,7 @@ export default function HotelDetails() {
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                         <Calendar
                           mode="single"
                           selected={endDate}
@@ -909,6 +910,7 @@ export default function HotelDetails() {
                             date < (startDate || new Date())
                           }
                           initialFocus
+                          className="text-neutral-800"
                         />
                       </PopoverContent>
                     </Popover>
@@ -920,12 +922,12 @@ export default function HotelDetails() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select number of guests" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 Guest</SelectItem>
-                        <SelectItem value="2">2 Guests</SelectItem>
-                        <SelectItem value="3">3 Guests</SelectItem>
-                        <SelectItem value="4">4 Guests</SelectItem>
-                        <SelectItem value="5">5 Guests</SelectItem>
+                      <SelectContent className="text-neutral-800">
+                        <SelectItem value="1" className="text-neutral-800">1 Guest</SelectItem>
+                        <SelectItem value="2" className="text-neutral-800">2 Guests</SelectItem>
+                        <SelectItem value="3" className="text-neutral-800">3 Guests</SelectItem>
+                        <SelectItem value="4" className="text-neutral-800">4 Guests</SelectItem>
+                        <SelectItem value="5" className="text-neutral-800">5 Guests</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -939,9 +941,9 @@ export default function HotelDetails() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="text-neutral-800">
                         {roomTypes.map((room: any) => (
-                          <SelectItem key={room.id} value={room.id.toString()}>
+                          <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
                             {room.name} - {formatCurrency(room.price)}
                           </SelectItem>
                         ))}
