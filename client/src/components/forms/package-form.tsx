@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,27 +22,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Plus, X } from "lucide-react";
 
 // Extend the insert schema for form validation
 const packageFormSchema = insertPackageSchema.extend({
-  inclusions: z.string().min(1, "Inclusions are required").optional(),
+  // Convert some of the JSON string fields to more usable form types
+  imageGalleryUrls: z.array(z.string()).optional(),
+  includedItems: z.string().optional(),
+  excludedItems: z.string().optional(),
+  itineraryText: z.string().optional(),
+  hotelsText: z.string().optional(),
+  citiesCoveredText: z.string().optional(),
+  mealsText: z.string().optional(),
+  startingDatesText: z.string().optional(),
+  highlightsText: z.string().optional(),
 });
 
 type PackageFormValues = z.infer<typeof packageFormSchema>;
 
-// Function to convert inclusions string to JSON and back
-const stringToInclusionsArray = (inclusions: string): string[] => {
+// Helper functions for converting between form and DB formats
+const stringToArray = (str: string): string[] => {
   try {
-    return inclusions.split('\n').filter(line => line.trim() !== '');
+    return str.split('\n').filter(line => line.trim() !== '');
   } catch (e) {
     return [];
   }
 };
 
-const inclusionsArrayToString = (inclusions: string[] | null): string => {
-  if (!inclusions) return '';
-  return inclusions.join('\n');
+const arrayToString = (arr: string[] | null): string => {
+  if (!arr) return '';
+  return arr.join('\n');
+};
+
+const parseJsonOrDefault = (jsonString: string | null, defaultValue: any): any => {
+  if (!jsonString) return defaultValue;
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    return defaultValue;
+  }
+};
+
+const stringifyJsonSafely = (value: any): string => {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (e) {
+    return '';
+  }
 };
 
 interface PackageFormProps {
@@ -58,13 +88,29 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
   // Parse initial data for form
   const defaultValues: Partial<PackageFormValues> = {
     name: initialData?.name || "",
-    destinationId: initialData?.destinationId.toString() || "",
+    destinationId: initialData?.destinationId?.toString() || "",
     description: initialData?.description || "",
     imageUrl: initialData?.imageUrl || "",
-    duration: initialData?.duration || 0,
+    imageGalleryUrls: parseJsonOrDefault(initialData?.imageGallery, []),
+    duration: initialData?.duration || 7,
     price: initialData?.price || 0,
-    status: initialData?.status || "active",
-    inclusions: initialData?.inclusions ? inclusionsArrayToString(initialData.inclusions as string[]) : "",
+    includedItems: arrayToString(parseJsonOrDefault(initialData?.included, [])),
+    excludedItems: arrayToString(parseJsonOrDefault(initialData?.excluded, [])),
+    trending: initialData?.trending || false,
+    featured: initialData?.featured || false,
+    itineraryText: stringifyJsonSafely(parseJsonOrDefault(initialData?.itinerary, {})),
+    hotelsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.hotels, [])),
+    flightIncluded: initialData?.flightIncluded || false,
+    visaRequired: initialData?.visaRequired || false,
+    visaAssistance: initialData?.visaAssistance || false,
+    typeOfTour: initialData?.typeOfTour || "Group",
+    citiesCoveredText: arrayToString(parseJsonOrDefault(initialData?.citiesCovered, [])),
+    mealsText: stringifyJsonSafely(parseJsonOrDefault(initialData?.meals, { breakfast: true, lunch: false, dinner: false })),
+    startingDatesText: arrayToString(parseJsonOrDefault(initialData?.startingDates, [])),
+    travelMode: initialData?.travelMode || "Flight",
+    minTravelers: initialData?.minTravelers || 1,
+    customizable: initialData?.customizable || false,
+    highlightsText: arrayToString(parseJsonOrDefault(initialData?.highlights, [])),
   };
 
   const form = useForm<PackageFormValues>({
@@ -73,14 +119,47 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
   });
 
   const handleSubmit = (data: PackageFormValues) => {
-    // Convert inclusions string to JSON array
+    // Format the data for database storage
     const formattedData = {
       ...data,
       destinationId: parseInt(data.destinationId),
-      inclusions: data.inclusions ? stringToInclusionsArray(data.inclusions) : [],
+      // Convert form text fields to proper JSON strings for DB storage
+      included: stringToArray(data.includedItems || ""),
+      excluded: stringToArray(data.excludedItems || ""),
+      itinerary: data.itineraryText,
+      hotels: data.hotelsText,
+      citiesCovered: stringToArray(data.citiesCoveredText || ""), 
+      meals: data.mealsText,
+      startingDates: stringToArray(data.startingDatesText || ""),
+      highlights: stringToArray(data.highlightsText || ""),
+      imageGallery: JSON.stringify(data.imageGalleryUrls || []),
     };
     
+    // Remove temporary form-only fields before submission
+    delete formattedData.includedItems;
+    delete formattedData.excludedItems;
+    delete formattedData.itineraryText;
+    delete formattedData.hotelsText;
+    delete formattedData.citiesCoveredText;
+    delete formattedData.mealsText;
+    delete formattedData.startingDatesText;
+    delete formattedData.highlightsText;
+    delete formattedData.imageGalleryUrls;
+    
     onSubmit(formattedData);
+  };
+
+  // Handle image gallery inputs
+  const imageGallery = form.watch("imageGalleryUrls") || [];
+  
+  const addImageToGallery = () => {
+    const currentGallery = form.getValues("imageGalleryUrls") || [];
+    form.setValue("imageGalleryUrls", [...currentGallery, ""]);
+  };
+  
+  const removeImageFromGallery = (index: number) => {
+    const currentGallery = form.getValues("imageGalleryUrls") || [];
+    form.setValue("imageGalleryUrls", currentGallery.filter((_, i) => i !== index));
   };
 
   if (destinationsLoading) {
@@ -94,155 +173,596 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Package Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter package name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="destinationId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Destination</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select destination" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {destinations?.map((destination) => (
-                    <SelectItem key={destination.id} value={destination.id.toString()}>
-                      {destination.name}, {destination.country}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duration (days)</FormLabel>
-                <FormControl>
-                  <Input type="number" min="1" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <Tabs defaultValue="basic">
+          <TabsList className="mb-6">
+            <TabsTrigger value="basic">Basic Info</TabsTrigger>
+            <TabsTrigger value="images">Images</TabsTrigger>
+            <TabsTrigger value="inclusions">Inclusions/Exclusions</TabsTrigger>
+            <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
+            <TabsTrigger value="details">Additional Details</TabsTrigger>
+          </TabsList>
           
-          <FormField
-            control={form.control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price ($)</FormLabel>
-                <FormControl>
-                  <Input type="number" min="0" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* Basic Info Tab */}
+          <TabsContent value="basic">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Package Information</CardTitle>
+                <CardDescription>Enter the core details of the package</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Package Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter package name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="destinationId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Destination</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select destination" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {destinations?.map((destination) => (
+                            <SelectItem key={destination.id} value={destination.id.toString()}>
+                              {destination.name}, {destination.country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duration (days)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the package..." 
+                          className="min-h-[150px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Featured Package</FormLabel>
+                          <FormDescription>
+                            Show this package on the homepage
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="trending"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Trending</FormLabel>
+                          <FormDescription>
+                            Mark as a trending package
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="customizable"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Customizable</FormLabel>
+                          <FormDescription>
+                            Allow custom modifications
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Images Tab */}
+          <TabsContent value="images">
+            <Card>
+              <CardHeader>
+                <CardTitle>Package Images</CardTitle>
+                <CardDescription>Upload primary and gallery images for the package</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Main Image URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter primary image URL" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        This is the main image displayed in listings and at the top of the details page
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Image Gallery (Up to 10 images)</FormLabel>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={addImageToGallery}
+                      disabled={imageGallery.length >= 10}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Image
+                    </Button>
+                  </div>
+                  
+                  <FormDescription>
+                    Add multiple images to showcase different aspects of the package
+                  </FormDescription>
+
+                  {imageGallery.map((_, index) => (
+                    <FormField
+                      key={index}
+                      control={form.control}
+                      name={`imageGalleryUrls.${index}`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormControl>
+                              <Input placeholder={`Gallery image ${index + 1}`} {...field} />
+                            </FormControl>
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => removeImageFromGallery(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Inclusions/Exclusions Tab */}
+          <TabsContent value="inclusions">
+            <Card>
+              <CardHeader>
+                <CardTitle>What's Included & Excluded</CardTitle>
+                <CardDescription>Specify what's included and excluded in the package</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="includedItems"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>What's Included (One item per line)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Hotel accommodation&#10;Airport transfer&#10;Daily breakfast&#10;Guided tours" 
+                          className="min-h-[150px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        List each included item on a separate line
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="excludedItems"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>What's Excluded (One item per line)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="International flights&#10;Travel insurance&#10;Personal expenses&#10;Optional tours" 
+                          className="min-h-[150px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        List each excluded item on a separate line
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="flightIncluded"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Flight Included</FormLabel>
+                          <FormDescription>
+                            Package includes flights
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="visaRequired"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Visa Required</FormLabel>
+                          <FormDescription>
+                            Visa is required for this destination
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="visaAssistance"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Visa Assistance</FormLabel>
+                        <FormDescription>
+                          We provide visa assistance services
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Itinerary Tab */}
+          <TabsContent value="itinerary">
+            <Card>
+              <CardHeader>
+                <CardTitle>Itinerary & Highlights</CardTitle>
+                <CardDescription>Day-by-day plan and key highlights of the package</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="itineraryText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Itinerary (JSON format)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={'{\n  "day1": "Arrival in Dubai & Hotel Check-in",\n  "day2": "City Tour & Burj Khalifa Visit",\n  "day3": "Desert Safari Adventure"\n}'}
+                          className="min-h-[200px] font-mono text-sm" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter the itinerary in JSON format with day numbers as keys and activities as values
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="highlightsText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Package Highlights (One per line)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Visit to Burj Khalifa&#10;Desert Safari Adventure&#10;Dhow Cruise with Dinner&#10;Shopping at Dubai Mall" 
+                          className="min-h-[150px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        List each highlight on a separate line
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="citiesCoveredText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cities Covered (One per line)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Dubai&#10;Abu Dhabi&#10;Sharjah" 
+                          className="min-h-[100px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        List each city on a separate line
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Additional Details Tab */}
+          <TabsContent value="details">
+            <Card>
+              <CardHeader>
+                <CardTitle>Additional Details</CardTitle>
+                <CardDescription>Important details that make the package special</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="typeOfTour"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tour Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select tour type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Group">Group Tour</SelectItem>
+                            <SelectItem value="Private">Private Tour</SelectItem>
+                            <SelectItem value="Self-Guided">Self-Guided</SelectItem>
+                            <SelectItem value="Customizable">Customizable</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="travelMode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Travel Mode</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select travel mode" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Flight">Flight</SelectItem>
+                            <SelectItem value="Train">Train</SelectItem>
+                            <SelectItem value="Bus">Bus</SelectItem>
+                            <SelectItem value="Cruise">Cruise</SelectItem>
+                            <SelectItem value="Car">Car</SelectItem>
+                            <SelectItem value="Multiple">Multiple Modes</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="minTravelers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minimum Travelers</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="startingDatesText"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Starting Dates (One per line)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="2025-01-15&#10;2025-02-01&#10;2025-02-15" 
+                            className="min-h-[100px]" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          List available starting dates in YYYY-MM-DD format
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="hotelsText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hotels (JSON format)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={'[\n  {\n    "name": "Burj Al Arab",\n    "rating": 5,\n    "nights": 2\n  },\n  {\n    "name": "Atlantis The Palm",\n    "rating": 5,\n    "nights": 3\n  }\n]'}
+                          className="min-h-[200px] font-mono text-sm" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter hotels in JSON format with name, rating, and nights for each
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="mealsText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Included Meals (JSON format)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder={'{\n  "breakfast": true,\n  "lunch": false,\n  "dinner": true\n}'}
+                          className="min-h-[150px] font-mono text-sm" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Specify which meals are included in the package
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+        
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting} size="lg">
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : initialData ? "Update Package" : "Create Package"}
+          </Button>
         </div>
-        
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe the package..." 
-                  className="min-h-[100px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="imageUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Image URL</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter image URL" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="inclusions"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Inclusions (One per line)</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Hotel accommodation&#10;Airport transfer&#10;Daily breakfast&#10;Guided tours" 
-                  className="min-h-[100px]" 
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="status"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Status</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Saving...
-            </>
-          ) : initialData ? "Update Package" : "Create Package"}
-        </Button>
       </form>
     </Form>
   );
