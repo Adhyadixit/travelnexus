@@ -7,7 +7,10 @@ import {
   cruises, type Cruise, type InsertCruise,
   events, type Event, type InsertEvent,
   bookings, type Booking, type InsertBooking,
-  bookingTypeEnum
+  bookingTypeEnum,
+  guestUsers, type GuestUser, type InsertGuestUser,
+  conversations, type Conversation, type InsertConversation,
+  messages, type Message, type InsertMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc, like, sql, count } from "drizzle-orm";
@@ -96,8 +99,49 @@ export interface IStorage {
   getBookingCountsByType(): Promise<Record<string, number>>;
   getRevenueData(): Promise<{ date: string; revenue: number }[]>;
 
+  // Guest User operations
+  createGuestUser(guestUser: InsertGuestUser): Promise<GuestUser>;
+  getGuestUserBySessionId(sessionId: string): Promise<GuestUser | undefined>;
+  
+  // Chat operations
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  getConversation(id: number): Promise<Conversation | undefined>;
+  getConversationsByUser(userId: number): Promise<Conversation[]>;
+  getConversationsByGuestUser(guestUserId: number): Promise<Conversation[]>;
+  getAllConversations(): Promise<Conversation[]>;
+  updateConversation(id: number, data: Partial<InsertConversation>): Promise<Conversation | undefined>;
+  closeConversation(id: number): Promise<Conversation | undefined>;
+  
+  // Message operations
+  createMessage(message: InsertMessage): Promise<Message>;
+  getMessagesByConversation(conversationId: number): Promise<Message[]>;
+  getUnreadMessageCountForAdmin(): Promise<number>;
+  getUnreadMessageCountForUser(userId: number): Promise<number>;
+  markMessagesAsReadByAdmin(conversationId: number): Promise<void>;
+  markMessagesAsReadByUser(conversationId: number): Promise<void>;
+
   // Session store
   sessionStore: session.SessionStore;
+
+  // Guest User operations
+  createGuestUser(guestData: InsertGuestUser): Promise<GuestUser>;
+  getGuestUserBySessionId(sessionId: string): Promise<GuestUser | undefined>;
+  getGuestUser(id: number): Promise<GuestUser | undefined>;
+
+  // Chat operations
+  createConversation(conversationData: InsertConversation): Promise<Conversation>;
+  getConversation(id: number): Promise<Conversation | undefined>;
+  getConversationsByUser(userId: number): Promise<Conversation[]>;
+  getConversationsByGuestUser(guestUserId: number): Promise<Conversation[]>;
+  getAllConversations(): Promise<Conversation[]>;
+  getActiveConversations(): Promise<Conversation[]>;
+  updateConversation(id: number, data: Partial<InsertConversation>): Promise<Conversation | undefined>;
+  deleteConversation(id: number): Promise<void>;
+  
+  // Message operations
+  createMessage(messageData: InsertMessage): Promise<Message>;
+  getMessagesByConversation(conversationId: number): Promise<Message[]>;
+  updateMessageReadStatus(conversationId: number, isAdmin: boolean): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {

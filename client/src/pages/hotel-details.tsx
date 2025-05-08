@@ -15,6 +15,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, parseAmenities } from "@/lib/utils";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { 
@@ -29,6 +34,7 @@ import {
   MapPin, 
   MapPinIcon, 
   Maximize, 
+  MessageCircle,
   Star, 
   User,
   Wifi,
@@ -175,6 +181,15 @@ export default function HotelDetails() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [guestDetails, setGuestDetails] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    message: ''
+  });
+  const { toast } = useToast();
   
   // Fetch hotel details
   const { 
@@ -366,9 +381,120 @@ export default function HotelDetails() {
         extraBeds: 'Extra beds available for $50 per night'
       };
   
+  // Handle chat inquiry
+  const handleChatInquiry = () => {
+    // Validate form
+    if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phoneNumber || !guestDetails.message) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all fields to start a chat",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Here we would normally submit to the API
+    // For now just show a success message
+    toast({
+      title: "Inquiry sent!",
+      description: "Our team will get back to you shortly.",
+    });
+
+    // Reset form and close modal
+    setGuestDetails({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      message: ''
+    });
+    setShowChatModal(false);
+  };
+
+  // Handle input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setGuestDetails(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
+        {/* Chat Dialog */}
+        <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">
+                <div className="flex items-center">
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  Live Chat Inquiry
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input 
+                    id="firstName" 
+                    name="firstName"
+                    value={guestDetails.firstName}
+                    onChange={handleInputChange}
+                    placeholder="John" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input 
+                    id="lastName" 
+                    name="lastName"
+                    value={guestDetails.lastName}
+                    onChange={handleInputChange}
+                    placeholder="Doe" 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  name="email"
+                  type="email"
+                  value={guestDetails.email}
+                  onChange={handleInputChange}
+                  placeholder="john.doe@example.com" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input 
+                  id="phoneNumber" 
+                  name="phoneNumber"
+                  value={guestDetails.phoneNumber}
+                  onChange={handleInputChange}
+                  placeholder="+1 (123) 456-7890" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="message">How can we help you?</Label>
+                <Textarea 
+                  id="message" 
+                  name="message"
+                  value={guestDetails.message}
+                  onChange={handleInputChange}
+                  placeholder="I'm interested in booking this hotel and have some questions..."
+                  rows={4}
+                />
+              </div>
+              <div className="mt-2 flex justify-end">
+                <Button onClick={handleChatInquiry}>Start Chat</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-neutral-600 mb-4">
           <Link href="/">
@@ -479,12 +605,21 @@ export default function HotelDetails() {
             <div className="text-lg font-medium">From {formatCurrency(hotel.price)}</div>
             <div className="text-sm text-neutral-600">per night</div>
           </div>
-          <Button 
-            size="lg" 
-            onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            Book Now
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              size="lg" 
+              onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Book Now
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => setShowChatModal(true)}
+            >
+              Inquire Now
+            </Button>
+          </div>
           <button
             className={`p-2 rounded-full border ${isFavorite ? 'bg-red-50 border-red-200 text-red-500' : 'bg-white border-neutral-200 text-neutral-400'}`}
             onClick={() => setIsFavorite(!isFavorite)}
