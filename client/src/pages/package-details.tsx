@@ -874,44 +874,92 @@ export default function PackageDetails() {
             <div className="mb-8">
               <h2 className="text-xl font-heading font-bold mb-6">You Might Also Like</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i} className="overflow-hidden h-full">
-                    <div className="relative">
-                      <img 
-                        src={packageData.imageUrl} // In a real app, would use different images
-                        alt={`Similar Package ${i}`}
-                        className="w-full h-48 object-cover"
-                      />
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                        <div className="text-white font-medium">Similar Package {i}</div>
-                        <div className="text-white/80 text-sm">
-                          {packageData.duration - Math.floor(Math.random() * 3)} Days / {packageData.duration - Math.floor(Math.random() * 3) - 1} Nights
-                        </div>
+              {allPackages && destination ? (
+                (() => {
+                  // Filter packages from the same country
+                  const similarPackages = allPackages.filter(pkg => {
+                    // Skip current package
+                    if (pkg.id === parseInt(id as string)) return false;
+                    
+                    // Get destination for this package to check the country
+                    const pkgDestId = pkg.destinationId;
+                    const pkgDest = allPackages.find(p => p.destinationId === pkgDestId);
+                    
+                    return pkgDest && pkgDest.destinationId === destination.id;
+                  }).slice(0, 3);
+                  
+                  if (similarPackages.length === 0) {
+                    return (
+                      <div className="text-center py-8 bg-neutral-50 rounded-lg">
+                        <Briefcase className="w-12 h-12 text-neutral-300 mx-auto mb-2" />
+                        <p className="text-neutral-500">No similar packages available in {destination.country}</p>
                       </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {similarPackages.map((similarPackage) => (
+                        <Card key={similarPackage.id} className="overflow-hidden h-full">
+                          <div className="relative">
+                            <img 
+                              src={similarPackage.imageUrl}
+                              alt={similarPackage.name}
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                              <div className="text-white font-medium">{similarPackage.name}</div>
+                              <div className="text-white/80 text-sm">
+                                {similarPackage.duration} Days / {similarPackage.duration - 1} Nights
+                              </div>
+                            </div>
+                          </div>
+                          <CardContent className="p-4">
+                            <div className="flex items-center mb-2">
+                              <MapPin className="w-4 h-4 text-neutral-500 mr-1" />
+                              <span className="text-neutral-600 text-sm">{destination.name}</span>
+                            </div>
+                            <div className="flex justify-between items-center mt-2">
+                              <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={`w-4 h-4 ${i < Math.floor(similarPackage.rating || 4) ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-300'}`} 
+                                  />
+                                ))}
+                              </div>
+                              <div className="font-bold">{formatCurrency(similarPackage.price)}</div>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="p-4 pt-0">
+                            <Link href={`/packages/${similarPackage.id}`}>
+                              <Button variant="outline" size="sm" className="w-full">
+                                View Details
+                              </Button>
+                            </Link>
+                          </CardFooter>
+                        </Card>
+                      ))}
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex items-center mb-2">
-                        <MapPin className="w-4 h-4 text-neutral-500 mr-1" />
-                        <span className="text-neutral-600 text-sm">{destination?.name || 'Popular destination'}</span>
-                      </div>
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-secondary fill-current' : 'text-neutral-300'}`} />
-                          ))}
-                        </div>
-                        <div className="font-bold">{formatCurrency(packageData.price * (0.8 + i * 0.1))}</div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="p-4 pt-0">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
+                  );
+                })()
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="overflow-hidden h-full">
+                      <div className="h-48 bg-neutral-100 animate-pulse" />
+                      <CardContent className="p-4">
+                        <div className="h-4 bg-neutral-100 animate-pulse mb-2" />
+                        <div className="h-4 bg-neutral-100 animate-pulse mb-2 w-2/3" />
+                        <div className="h-8 bg-neutral-100 animate-pulse mt-3" />
+                      </CardContent>
+                      <CardFooter className="p-4 pt-0">
+                        <div className="h-8 bg-neutral-100 animate-pulse w-full" />
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
