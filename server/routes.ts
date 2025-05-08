@@ -694,31 +694,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Routes for drivers admin have been moved to server/routes/admin-drivers.ts
 
-  app.get("/api/cruises/admin", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const allCruises = await storage.getAllCruises();
-      res.json(allCruises);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch cruises" });
-    }
-  });
+  // Routes for cruises admin have been moved to server/routes/admin-cruises.ts
 
-  app.get("/api/events/admin", async (req, res) => {
-    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
-      return res.status(403).json({ error: "Admin access required" });
-    }
-    
-    try {
-      const allEvents = await storage.getAllEvents();
-      res.json(allEvents);
-    } catch (error) {
-      res.status(500).json({ error: "Failed to fetch events" });
-    }
-  });
+  // Routes for events admin have been moved to server/routes/admin-events.ts
 
   app.get("/api/users/admin", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {
