@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, parseAmenities } from "@/lib/utils";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { InquiryForm } from "@/components/inquiry-form";
 import { 
   CalendarIcon, 
   ChevronLeft, 

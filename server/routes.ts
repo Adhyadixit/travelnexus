@@ -1074,9 +1074,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (req.body.guestName && req.body.guestEmail) {
           console.log("Creating new guest user for inquiry");
           const guestUser = await storage.createGuestUser({
-            name: req.body.guestName,
+            firstName: req.body.guestName.split(' ')[0] || req.body.guestName,
+            lastName: req.body.guestName.split(' ').slice(1).join(' ') || '-',
             email: req.body.guestEmail,
-            phone: req.body.guestPhone || '',
+            phoneNumber: req.body.guestPhone || '',
             sessionId: req.sessionID,
           });
           guestUserId = guestUser.id;
@@ -1103,11 +1104,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Create the first message if provided
       if (req.body.message) {
+        // Determine the sender ID and type
+        let senderId = 0;
+        let senderType = '';
+        
+        if (req.isAuthenticated()) {
+          senderId = req.user!.id;
+          senderType = req.user!.role === 'admin' ? 'admin' : 'user';
+        } else if (guestUserId) {
+          senderId = guestUserId;
+          senderType = 'guest';
+        }
+        
         const messageData = {
           conversationId: conversation.id,
-          body: req.body.message,
-          type: req.isAuthenticated() ? 'user' : 'guest',
-          readAt: null,
+          senderId,
+          senderType,
+          content: req.body.message,
+          messageType: 'text' as const,
+          fileUrl: null,
         };
         
         await storage.createMessage(messageData);
