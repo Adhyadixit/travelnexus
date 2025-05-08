@@ -303,11 +303,27 @@ router.post("/api/direct/payment-details", async (req, res) => {
 router.post("/api/events", async (req, res) => {
   try {
     console.log("Direct database access to create event");
-    const eventData = {
-      ...req.body,
+    
+    // Extract date from request body to handle it separately
+    const { date, ...otherData } = req.body;
+    
+    // Prepare the event data without the date field
+    let eventData = {
+      ...otherData,
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    
+    // Add date back only if it exists, letting Drizzle handle the default
+    if (date) {
+      // Convert to Date object first to ensure it's in the right format
+      eventData.date = new Date(date);
+    }
+    
+    console.log("Creating event with data:", {
+      ...eventData,
+      date: eventData.date ? eventData.date.toISOString() : null
+    });
     
     const createdEvent = await db
       .insert(events)
@@ -332,10 +348,25 @@ router.patch("/api/events/:id", async (req, res) => {
       return res.status(400).json({ error: "Invalid event ID" });
     }
     
-    const eventData = {
-      ...req.body,
+    // Extract date from request body to handle it separately
+    const { date, ...otherData } = req.body;
+    
+    // Prepare the event data without the date field
+    let eventData = {
+      ...otherData,
       updatedAt: new Date()
     };
+    
+    // Add date back only if it exists
+    if (date) {
+      // Convert to Date object first to ensure it's in the right format
+      eventData.date = new Date(date);
+    }
+    
+    console.log("Updating event with data:", {
+      ...eventData,
+      date: eventData.date ? eventData.date.toISOString() : null
+    });
     
     const updatedEvent = await db
       .update(events)
