@@ -19,10 +19,16 @@ interface ReviewFormProps {
   itemId: number;
 }
 
-const reviewFormSchema = insertReviewSchema.extend({
-  rating: z.coerce.number().min(1, "Please select a rating").max(5),
+// Modified schema to use strings for dates instead of Date objects
+const reviewFormSchema = z.object({
+  userId: z.number().optional(),
+  itemType: z.string(),
+  itemId: z.number(),
+  rating: z.number().min(1, "Please select a rating").max(5),
   title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title cannot exceed 100 characters"),
   comment: z.string().min(10, "Review must be at least 10 characters").max(1000, "Review cannot exceed 1000 characters"),
+  dateOfStay: z.string().optional(),
+  images: z.string().optional(),
 });
 
 type ReviewFormValues = z.infer<typeof reviewFormSchema>;

@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm";
 import {
   bookings, bookingTypeEnum,
-  destinations, packages, hotels, drivers, cruises, events, users,
+  destinations, packages, hotels, drivers, cruises, events, users, reviews,
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -182,6 +182,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(event);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch event" });
+    }
+  });
+
+  // Reviews
+  app.get("/api/reviews/:itemType/:itemId", async (req, res) => {
+    try {
+      const { itemType, itemId } = req.params;
+      
+      // Get reviews for the specified item
+      const reviewsData = await db.select({
+        review: reviews,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          username: users.username,
+        }
+      })
+      .from(reviews)
+      .leftJoin(users, eq(reviews.userId, users.id))
+      .where(
+        and(
+          eq(reviews.itemType, itemType),
+          eq(reviews.itemId, parseInt(itemId)),
+          eq(reviews.status, "approved")
+        )
+      )
+      .orderBy(desc(reviews.createdAt));
+      
+      // Transform the data to the expected format
+      const formattedReviews = reviewsData.map(item => ({
+        ...item.review,
+        user: item.user
+      }));
+      
+      res.json(formattedReviews);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+      res.status(500).json({ error: "Failed to fetch reviews" });
+    }
+  });
+
+  app.post("/api/reviews", async (req, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ error: "Unauthorized" });
+    
+    try {
+      const reviewData = {
+        ...req.body,
+        userId: req.user!.id,
+        status: "approved", // Auto-approve for now
+        helpfulVotes: 0,
+        verified: req.body.dateOfStay ? true : false,
+      };
+      
+      // Insert the review into the database
+      const [newReview] = await db
+        .insert(reviews)
+        .values(reviewData)
+        .returning();
+      
+      // Also return the user data
+      const userData = await db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          username: users.username
+        })
+        .from(users)
+        .where(eq(users.id, req.user!.id));
+      
+      const reviewWithUser = {
+        ...newReview,
+        user: userData[0]
+      };
+      
+      res.status(201).json(reviewWithUser);
+    } catch (error) {
+      console.error("Error creating review:", error);
+      res.status(500).json({ error: "Failed to create review" });
+    }
+  });
+
+  // Admin review management
+  app.get("/api/reviews/admin", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const allReviews = await db
+        .select({
+          review: reviews,
+          user: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            username: users.username,
+          }
+        })
+        .from(reviews)
+        .leftJoin(users, eq(reviews.userId, users.id))
+        .orderBy(desc(reviews.createdAt));
+      
+      // Transform the data
+      const formattedReviews = allReviews.map(item => ({
+        ...item.review,
+        user: item.user
+      }));
+      
+      res.json(formattedReviews);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch reviews" });
+    }
+  });
+
+  app.put("/api/reviews/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      // Update the review
+      const [updatedReview] = await db
+        .update(reviews)
+        .set(req.body)
+        .where(eq(reviews.id, parseInt(req.params.id)))
+        .returning();
+      
+      if (!updatedReview) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+      
+      // Get the user data
+      const userData = await db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          username: users.username
+        })
+        .from(users)
+        .where(eq(users.id, updatedReview.userId));
+      
+      const reviewWithUser = {
+        ...updatedReview,
+        user: userData[0]
+      };
+      
+      res.json(reviewWithUser);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update review" });
+    }
+  });
+
+  app.delete("/api/reviews/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      await db
+        .delete(reviews)
+        .where(eq(reviews.id, parseInt(req.params.id)));
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete review" });
     }
   });
 
