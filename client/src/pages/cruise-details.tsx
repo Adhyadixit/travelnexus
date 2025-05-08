@@ -1072,6 +1072,16 @@ export default function CruiseDetails() {
                       <BadgePercent className="w-4 h-4 mr-1" />
                       <span>Special group rates available</span>
                     </div>
+
+                    <div className="mt-4 border-t pt-4">
+                      <h4 className="text-neutral-700 font-medium text-center mb-3">Have questions?</h4>
+                      <InquiryForm
+                        productName={cruise.name}
+                        defaultSubject={`Inquiry about ${cruise.name} cruise`}
+                        triggerButtonText="Contact Us"
+                        triggerButtonFullWidth={true}
+                      />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
