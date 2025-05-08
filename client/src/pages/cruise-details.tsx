@@ -280,9 +280,9 @@ export default function CruiseDetails() {
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
                 {cruise.featured && (
-                  <Badge className="bg-secondary text-neutral-800">Luxury Cruise</Badge>
+                  <Badge className="bg-secondary text-white">Luxury Cruise</Badge>
                 )}
-                <Badge className="bg-blue-600 text-neutral-800">
+                <Badge className="bg-blue-600 text-white">
                   Limited Cabins Remaining
                 </Badge>
               </div>
@@ -291,7 +291,7 @@ export default function CruiseDetails() {
                 {cruise.name}
               </h1>
               
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-neutral-700 mb-4">
+              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-blue-100 mb-4">
                 <div className="flex items-center">
                   <ShipIcon className="w-4 h-4 mr-1.5" />
                   <span>{cruise.company}</span>
@@ -326,20 +326,20 @@ export default function CruiseDetails() {
               )}
               
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-secondary hover:bg-secondary/90 text-neutral-800">
+                <Button className="bg-secondary hover:bg-secondary/90 text-white">
                   Book Now
                 </Button>
-                <Button variant="outline" className="text-neutral-800 border-neutral-800 hover:bg-white/10">
+                <Button variant="outline" className="text-white border-white hover:bg-white/10">
                   Enquire
                 </Button>
               </div>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm p-5 rounded-lg text-center w-full md:w-auto">
-              <div className="text-neutral-700">Starting from</div>
+              <div className="text-blue-100">Starting from</div>
               <div className="text-3xl md:text-4xl font-heading font-bold">{formatCurrency(cruise.price)}</div>
-              <div className="text-neutral-700 text-sm">per person</div>
-              <Badge className="mt-2 bg-secondary text-neutral-800">Save 15% • Limited Offer</Badge>
+              <div className="text-blue-100 text-sm">per person</div>
+              <Badge className="mt-2 bg-secondary text-white">Save 15% • Limited Offer</Badge>
             </div>
           </div>
         </div>
@@ -1085,8 +1085,8 @@ export default function CruiseDetails() {
                     alt="Related Cruise" 
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-neutral-800">
-                    <Badge className="bg-secondary text-neutral-800 mb-1">Best Seller</Badge>
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
+                    <Badge className="bg-secondary text-white mb-1">Best Seller</Badge>
                     <h3 className="font-heading font-bold">Greek Islands Cruise</h3>
                   </div>
                 </div>
