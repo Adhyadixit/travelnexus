@@ -71,6 +71,14 @@ export default function CruiseDetails() {
   } = useQuery<Cruise>({
     queryKey: [`/api/cruises/${id}`],
   });
+  
+  // Fetch all cruises (to filter related ones)
+  const { 
+    data: allCruises
+  } = useQuery<Cruise[]>({
+    queryKey: ['/api/cruises'],
+    enabled: !!cruise,
+  });
 
   // Handle booking
   const handleBookNow = () => {
@@ -1093,36 +1101,74 @@ export default function CruiseDetails() {
         <div className="mt-12">
           <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {[...Array(3)].map((_, idx) => (
-              <Card key={idx} className="overflow-hidden">
-                <div className="relative h-48">
-                  <img 
-                    src="https://images.unsplash.com/photo-1548574505-5e239809ee19?q=80&w=1364&auto=format&fit=crop"
-                    alt="Related Cruise" 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
-                    <Badge className="bg-secondary text-white mb-1">Best Seller</Badge>
-                    <h3 className="font-heading font-bold">Greek Islands Cruise</h3>
+          {allCruises && cruise ? (
+            (() => {
+              // Filter cruises with the same departure port
+              const similarCruises = allCruises.filter(c => 
+                c.id !== parseInt(id as string) && 
+                c.departure === cruise.departure
+              ).slice(0, 3);
+
+              if (similarCruises.length === 0) {
+                return (
+                  <div className="text-center py-8 bg-neutral-50 rounded-lg">
+                    <Ship className="w-12 h-12 text-neutral-300 mx-auto mb-2" />
+                    <p className="text-neutral-500">No similar cruises available from {cruise.departure}</p>
                   </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {similarCruises.map((similarCruise) => (
+                    <Card key={similarCruise.id} className="overflow-hidden">
+                      <div className="relative h-48">
+                        <img 
+                          src={similarCruise.imageUrl}
+                          alt={similarCruise.name} 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
+                          {similarCruise.featured && (
+                            <Badge className="bg-secondary text-white mb-1">Featured</Badge>
+                          )}
+                          <h3 className="font-heading font-bold">{similarCruise.name}</h3>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center text-sm text-neutral-500">
+                            <Clock className="w-4 h-4 mr-1" />
+                            <span>{similarCruise.duration} Nights</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-neutral-500">From</div>
+                            <div className="font-heading font-bold text-primary">{formatCurrency(similarCruise.price)}</div>
+                          </div>
+                        </div>
+                        <Link href={`/cruises/${similarCruise.id}`}>
+                          <Button variant="outline" className="w-full mt-2">View Details</Button>
+                        </Link>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center text-sm text-neutral-500">
-                      <Clock className="w-4 h-4 mr-1" />
-                      <span>7 Nights</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-neutral-500">From</div>
-                      <div className="font-heading font-bold text-primary">$899</div>
-                    </div>
-                  </div>
-                  <Button variant="outline" className="w-full mt-2">View Details</Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+              );
+            })()
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, idx) => (
+                <Card key={idx} className="overflow-hidden">
+                  <div className="h-48 bg-neutral-100 animate-pulse" />
+                  <CardContent className="p-4">
+                    <div className="h-4 bg-neutral-100 animate-pulse mb-2" />
+                    <div className="h-6 bg-neutral-100 animate-pulse mb-4 w-1/2" />
+                    <div className="h-10 bg-neutral-100 animate-pulse" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </Layout>
