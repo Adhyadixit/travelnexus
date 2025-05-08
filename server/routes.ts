@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { db } from "./db";
+import { seed } from "./seed";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
@@ -527,6 +528,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update booking" });
     }
   });
+
+  // Seed the database with initial data
+  try {
+    await seed();
+    console.log("Database seeded successfully");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+  }
 
   const httpServer = createServer(app);
   return httpServer;
