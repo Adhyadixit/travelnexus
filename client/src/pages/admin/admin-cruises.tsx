@@ -511,42 +511,90 @@ export default function AdminCruises() {
           </DialogHeader>
           
           <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4 py-4">
-              <FormField
-                control={editForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cruise Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6 py-4">
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Basic Information</h3>
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cruise Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="company"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cruise Line</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Royal Caribbean" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="shipName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ship Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Oasis of the Seas" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price ($)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" step="0.01" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={editForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea rows={4} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
-              <FormField
-                control={editForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea rows={4} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Images</h3>
                 <FormField
                   control={editForm.control}
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
+                      <FormLabel>Main Image URL</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -557,12 +605,16 @@ export default function AdminCruises() {
                 
                 <FormField
                   control={editForm.control}
-                  name="price"
+                  name="imageGallery"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
+                      <FormLabel>Additional Images (JSON array of URLs)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
+                        <Textarea 
+                          placeholder='["https://example.com/image1.jpg", "https://example.com/image2.jpg"]'
+                          rows={3}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -570,15 +622,113 @@ export default function AdminCruises() {
                 />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Trip Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duration (days)</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="capacity"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ship Capacity</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="departure"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Departure Port</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Miami, Florida" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="returnPort"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Return Port (if different)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Fort Lauderdale, Florida" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="boardingTime"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Boarding Time</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., 3:00 PM" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="daysAtSea"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Days at Sea</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Itinerary & Ports</h3>
                 <FormField
                   control={editForm.control}
-                  name="duration"
+                  name="itinerary"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (days)</FormLabel>
+                      <FormLabel>Itinerary (JSON format)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <Textarea 
+                          placeholder='{"day1": "Departure from Miami", "day2": "At Sea", "day3": "Nassau, Bahamas"}'
+                          rows={5}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -587,12 +737,16 @@ export default function AdminCruises() {
                 
                 <FormField
                   control={editForm.control}
-                  name="capacity"
+                  name="portsOfCall"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Capacity</FormLabel>
+                      <FormLabel>Ports of Call (JSON array)</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <Textarea 
+                          placeholder='["Nassau, Bahamas", "Charlotte Amalie, St. Thomas", "Philipsburg, St. Maarten"]'
+                          rows={3}
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -600,21 +754,219 @@ export default function AdminCruises() {
                 />
               </div>
               
-              <FormField
-                control={editForm.control}
-                name="itinerary"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Itinerary (JSON format)</FormLabel>
-                    <FormControl>
-                      <Textarea rows={4} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Ship Amenities & Features</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="cabinTypes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cabin Types (JSON format)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='{"interior": "From $799", "oceanview": "From $999", "balcony": "From $1299", "suite": "From $1999"}'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="amenities"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Onboard Amenities (JSON array)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='["Swimming Pools", "Spa", "Fitness Center", "Casino", "Theater"]'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="dining"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Dining Options (JSON format)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='{"main_dining": "Included", "specialty": "Additional fee", "buffet": "Included", "cafes": "Some included"}'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="entertainment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Entertainment (JSON array)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='["Broadway Shows", "Live Music", "Comedy Club", "Nightclub", "Movies"]'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={editForm.control}
+                  name="shipDetails"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ship Details (JSON format)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder='{"year_built": "2009", "refurbished": "2019", "tonnage": "225,282", "length": "1,188 ft", "crew": "2,200"}'
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
-              <div className="flex justify-end gap-2">
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Included/Excluded & Policies</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="includedServices"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Included Services (JSON array)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='["Accommodations", "All meals in main dining venues", "Entertainment", "Port fees"]'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="excludedServices"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Excluded Services (JSON array)</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder='["Gratuities", "Alcoholic beverages", "Specialty dining", "Shore excursions", "WiFi"]'
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="familyFriendly"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Family Friendly</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Suitable for families with children
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="adultOnly"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Adult Only</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Restricted to passengers 18+ or 21+ years old
+                          </p>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                <h3 className="text-lg font-medium">Display Settings</h3>
+                <FormField
+                  control={editForm.control}
+                  name="featured"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Featured Cruise</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Display this cruise in featured sections
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
