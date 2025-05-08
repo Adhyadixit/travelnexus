@@ -57,12 +57,12 @@ export default function CruiseDetails() {
   const Layout = isMobile ? MobileLayout : DesktopLayout;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  
+
   // State for booking
   const [startDate, setStartDate] = useState<Date>();
   const [guests, setGuests] = useState("2");
   const [selectedCabinType, setSelectedCabinType] = useState<string | null>(null);
-  
+
   // Fetch cruise details
   const { 
     data: cruise,
@@ -70,38 +70,38 @@ export default function CruiseDetails() {
   } = useQuery<Cruise>({
     queryKey: [`/api/cruises/${id}`],
   });
-  
+
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
       setLocation(`/auth?redirect=/cruises/${id}`);
       return;
     }
-    
+
     if (!startDate || !selectedCabinType) {
       return;
     }
-    
+
     // Calculate end date based on cruise duration
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (cruise?.duration || 0));
-    
+
     setLocation(`/checkout/cruise/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&cabinType=${selectedCabinType}`);
   };
-  
+
   // Parse itinerary
   const getItinerary = () => {
     if (!cruise) return {};
-    
+
     try {
       return JSON.parse(cruise.itinerary);
     } catch (e) {
       return {};
     }
   };
-  
+
   const itinerary = getItinerary();
-  
+
   // Cabin types
   const cabinTypes: CabinType[] = [
     {
@@ -137,7 +137,7 @@ export default function CruiseDetails() {
       availability: 1
     }
   ];
-  
+
   // Route/ports of call (example data)
   const ports = [
     { day: 1, port: "Miami, Florida", arrival: "", departure: "16:00", isEmbarkation: true },
@@ -147,7 +147,7 @@ export default function CruiseDetails() {
     { day: 5, port: "At Sea", arrival: "", departure: "", isSea: true },
     { day: 6, port: "Miami, Florida", arrival: "07:00", departure: "", isDisembarkation: true }
   ];
-  
+
   // Ship details (example data)
   const shipDetails = {
     name: cruise?.company || "Royal Caribbean",
@@ -157,7 +157,7 @@ export default function CruiseDetails() {
     tonnage: "168,000 tons",
     length: "1,188 feet"
   };
-  
+
   // Onboard experience categories
   const onboardExperience = [
     {
@@ -181,7 +181,7 @@ export default function CruiseDetails() {
       options: ["Full-service Spa", "Fitness Center", "Adult-only Solarium", "Hot Tubs", "Meditation Classes"]
     }
   ];
-  
+
   // Reviews data (example)
   const reviews = [
     {
@@ -203,7 +203,7 @@ export default function CruiseDetails() {
       comment: "This was our third cruise with this line and it did not disappoint. The balcony cabin was worth every penny!"
     }
   ];
-  
+
   // Rating categories
   const ratingCategories = [
     { name: "Service", value: 4.8 },
@@ -212,7 +212,7 @@ export default function CruiseDetails() {
     { name: "Entertainment", value: 4.5 },
     { name: "Value", value: 4.4 }
   ];
-  
+
   // FAQs
   const faqs = [
     {
@@ -286,28 +286,28 @@ export default function CruiseDetails() {
                   Limited Cabins Remaining
                 </Badge>
               </div>
-              
+
               <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">
                 {cruise.name}
               </h1>
-              
+
               <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-blue-100 mb-4">
                 <div className="flex items-center">
                   <ShipIcon className="w-4 h-4 mr-1.5" />
                   <span>{cruise.company}</span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-1.5" />
                   <span>Departs from {cruise.departure}</span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Clock className="w-4 h-4 mr-1.5" />
                   <span>{cruise.duration} Nights / {cruise.duration + 1} Days</span>
                 </div>
               </div>
-              
+
               {cruise.rating && (
                 <div className="flex items-center mb-6">
                   <div className="flex">
@@ -324,7 +324,7 @@ export default function CruiseDetails() {
                   )}
                 </div>
               )}
-              
+
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-secondary hover:bg-secondary/90 text-white">
                   Book Now
@@ -334,7 +334,7 @@ export default function CruiseDetails() {
                 </Button>
               </div>
             </div>
-            
+
             <div className="bg-white/10 backdrop-blur-sm p-5 rounded-lg text-center w-full md:w-auto">
               <div className="text-blue-100">Starting from</div>
               <div className="text-3xl md:text-4xl font-heading font-bold">{formatCurrency(cruise.price)}</div>
@@ -344,7 +344,7 @@ export default function CruiseDetails() {
           </div>
         </div>
       </div>
-      
+
       {/* Hero Image Carousel */}
       <div className="bg-white">
         <div className="container mx-auto px-4 py-8">
@@ -357,7 +357,7 @@ export default function CruiseDetails() {
           </div>
         </div>
       </div>
-      
+
       {/* Cruise Highlights Bar */}
       <div className="bg-blue-50 border-y border-blue-100">
         <div className="container mx-auto px-4 py-6">
@@ -371,7 +371,7 @@ export default function CruiseDetails() {
                 {cruise.departure} {/*→ Multiple Ports*/}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-3">
               <div className="bg-blue-100 p-2 rounded-full mb-2">
                 <CalendarIcon className="w-5 h-5 text-primary" />
@@ -381,7 +381,7 @@ export default function CruiseDetails() {
                 {cruise.duration} Nights / {cruise.duration + 1} Days
               </div>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-3">
               <div className="bg-blue-100 p-2 rounded-full mb-2">
                 <Ship className="w-5 h-5 text-primary" />
@@ -391,7 +391,7 @@ export default function CruiseDetails() {
                 {cruise.company}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-3">
               <div className="bg-blue-100 p-2 rounded-full mb-2">
                 <Users className="w-5 h-5 text-primary" />
@@ -401,7 +401,7 @@ export default function CruiseDetails() {
                 {shipDetails.capacity}
               </div>
             </div>
-            
+
             <div className="flex flex-col items-center text-center p-3">
               <div className="bg-blue-100 p-2 rounded-full mb-2">
                 <BadgePercent className="w-5 h-5 text-primary" />
@@ -414,7 +414,7 @@ export default function CruiseDetails() {
           </div>
         </div>
       </div>
-      
+
       {/* Main Content Area */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -428,21 +428,21 @@ export default function CruiseDetails() {
                 <TabsTrigger value="onboard">Onboard</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
               </TabsList>
-              
+
               {/* Overview Tab */}
               <TabsContent value="overview" className="mt-6">
                 <h2 className="text-2xl font-heading font-bold mb-4">About This Cruise</h2>
                 <p className="text-neutral-600 whitespace-pre-line mb-6">
                   {cruise.description}
                 </p>
-                
+
                 {/* Ship details */}
                 <div className="bg-blue-50 rounded-lg p-6 mb-6">
                   <h3 className="text-xl font-heading font-bold mb-4 flex items-center">
                     <Ship className="w-5 h-5 text-primary mr-2" />
                     Ship Details
                   </h3>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <div className="text-sm text-neutral-500">Ship Name</div>
@@ -470,7 +470,7 @@ export default function CruiseDetails() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* What's Included/Excluded */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div className="bg-white rounded-lg border p-6">
@@ -478,7 +478,7 @@ export default function CruiseDetails() {
                       <CheckCircle2 className="w-5 h-5 text-green-500 mr-2" />
                       What's Included
                     </h3>
-                    
+
                     <ul className="space-y-3">
                       {["Accommodation in selected cabin category", 
                         "All meals in main dining venues", 
@@ -493,13 +493,13 @@ export default function CruiseDetails() {
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-6">
                     <h3 className="text-xl font-heading font-bold mb-4 flex items-center">
                       <XCircle className="w-5 h-5 text-red-500 mr-2" />
                       What's Not Included
                     </h3>
-                    
+
                     <ul className="space-y-3">
                       {["Flights to/from departure port", 
                         "Shore excursions", 
@@ -516,11 +516,11 @@ export default function CruiseDetails() {
                     </ul>
                   </div>
                 </div>
-                
+
                 {/* FAQs */}
                 <div className="bg-white rounded-lg border p-6">
                   <h3 className="text-xl font-heading font-bold mb-4">Frequently Asked Questions</h3>
-                  
+
                   <Accordion type="single" collapsible className="w-full">
                     {faqs.map((faq, idx) => (
                       <AccordionItem key={idx} value={`faq-${idx}`}>
@@ -535,11 +535,11 @@ export default function CruiseDetails() {
                   </Accordion>
                 </div>
               </TabsContent>
-              
+
               {/* Itinerary Tab */}
               <TabsContent value="itinerary" className="mt-6">
                 <h2 className="text-2xl font-heading font-bold mb-4">Cruise Itinerary</h2>
-                
+
                 {/* Map placeholder */}
                 <div className="bg-blue-50 rounded-lg h-[300px] flex items-center justify-center mb-6">
                   <div className="text-center text-neutral-500">
@@ -547,7 +547,7 @@ export default function CruiseDetails() {
                     <div className="font-medium">Interactive Cruise Route Map</div>
                   </div>
                 </div>
-                
+
                 {/* Port Schedule */}
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse mb-6">
@@ -582,7 +582,7 @@ export default function CruiseDetails() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {/* Detailed Day by Day */}
                 <h3 className="text-xl font-heading font-bold mb-4">Day-by-Day Experience</h3>
                 <div className="space-y-4">
@@ -625,11 +625,11 @@ export default function CruiseDetails() {
                   )}
                 </div>
               </TabsContent>
-              
+
               {/* Cabins Tab */}
               <TabsContent value="cabins" className="mt-6">
                 <h2 className="text-2xl font-heading font-bold mb-4">Cabin Types & Pricing</h2>
-                
+
                 <div className="space-y-6">
                   {cabinTypes.map((cabin, idx) => (
                     <Card key={idx} className="overflow-hidden">
@@ -657,9 +657,9 @@ export default function CruiseDetails() {
                               <div className="text-sm text-neutral-500">per person</div>
                             </div>
                           </div>
-                          
+
                           <p className="text-neutral-600 mb-4">{cabin.description}</p>
-                          
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                             {cabin.features.map((feature, i) => (
                               <div key={i} className="flex items-center">
@@ -670,7 +670,7 @@ export default function CruiseDetails() {
                               </div>
                             ))}
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-2 mt-4">
                             <Button
                               variant={selectedCabinType === cabin.name ? "default" : "outline"}
@@ -686,11 +686,11 @@ export default function CruiseDetails() {
                   ))}
                 </div>
               </TabsContent>
-              
+
               {/* Onboard Experience Tab */}
               <TabsContent value="onboard" className="mt-6">
                 <h2 className="text-2xl font-heading font-bold mb-4">Onboard Experience</h2>
-                
+
                 <div className="space-y-6">
                   {onboardExperience.map((category, idx) => (
                     <div key={idx} className="bg-white rounded-lg border overflow-hidden">
@@ -717,7 +717,7 @@ export default function CruiseDetails() {
                     </div>
                   ))}
                 </div>
-                
+
                 {/* Amenities Grid */}
                 <h3 className="text-xl font-heading font-bold mt-8 mb-4">Ship Amenities</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -743,7 +743,7 @@ export default function CruiseDetails() {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-5">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -766,7 +766,7 @@ export default function CruiseDetails() {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-5">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -789,7 +789,7 @@ export default function CruiseDetails() {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-5">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -812,7 +812,7 @@ export default function CruiseDetails() {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-5">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -835,7 +835,7 @@ export default function CruiseDetails() {
                       </li>
                     </ul>
                   </div>
-                  
+
                   <div className="bg-white rounded-lg border p-5">
                     <div className="flex items-center mb-3">
                       <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -860,13 +860,13 @@ export default function CruiseDetails() {
                   </div>
                 </div>
               </TabsContent>
-              
+
               {/* Reviews Tab */}
               <TabsContent value="reviews" className="mt-6">
                 <div className="flex flex-col md:flex-row gap-8">
                   <div className="md:w-1/3">
                     <h2 className="text-2xl font-heading font-bold mb-4">Guest Reviews</h2>
-                    
+
                     <div className="bg-blue-50 rounded-lg p-6 mb-6">
                       <div className="flex items-center mb-4">
                         <div className="text-4xl font-heading font-bold mr-4">{cruise.rating?.toFixed(1) || "4.6"}</div>
@@ -884,7 +884,7 @@ export default function CruiseDetails() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-3">
                         {ratingCategories.map((category, idx) => (
                           <div key={idx}>
@@ -903,12 +903,12 @@ export default function CruiseDetails() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="md:w-2/3">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xl font-heading font-bold">Traveler Experiences</h3>
                     </div>
-                    
+
                     <div className="space-y-6">
                       {reviews.map((review, idx) => (
                         <div key={idx} className="bg-white rounded-lg border p-5">
@@ -916,7 +916,7 @@ export default function CruiseDetails() {
                             <div className="font-heading font-bold">{review.name}</div>
                             <div className="text-sm text-neutral-500">{review.date}</div>
                           </div>
-                          
+
                           <div className="flex mb-3">
                             {[...Array(5)].map((_, i) => (
                               <StarIcon 
@@ -925,7 +925,7 @@ export default function CruiseDetails() {
                               />
                             ))}
                           </div>
-                          
+
                           <p className="text-neutral-600">{review.comment}</p>
                         </div>
                       ))}
@@ -935,14 +935,14 @@ export default function CruiseDetails() {
               </TabsContent>
             </Tabs>
           </div>
-          
+
           {/* Booking sidebar */}
           <div>
             <div className="sticky top-24">
               <Card className="shadow-md">
                 <CardContent className="p-6">
                   <h2 className="text-xl font-heading font-bold mb-4">Book This Cruise</h2>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-2">Departure Date</label>
@@ -971,7 +971,7 @@ export default function CruiseDetails() {
                         </PopoverContent>
                       </Popover>
                     </div>
-                    
+
                     {startDate && (
                       <div>
                         <label className="block text-sm font-medium mb-2">Return Date</label>
@@ -983,7 +983,7 @@ export default function CruiseDetails() {
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-2">Cabin Type</label>
                       <Select 
@@ -1002,7 +1002,7 @@ export default function CruiseDetails() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div>
                       <label className="block text-sm font-medium mb-2">Passengers</label>
                       <Select value={guests} onValueChange={setGuests}>
@@ -1018,7 +1018,7 @@ export default function CruiseDetails() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     {selectedCabinType && (
                       <div className="bg-blue-50 p-4 rounded-lg space-y-2">
                         <div className="flex justify-between">
@@ -1047,7 +1047,7 @@ export default function CruiseDetails() {
                         </div>
                       </div>
                     )}
-                    
+
                     <Button 
                       className="w-full text-black" 
                       size="lg"
@@ -1056,11 +1056,11 @@ export default function CruiseDetails() {
                     >
                       Book Now
                     </Button>
-                    
+
                     <p className="text-xs text-neutral-500 text-center">
                       No payment required today - pay later available
                     </p>
-                    
+
                     <div className="flex items-center justify-center text-sm text-neutral-500 mt-2">
                       <BadgePercent className="w-4 h-4 mr-1" />
                       <span>Special group rates available</span>
@@ -1071,11 +1071,11 @@ export default function CruiseDetails() {
             </div>
           </div>
         </div>
-        
+
         {/* Related Cruises */}
         <div className="mt-12">
           <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {[...Array(3)].map((_, idx) => (
               <Card key={idx} className="overflow-hidden">
