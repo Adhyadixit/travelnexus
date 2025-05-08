@@ -1,0 +1,111 @@
+✅ Prompt for Creating a Hotel Detail Page:
+Goal: Design a detailed hotel page for a travel booking website that showcases all essential hotel information and allows users to view, compare, and book rooms. The design and layout should be inspired by Booking.com and similar platforms.
+
+🔹 Page Structure:
+1. Header Section
+
+Hotel name
+
+Star rating (1-5 stars)
+
+Address with location pin and a “View on map” link
+
+User rating (average out of 10) + number of reviews
+
+Breadcrumbs (e.g., Home > Hotels > Country > Hotel Name)
+
+2. Image Gallery (Hero section)
+
+5–8 high-quality images
+
+Include interior (room, bathroom), exterior, amenities, nearby attractions
+
+Lightbox functionality for fullscreen view
+
+Option to scroll or click through images
+
+3. Quick Info Bar
+
+Price range (e.g., from $120/night)
+
+“Book Now” button
+
+Save/favorite option
+
+Free cancellation badge (if applicable)
+
+4. Room Types & Booking Options
+
+List of available rooms (e.g., Deluxe Room, Suite, Family Room)
+
+Room name
+
+Price per night
+
+Amenities per room (Wi-Fi, A/C, TV, breakfast, etc.)
+
+Occupancy (number of guests)
+
+Cancellation policy
+
+“Reserve” or “Book” button for each room
+
+5. Detailed Hotel Description
+
+About the property
+
+Nearby landmarks
+
+Check-in / check-out times
+
+Hotel policies
+
+Languages spoken by staff
+
+6. Amenities Section
+
+Categorized: General, Room Amenities, Dining, Activities, Internet & Parking
+
+Icons with labels for each amenity (e.g., 🏊 Pool, 🚗 Free Parking)
+
+7. Guest Reviews
+
+Average rating breakdown (cleanliness, location, staff, etc.)
+
+Display 3-5 recent user reviews with filter option (e.g., most recent, highest rating)
+
+8. Map Section
+
+Interactive map embedded (Google Maps or equivalent)
+
+Highlight nearby places of interest
+
+9. FAQ Section
+
+Frequently asked questions and answers
+
+10. Booking Form (Sticky Sidebar or Footer CTA)
+
+Select dates
+
+Number of guests
+
+Select room
+
+Proceed to checkout button
+
+11. Related Hotels Carousel (Optional)
+
+“You may also like” hotels in the same city
+
+✨ Design & Feel:
+Clean, spacious layout
+
+Clear call-to-action buttons (highlighted in a contrasting color)
+
+Icons for amenities and room features
+
+Use a grid or card-based layout for rooms and images
+
+Responsive: should look good on desktop and mobile
+
