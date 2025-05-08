@@ -129,9 +129,9 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
       ...data,
       destinationId: parseInt(data.destinationId),
       // Convert form text fields to proper JSON strings for DB storage
-      amenities: stringToArray(data.amenitiesList || ""),
-      languagesSpoken: stringToArray(data.languagesList || ""),
-      nearbyAttractions: stringToArray(data.attractionsList || ""),
+      amenities: JSON.stringify(stringToArray(data.amenitiesList || "")),
+      languagesSpoken: JSON.stringify(stringToArray(data.languagesList || "")),
+      nearbyAttractions: JSON.stringify(stringToArray(data.attractionsList || "")),
       policies: data.policiesList,
       roomTypes: data.roomTypesList,
       imageGallery: JSON.stringify(data.imageGalleryUrls || []),
@@ -145,6 +145,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
     delete formattedData.roomTypesList;
     delete formattedData.imageGalleryUrls;
     
+    console.log("Submitting hotel data:", formattedData);
     onSubmit(formattedData);
   };
 

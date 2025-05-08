@@ -410,29 +410,39 @@ router.post("/api/direct/hotels", async (req, res) => {
 router.patch("/api/direct/hotels/:id", async (req, res) => {
   try {
     console.log(`Direct database access to update hotel with ID: ${req.params.id}`);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
     const hotelId = parseInt(req.params.id);
     
     if (isNaN(hotelId)) {
       return res.status(400).json({ error: "Invalid hotel ID" });
     }
     
+    // Make sure all fields are properly formatted for database
+    // Convert string arrays back to JSON strings if needed
     const hotelData = {
       ...req.body,
       updatedAt: new Date()
     };
     
-    const updatedHotel = await db
-      .update(hotels)
-      .set(hotelData)
-      .where(eq(hotels.id, hotelId))
-      .returning();
-      
-    if (updatedHotel.length === 0) {
-      return res.status(404).json({ error: "Hotel not found" });
-    }
+    console.log('Formatted hotel data:', JSON.stringify(hotelData, null, 2));
     
-    console.log(`Successfully updated hotel with ID: ${hotelId}`);
-    res.json(updatedHotel[0]);
+    try {
+      const updatedHotel = await db
+        .update(hotels)
+        .set(hotelData)
+        .where(eq(hotels.id, hotelId))
+        .returning();
+        
+      if (updatedHotel.length === 0) {
+        return res.status(404).json({ error: "Hotel not found" });
+      }
+      
+      console.log(`Successfully updated hotel with ID: ${hotelId}`);
+      res.json(updatedHotel[0]);
+    } catch (dbError) {
+      console.error("Database error in hotel update:", dbError);
+      res.status(500).json({ error: "Database error: " + dbError.message });
+    }
   } catch (error) {
     console.error("Error in direct update hotel route:", error);
     res.status(500).json({ error: "Failed to update hotel" });
