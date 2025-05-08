@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { type HotelRoomType, type HotelRoomImage } from "@shared/schema";
 
 interface RoomImagesManagerProps {
   hotelId: number;
@@ -44,7 +45,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     data: roomTypes,
     isLoading: roomTypesLoading,
     error: roomTypesError,
-  } = useQuery({
+  } = useQuery<HotelRoomType[]>({
     queryKey: [`/api/hotel-room-types/${hotelId}`],
     enabled: !!hotelId,
   });
@@ -54,7 +55,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     data: roomImages,
     isLoading: roomImagesLoading,
     error: roomImagesError,
-  } = useQuery({
+  } = useQuery<HotelRoomImage[]>({
     queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`],
     enabled: !!selectedRoomType,
   });
@@ -65,6 +66,9 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       setSelectedRoomType(roomTypes[0].id);
     }
   }, [roomTypes, selectedRoomType]);
+  
+  // Safe access to roomTypes array with fallback to empty array for TypeScript
+  const safeRoomTypes = roomTypes || [];
 
   // Create a new room type
   const createRoomTypeMutation = useMutation({
@@ -195,11 +199,14 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     },
   });
 
+  // Safe access to roomImages array with fallback to empty array for TypeScript
+  const safeRoomImages = roomImages || [];
+  
   // Handle setting an image as featured
   const handleSetFeatured = (imageId: number, isFeatured: boolean) => {
     // If setting as featured, first clear all other featured images
-    if (isFeatured && roomImages) {
-      roomImages.forEach(image => {
+    if (isFeatured) {
+      safeRoomImages.forEach(image => {
         if (image.id !== imageId && image.featured) {
           updateImageMutation.mutate({ 
             imageId: image.id, 
@@ -210,7 +217,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     }
     
     // Update this image
-    const image = roomImages?.find(img => img.id === imageId);
+    const image = safeRoomImages.find(img => img.id === imageId);
     if (image) {
       updateImageMutation.mutate({ 
         imageId, 
@@ -374,7 +381,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       )}
 
       {/* Room type selector */}
-      {!isAddingRoomType && roomTypes && roomTypes.length > 0 ? (
+      {!isAddingRoomType && safeRoomTypes.length > 0 ? (
         <div className="space-y-6">
           <div className="pb-4 border-b">
             <Select 
@@ -385,7 +392,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                 <SelectValue placeholder="Select room type" />
               </SelectTrigger>
               <SelectContent>
-                {roomTypes.map((roomType) => (
+                {safeRoomTypes.map((roomType) => (
                   <SelectItem key={roomType.id} value={roomType.id.toString()}>
                     {roomType.name} - ${roomType.price.toFixed(2)} per night
                   </SelectItem>
@@ -399,23 +406,26 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
             <>
               <div className="space-y-6">
                 {/* Room type details */}
-                {roomTypes && (
+                {safeRoomTypes.length > 0 && (
                   <div className="flex justify-between items-start">
                     <div>
-                      {roomTypes.find(rt => rt.id === selectedRoomType) && (
-                        <>
-                          <h3 className="text-lg font-medium">
-                            {roomTypes.find(rt => rt.id === selectedRoomType)?.name}
-                          </h3>
-                          <p className="text-sm text-neutral-500">
-                            ${roomTypes.find(rt => rt.id === selectedRoomType)?.price.toFixed(2)} per night · 
-                            Fits up to {roomTypes.find(rt => rt.id === selectedRoomType)?.capacity} guests
-                          </p>
-                          <p className="mt-2 text-sm">
-                            {roomTypes.find(rt => rt.id === selectedRoomType)?.description}
-                          </p>
-                        </>
-                      )}
+                      {(() => {
+                        const selectedRoom = safeRoomTypes.find(rt => rt.id === selectedRoomType);
+                        return selectedRoom && (
+                          <>
+                            <h3 className="text-lg font-medium">
+                              {selectedRoom.name}
+                            </h3>
+                            <p className="text-sm text-neutral-500">
+                              ${selectedRoom.price.toFixed(2)} per night · 
+                              Fits up to {selectedRoom.capacity} guests
+                            </p>
+                            <p className="mt-2 text-sm">
+                              {selectedRoom.description}
+                            </p>
+                          </>
+                        );
+                      })()}
                     </div>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -562,8 +572,8 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                         <Loader2 className="w-6 h-6 text-primary animate-spin" />
                         <span className="ml-2">Loading images...</span>
                       </div>
-                    ) : roomImages && roomImages.length > 0 ? (
-                      roomImages.map((image) => (
+                    ) : safeRoomImages.length > 0 ? (
+                      safeRoomImages.map((image) => (
                         <Card key={image.id} className="overflow-hidden">
                           <div className="relative">
                             <img 
