@@ -1,0 +1,73 @@
+Thanks for sharing the debug output—you're facing **two key issues** in your React app:
+
+---
+
+### 🛠 1. **React DOM Nesting Warning**
+
+```
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+```
+
+#### 🔍 Problem:
+
+You're rendering an `<a>` tag (a link) **inside another `<a>` tag**, which is invalid in HTML.
+
+#### ✅ Fix:
+
+Review your JSX and ensure that you don't nest `<a>` tags. Instead, consider replacing the inner one with a `<span>`, `<button>`, or a styled `<div>`. Example:
+
+```tsx
+// ❌ Bad
+<a href="/outer">
+  <a href="/inner">Inner Link</a>
+</a>
+
+// ✅ Good
+<a href="/outer">
+  <span onClick={handleClick}>Inner Action</span>
+</a>
+```
+
+---
+
+### 🛠 2. **500 Internal Server Error on API Call**
+
+```
+GET /api/destinations/admin 500 (Internal Server Error)
+```
+
+#### 🔍 Problem:
+
+Your frontend is calling the backend API `/api/destinations/admin`, and the backend is responding with a 500 error—meaning something crashed on the server side.
+
+#### ✅ Fix:
+
+You’ll need to inspect your backend code. Here's what to check:
+
+* **Is the database connected properly?**
+* **Are you querying the correct table/collection?**
+* **Add `console.log()` or logging** around that endpoint to inspect errors.
+* In a Node/Express backend, your endpoint might look like this:
+
+```ts
+app.get('/api/destinations/admin', async (req, res) => {
+  try {
+    const destinations = await db.query('SELECT * FROM destinations WHERE admin = true');
+    res.json(destinations);
+  } catch (error) {
+    console.error('API Error:', error); // This will help in debugging
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+```
+
+---
+
+### ✅ Suggested Steps:
+
+* Fix the nesting issue in your React JSX.
+* Check backend logs (e.g., Replit console) for the full stack trace of the 500 error.
+* Verify DB credentials/config.
+* Use tools like Postman to hit `/api/destinations/admin` directly and confirm the issue.
+
+Want help reviewing that backend route code? Feel free to paste it here.
