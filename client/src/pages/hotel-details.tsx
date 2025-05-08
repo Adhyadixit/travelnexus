@@ -172,7 +172,7 @@ export default function HotelDetails() {
   const Layout = isMobile ? MobileLayout : DesktopLayout;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-  
+
   // State for booking
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
@@ -190,7 +190,7 @@ export default function HotelDetails() {
     message: ''
   });
   const { toast } = useToast();
-  
+
   // Fetch hotel details
   const { 
     data: hotel,
@@ -207,7 +207,7 @@ export default function HotelDetails() {
     queryKey: [`/api/destinations/${hotel?.destinationId}`],
     enabled: !!hotel?.destinationId,
   });
-  
+
   // Fetch similar hotels in the same destination
   const { 
     data: similarHotels, 
@@ -217,37 +217,37 @@ export default function HotelDetails() {
     select: (data) => data.filter(h => h.destinationId === hotel?.destinationId && h.id !== parseInt(id as string)),
     enabled: !!hotel?.destinationId,
   });
-  
+
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
       setLocation(`/auth?redirect=/hotels/${id}`);
       return;
     }
-    
+
     if (!startDate || !endDate || !selectedRoom) {
       return;
     }
-    
+
     setLocation(`/checkout/hotel/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&roomType=${selectedRoom}`);
   };
-  
+
   // Parse amenities
   const amenitiesList = hotel ? parseAmenities(hotel.amenities) : [];
-  
+
   // Calculate total nights and price
   const calculateNights = () => {
     if (!startDate || !endDate) return 0;
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
-  
+
   const calculateTotalPrice = () => {
     const nights = calculateNights();
     const roomPrice = selectedRoom ? ROOM_TYPES.find(r => r.id === selectedRoom)?.price || 0 : 0;
     return nights * roomPrice;
   };
-  
+
   const nights = calculateNights();
   const totalPrice = calculateTotalPrice();
 
@@ -280,7 +280,7 @@ export default function HotelDetails() {
             <Skeleton className="h-5 w-5" />
             <Skeleton className="h-5 w-32" />
           </div>
-          
+
           {/* Header section skeleton */}
           <div className="mb-6">
             <Skeleton className="h-10 w-64 mb-2" />
@@ -296,7 +296,7 @@ export default function HotelDetails() {
               <Skeleton className="h-5 w-48" />
             </div>
           </div>
-          
+
           {/* Gallery skeleton */}
           <div className="grid grid-cols-12 gap-2 mb-6">
             <Skeleton className="col-span-8 h-96 rounded-xl" />
@@ -305,7 +305,7 @@ export default function HotelDetails() {
               <Skeleton className="h-full rounded-xl" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Main content skeleton */}
             <div className="md:col-span-2 space-y-6">
@@ -317,7 +317,7 @@ export default function HotelDetails() {
                 <Skeleton className="h-10 w-32" />
                 <Skeleton className="h-10 w-10 rounded-full" />
               </div>
-              
+
               <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
                 {[1, 2, 3].map((i) => (
@@ -325,7 +325,7 @@ export default function HotelDetails() {
                 ))}
               </div>
             </div>
-            
+
             {/* Booking sidebar skeleton */}
             <div>
               <Skeleton className="h-[500px] w-full rounded-xl" />
@@ -390,7 +390,7 @@ export default function HotelDetails() {
         children: 'Children of all ages welcome',
         extraBeds: 'Extra beds available for $50 per night'
       };
-  
+
   // Handle chat inquiry
   const handleChatInquiry = async () => {
     // Validate form
@@ -592,7 +592,7 @@ export default function HotelDetails() {
           <ChevronRight className="w-4 h-4 mx-2" />
           <span className="font-medium text-neutral-900">{hotel.name}</span>
         </div>
-        
+
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{hotel.name}</h1>
@@ -608,16 +608,18 @@ export default function HotelDetails() {
                 <span className="text-xs ml-1">/10</span>
               </div>
             )}
-            <div className="text-neutral-600">
-              {hotel.reviewCount ? `${hotel.reviewCount} reviews` : "No reviews yet"}
-            </div>
+            {hotel.reviewCount > 0 && (
+                <div className="text-neutral-600">
+                  {hotel.reviewCount} reviews
+                </div>
+              )}
           </div>
           <div className="flex items-center text-neutral-600">
             <MapPinIcon className="w-5 h-5 mr-1" />
             <span>{hotel.address}</span>
           </div>
         </div>
-        
+
         {/* Image Gallery Section */}
         <div className="grid grid-cols-12 gap-2 mb-6 relative">
           {/* Main large image */}
@@ -634,7 +636,7 @@ export default function HotelDetails() {
             >
               <Maximize className="w-5 h-5" />
             </button>
-            
+
             {/* Image navigation arrows */}
             <button
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full text-neutral-700 hover:text-primary transition-colors"
@@ -649,7 +651,7 @@ export default function HotelDetails() {
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Smaller thumbnail images - shown only on desktop */}
           <div className="hidden md:grid md:col-span-4 grid-rows-2 gap-2">
             {galleryImages.slice(1, 3).map((img, idx) => (
@@ -666,13 +668,13 @@ export default function HotelDetails() {
               </div>
             ))}
           </div>
-          
+
           {/* Image counter indicator */}
           <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
             {activeImageIndex + 1} / {galleryImages.length}
           </div>
         </div>
-        
+
         {/* Quick Info Bar */}
         <div className="flex flex-wrap justify-between items-center p-4 bg-neutral-50 rounded-lg mb-8">
           <div>
@@ -701,7 +703,7 @@ export default function HotelDetails() {
           >
             <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
           </button>
-          
+
           {/* Free cancellation badge if applicable */}
           {hotel.freeCancellation && (
             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 ml-4">
@@ -709,7 +711,7 @@ export default function HotelDetails() {
             </Badge>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2">
@@ -718,7 +720,7 @@ export default function HotelDetails() {
               <h2 className="text-2xl font-heading font-bold mb-4">About This Property</h2>
               <div className="prose max-w-none text-neutral-700">
                 <p className="whitespace-pre-line">{hotel.description}</p>
-                
+
                 {/* Check-in/Check-out times */}
                 <div className="flex flex-col md:flex-row gap-6 my-6">
                   <div className="flex items-start">
@@ -736,7 +738,7 @@ export default function HotelDetails() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Hotel Policies */}
                 <div className="mb-6">
                   <h3 className="text-xl font-heading font-bold mb-3">Hotel Policies</h3>
@@ -749,7 +751,7 @@ export default function HotelDetails() {
                     ))}
                   </ul>
                 </div>
-                
+
                 {/* Languages Spoken */}
                 <div>
                   <h3 className="text-xl font-heading font-bold mb-3">Languages Spoken</h3>
@@ -764,7 +766,7 @@ export default function HotelDetails() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Nearby Attractions */}
                 {nearbyAttractions.length > 0 && (
                   <div>
@@ -781,11 +783,11 @@ export default function HotelDetails() {
                 )}
               </div>
             </section>
-            
+
             {/* Room Types & Booking Options Section */}
             <section id="booking-section" className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
-              
+
               <div className="space-y-6">
                 {roomTypes.map((room: any) => (
                   <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
@@ -805,14 +807,14 @@ export default function HotelDetails() {
                             <div className="text-sm text-neutral-500">per night</div>
                           </div>
                         </div>
-                        
+
                         <p className="text-neutral-600 my-2">{room.description}</p>
-                        
+
                         <div className="flex items-center text-neutral-600 mb-2">
                           <User className="w-4 h-4 mr-1" />
                           <span>Up to {room.capacity} guests</span>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-2 my-3">
                           {room.amenities.map((amenity: string, index: number) => (
                             <div key={index} className="flex items-center text-sm">
@@ -821,14 +823,14 @@ export default function HotelDetails() {
                             </div>
                           ))}
                         </div>
-                        
+
                         {room.cancellation && (
                           <div className="text-sm text-green-600 flex items-center mb-4">
                             <Check className="w-4 h-4 mr-1" />
                             <span>{room.cancellation}</span>
                           </div>
                         )}
-                        
+
                         <div className="mt-4 flex justify-end">
                           <Button 
                             variant={selectedRoom === room.id ? "default" : "outline"}
@@ -843,11 +845,11 @@ export default function HotelDetails() {
                 ))}
               </div>
             </section>
-            
+
             {/* Amenities Section */}
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Amenities</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-y-8">
                 <div>
                   <h3 className="text-lg font-bold mb-3">General</h3>
@@ -860,7 +862,7 @@ export default function HotelDetails() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
                   <ul className="space-y-2">
@@ -872,7 +874,7 @@ export default function HotelDetails() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
                   <ul className="space-y-2">
@@ -886,18 +888,18 @@ export default function HotelDetails() {
                 </div>
               </div>
             </section>
-            
+
             {/* Guest Reviews Section */}
             <section className="mb-10">
               <ReviewsSection itemType="hotel" itemId={parseInt(id)} />
             </section>
-            
 
-            
+
+
             {/* FAQ Section */}
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Frequently Asked Questions</h2>
-              
+
               <div className="space-y-4">
                 {HOTEL_FAQS.map((faq, index) => (
                   <Card key={index} className="p-4">
@@ -912,11 +914,11 @@ export default function HotelDetails() {
                 ))}
               </div>
             </section>
-            
+
             {/* Similar Hotels in the Same Destination */}
             <section>
               <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
-              
+
               {hotel.destinationId && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {isLoadingSimilarHotels ? (
@@ -975,7 +977,7 @@ export default function HotelDetails() {
                   )}
                 </div>
               )}
-              
+
               {similarHotels?.length === 0 && (
                 <div className="text-center p-8 bg-neutral-50 rounded-lg">
                   <p className="text-neutral-600">No similar hotels found in this destination.</p>
@@ -983,13 +985,13 @@ export default function HotelDetails() {
               )}
             </section>
           </div>
-          
+
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Check-in Date</label>
@@ -1019,7 +1021,7 @@ export default function HotelDetails() {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Check-out Date</label>
                     <Popover>
@@ -1050,7 +1052,7 @@ export default function HotelDetails() {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Guests</label>
                     <Select value={guests} onValueChange={setGuests}>
@@ -1066,7 +1068,7 @@ export default function HotelDetails() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Room Type</label>
                     <Select 
@@ -1085,7 +1087,7 @@ export default function HotelDetails() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {nights > 0 && selectedRoom && (
                     <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
                       <div className="flex justify-between">
@@ -1103,7 +1105,7 @@ export default function HotelDetails() {
                       </div>
                     </div>
                   )}
-                  
+
                   <Button 
                     className="w-full mt-4" 
                     size="lg"
@@ -1112,7 +1114,7 @@ export default function HotelDetails() {
                   >
                     Book Now
                   </Button>
-                  
+
                   {hotel.freeCancellation && (
                     <div className="text-sm text-green-600 flex items-center justify-center mt-2">
                       <Check className="w-4 h-4 mr-1" />
