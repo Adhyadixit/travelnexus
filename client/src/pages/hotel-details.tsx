@@ -208,6 +208,16 @@ export default function HotelDetails() {
     enabled: !!hotel?.destinationId,
   });
   
+  // Fetch similar hotels in the same destination
+  const { 
+    data: similarHotels, 
+    isLoading: isLoadingSimilarHotels 
+  } = useQuery<Hotel[]>({
+    queryKey: [`/api/hotels`],
+    select: (data) => data.filter(h => h.destinationId === hotel?.destinationId && h.id !== parseInt(id as string)),
+    enabled: !!hotel?.destinationId,
+  });
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
@@ -949,7 +959,7 @@ export default function HotelDetails() {
                             ))}
                           </div>
                           <div className="flex justify-between items-center">
-                            <div className="text-neutral-600">{hotel.destination?.name}</div>
+                            <div className="text-neutral-600">{destination?.name}</div>
                             <div className="font-bold">{formatCurrency(similarHotel.price)}</div>
                           </div>
                         </CardContent>
