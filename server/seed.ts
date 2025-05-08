@@ -1,6 +1,7 @@
 import { storage } from "./storage";
 import { hashPassword } from "./auth";
 import { roleEnum } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 // Function to create admin user
 async function createAdminUser() {
@@ -557,6 +558,166 @@ async function createEvents() {
   }
 }
 
+// Function to create reviews
+async function createReviews() {
+  try {
+    // Check if we have the admin user
+    const admin = await storage.getUserByUsername("admin");
+    if (!admin) {
+      console.log("Admin user not found. Create admin first.");
+      return;
+    }
+    
+    // Get hotels to add reviews to
+    const hotels = await storage.getAllHotels();
+    if (hotels.length === 0) {
+      console.log("No hotels found. Create hotels first.");
+      return;
+    }
+    
+    // Check if reviews already exist
+    const reviewsData = await storage.db.select().from(storage.reviews).limit(1);
+    if (reviewsData.length > 0) {
+      console.log("Reviews already exist");
+      return;
+    }
+    
+    // Create reviews for hotels
+    const hotelReviews = [
+      // Reviews for first hotel (Burj Al Arab)
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[0].id,
+        rating: 5,
+        title: "Absolutely Amazing Experience",
+        comment: "The Burj Al Arab exceeds all expectations. The service is impeccable, the rooms are stunning with breathtaking views of Dubai, and the dining options are world-class. Worth every penny for a once-in-a-lifetime experience.",
+        dateOfStay: new Date(2024, 2, 15),
+        helpfulVotes: 12,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 2, 20),
+        updatedAt: new Date(2024, 2, 20)
+      },
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[0].id,
+        rating: 5,
+        title: "Luxury Beyond Compare",
+        comment: "From the moment you arrive via their private chauffeur service, the experience is unmatched. The duplex suite was stunning, with floor-to-ceiling windows overlooking the Arabian Gulf. The private butler service is exceptional, and the restaurants are phenomenal. The gold-plated everything might be a bit over the top, but that's part of the charm!",
+        dateOfStay: new Date(2024, 1, 5),
+        helpfulVotes: 8,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 1, 10),
+        updatedAt: new Date(2024, 1, 10)
+      },
+      
+      // Reviews for second hotel (Four Seasons Resort Bali)
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[1].id,
+        rating: 5,
+        title: "Paradise Found in Bali",
+        comment: "The Four Seasons Bali at Sayan is truly a slice of paradise. Our villa had the most stunning views of the jungle and river below. The infinity pool is Instagram-perfect. The staff remembered our names and preferences from day one. The spa treatments using local ingredients were fantastic. We especially loved the traditional Balinese dinner under the stars.",
+        dateOfStay: new Date(2024, 3, 10),
+        helpfulVotes: 15,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 3, 15),
+        updatedAt: new Date(2024, 3, 15)
+      },
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[1].id,
+        rating: 4,
+        title: "Serene Luxury in Nature",
+        comment: "The resort perfectly blends luxury with Bali's natural beauty. The villa was spacious with a private plunge pool. The sounds of the river and jungle create the perfect backdrop. The only minor issue was occasional insects, but that's expected in such a natural setting. The cooking class and rice field trek were highlights of our stay.",
+        dateOfStay: new Date(2024, 2, 25),
+        helpfulVotes: 7,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 3, 2),
+        updatedAt: new Date(2024, 3, 2)
+      },
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[1].id,
+        rating: 5,
+        title: "Honeymoon Heaven",
+        comment: "We chose Four Seasons Bali for our honeymoon and couldn't have picked a better place. The private villa with infinity pool was romantic and secluded. The staff arranged a special flower bath and candlelit dinner for us. The morning yoga sessions overlooking the jungle were magical. Worth every penny for a special occasion!",
+        dateOfStay: new Date(2024, 1, 14),
+        helpfulVotes: 10,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 1, 20),
+        updatedAt: new Date(2024, 1, 20)
+      },
+      
+      // Add reviews for other hotels
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[2].id,
+        rating: 5,
+        title: "Perfect Romantic Getaway",
+        comment: "The Shangri-La Paris exceeded all our expectations. The Eiffel Tower view from our balcony was unforgettable. The service was impeccable and the dining experience at L'Abeille was one of the best meals we've ever had. The location is perfect for exploring Paris.",
+        dateOfStay: new Date(2024, 2, 1),
+        helpfulVotes: 9,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 2, 5),
+        updatedAt: new Date(2024, 2, 5)
+      },
+      {
+        userId: admin.id,
+        itemType: "hotel",
+        itemId: hotels[3].id,
+        rating: 5,
+        title: "Japanese Hospitality at its Finest",
+        comment: "The Aman Tokyo perfectly balances modern luxury with traditional Japanese aesthetics. The soaking tub with city views was incredible. The attention to detail in everything from room design to the tea ceremony was impressive. Staff anticipate your needs before you even realize them.",
+        dateOfStay: new Date(2024, 3, 5),
+        helpfulVotes: 11,
+        verified: true,
+        status: "approved",
+        createdAt: new Date(2024, 3, 10),
+        updatedAt: new Date(2024, 3, 10)
+      }
+    ];
+    
+    // Insert reviews into database
+    for (const review of hotelReviews) {
+      await storage.db.insert(storage.reviews).values(review);
+    }
+    
+    // Update the review counts and ratings for hotels
+    for (const hotel of hotels) {
+      const hotelReviews = hotelReviews.filter(r => r.itemId === hotel.id);
+      if (hotelReviews.length > 0) {
+        const reviewCount = hotelReviews.length;
+        const totalRating = hotelReviews.reduce((sum, review) => sum + review.rating, 0);
+        const avgRating = totalRating / reviewCount;
+        
+        await storage.db
+          .update(storage.hotels)
+          .set({ 
+            reviewCount, 
+            userRating: avgRating
+          })
+          .where(eq(storage.hotels.id, hotel.id));
+      }
+    }
+    
+    console.log(`${hotelReviews.length} reviews created`);
+  } catch (error) {
+    console.error("Error creating reviews:", error);
+  }
+}
+
 // Main seed function
 export async function seed() {
   console.log("Starting database seeding...");
@@ -568,6 +729,7 @@ export async function seed() {
   await createDrivers();
   await createCruises();
   await createEvents();
+  await createReviews();
   
   console.log("Database seeding completed successfully!");
 }
