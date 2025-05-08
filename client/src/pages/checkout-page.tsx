@@ -124,21 +124,32 @@ export default function CheckoutPage() {
     return prop in obj;
   };
 
+  // Map itemType to the format expected by BookingItem
+  const getBookingItemType = (type: string | null): "package" | "hotel" | "driver" | "cruise" | "event" => {
+    switch (type) {
+      case "package": return "package";
+      case "hotel": return "hotel";
+      case "cab": return "driver"; // Map cab to driver
+      case "cruise": return "cruise";
+      case "event": return "event";
+      default: return "package"; // Default to package
+    }
+  };
+
   // Prepare item data for checkout
   const checkoutItem = {
     id: item.id,
     name: hasProperty(item, "name") ? item.name : 
           hasProperty(item, "driverName") ? item.driverName : "Unknown",
-    price: hasProperty(item, "pricePerNight") ? item.pricePerNight : 
-           hasProperty(item, "dailyRate") ? item.dailyRate : 
-           hasProperty(item, "price") ? item.price : 0,
+    price: hasProperty(item, "pricePerNight") ? Number(item.pricePerNight) : 
+           hasProperty(item, "dailyRate") ? Number(item.dailyRate) : 
+           hasProperty(item, "price") ? Number(item.price) : 0,
     image: hasProperty(item, "imageUrl") ? item.imageUrl : 
            hasProperty(item, "vehicleImageUrl") ? item.vehicleImageUrl : "",
-    type: itemType || "package",  // Provide a safe default
-    destination: destination?.name,
+    type: getBookingItemType(itemType),
     duration: hasProperty(item, "duration") ? item.duration : undefined,
     rating: hasProperty(item, "rating") ? item.rating : undefined,
-  } as const;
+  };
 
   return (
     <PageContainer>
