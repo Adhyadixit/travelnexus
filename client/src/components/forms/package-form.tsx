@@ -26,6 +26,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus, X } from "lucide-react";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 // Extend the insert schema for form validation
 const packageFormSchema = insertPackageSchema.extend({
@@ -359,9 +360,13 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image URL</FormLabel>
+                      <FormLabel>Main Image</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter primary image URL" {...field} />
+                        <ImageUpload 
+                          value={field.value}
+                          onChange={field.onChange}
+                          folder="packages"
+                        />
                       </FormControl>
                       <FormDescription>
                         This is the main image displayed in listings and at the top of the details page
@@ -397,17 +402,23 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       name={`imageGalleryUrls.${index}`}
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
                             <FormControl>
-                              <Input placeholder={`Gallery image ${index + 1}`} {...field} />
+                              <ImageUpload 
+                                value={field.value}
+                                onChange={field.onChange}
+                                folder="packages/gallery"
+                              />
                             </FormControl>
                             <Button 
                               type="button" 
-                              variant="ghost" 
-                              size="icon"
+                              variant="outline" 
+                              size="sm"
                               onClick={() => removeImageFromGallery(index)}
+                              className="self-end"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-4 w-4 mr-2" />
+                              Remove Image
                             </Button>
                           </div>
                         </FormItem>
