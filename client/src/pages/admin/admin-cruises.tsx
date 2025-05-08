@@ -61,7 +61,26 @@ export default function AdminCruises() {
   
   // Edit form
   const editForm = useForm<CruiseFormValues & { id: number }>({
-    resolver: zodResolver(cruiseFormSchema.extend({ id: z.number() })),
+    resolver: zodResolver(cruiseFormSchema.extend({ 
+      id: z.number(),
+      company: z.string().min(1, "Cruise line company is required"),
+      shipName: z.string().min(1, "Ship name is required"),
+      departure: z.string().min(1, "Departure port is required"),
+      returnPort: z.string().optional(),
+      imageGallery: z.string().optional(),
+      boardingTime: z.string().optional(),
+      portsOfCall: z.string().optional(),
+      daysAtSea: z.coerce.number().min(0).optional(),
+      cabinTypes: z.string().optional(),
+      amenities: z.string().optional(),
+      dining: z.string().optional(),
+      entertainment: z.string().optional(),
+      shipDetails: z.string().optional(),
+      includedServices: z.string().optional(),
+      excludedServices: z.string().optional(),
+      familyFriendly: z.boolean().optional().default(true),
+      adultOnly: z.boolean().optional().default(false),
+    })),
     defaultValues: {
       id: 0,
       name: "",
@@ -73,6 +92,25 @@ export default function AdminCruises() {
       itinerary: "",
       available: true,
       featured: false,
+      
+      // Additional fields
+      company: "",
+      shipName: "",
+      departure: "",
+      returnPort: "",
+      imageGallery: "",
+      boardingTime: "",
+      portsOfCall: "",
+      daysAtSea: 0,
+      cabinTypes: "",
+      amenities: "",
+      dining: "",
+      entertainment: "",
+      shipDetails: "",
+      includedServices: "",
+      excludedServices: "",
+      familyFriendly: true,
+      adultOnly: false,
     },
   });
   
@@ -181,10 +219,28 @@ export default function AdminCruises() {
       duration: cruise.duration,
       company: cruise.company,
       departure: cruise.departure,
-      // For properties not in the DB schema, provide default values
-      capacity: 100, // Default capacity since it's not in DB
+      
+      // Additional properties from the schema
+      shipName: cruise.shipName || '',
+      returnPort: cruise.returnPort || '',
+      imageGallery: cruise.imageGallery || '',
+      boardingTime: cruise.boardingTime || '',
+      portsOfCall: cruise.portsOfCall || '',
+      daysAtSea: cruise.daysAtSea || 0,
+      cabinTypes: cruise.cabinTypes || '',
+      amenities: cruise.amenities || '',
+      dining: cruise.dining || '',
+      entertainment: cruise.entertainment || '',
+      shipDetails: cruise.shipDetails || '',
+      includedServices: cruise.includedServices || '',
+      excludedServices: cruise.excludedServices || '',
+      familyFriendly: cruise.familyFriendly || true,
+      adultOnly: cruise.adultOnly || false,
+      
+      // UI-specific values not in the DB
+      capacity: 100,
       itinerary: cruise.itinerary || '{}',
-      available: true, // Default value since it's not in DB
+      available: true,
       featured: cruise.featured || false,
     });
     setIsEditDialogOpen(true);
