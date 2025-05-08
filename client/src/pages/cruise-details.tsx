@@ -280,7 +280,7 @@ export default function CruiseDetails() {
             <div>
               <div className="flex flex-wrap gap-2 mb-3">
                 {cruise.featured && (
-                  <Badge className="bg-secondary text-white">Luxury Cruise</Badge>
+                  <Badge className="bg-secondary text-black">Luxury Cruise</Badge>
                 )}
                 <Badge className="bg-blue-600 text-white">
                   Limited Cabins Remaining
