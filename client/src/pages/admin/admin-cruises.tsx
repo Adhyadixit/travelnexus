@@ -23,6 +23,7 @@ const cruiseFormSchema = insertCruiseSchema.extend({
   price: z.coerce.number().min(1, "Price must be greater than 0"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 day"),
   // Not part of the actual database schema but needed for the form
+  imageGallery: z.string().optional().default("[]"),
   capacity: z.coerce.number().min(1, "Capacity must be at least 1"),
   available: z.boolean().optional().default(true),
 });
@@ -51,6 +52,7 @@ export default function AdminCruises() {
       name: "",
       description: "",
       imageUrl: "",
+      imageGallery: "[]",
       price: 0,
       duration: 1,
       capacity: 100,
@@ -335,6 +337,87 @@ export default function AdminCruises() {
                         </FormItem>
                       )}
                     />
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Image Gallery</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentValue = createForm.getValues("imageGallery");
+                            try {
+                              const currentGallery = currentValue ? JSON.parse(currentValue) : [];
+                              const newGallery = [...currentGallery, ""];
+                              createForm.setValue("imageGallery", JSON.stringify(newGallery));
+                            } catch (error) {
+                              // If JSON parsing fails, start a new array
+                              createForm.setValue("imageGallery", JSON.stringify([""]));
+                            }
+                          }}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Image
+                        </Button>
+                      </div>
+                      
+                      <FormField
+                        control={createForm.control}
+                        name="imageGallery"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="space-y-4">
+                                {(() => {
+                                  let galleryImages: string[] = [];
+                                  try {
+                                    galleryImages = field.value ? JSON.parse(field.value) : [];
+                                  } catch (error) {
+                                    // If parsing fails, use empty array
+                                  }
+                                  
+                                  return galleryImages.map((url, index) => (
+                                    <div key={index} className="relative border rounded-md p-4">
+                                      <div className="absolute top-2 right-2">
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="icon"
+                                          onClick={() => {
+                                            const newGallery = [...galleryImages];
+                                            newGallery.splice(index, 1);
+                                            field.onChange(JSON.stringify(newGallery));
+                                          }}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                      
+                                      <div className="mt-6">
+                                        <ImageUpload
+                                          value={url}
+                                          onChange={(newUrl) => {
+                                            const newGallery = [...galleryImages];
+                                            newGallery[index] = newUrl;
+                                            field.onChange(JSON.stringify(newGallery));
+                                          }}
+                                          folder="travelease/cruises/gallery"
+                                        />
+                                      </div>
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Add multiple images to showcase different aspects of the cruise
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
