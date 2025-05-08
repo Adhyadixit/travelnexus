@@ -182,14 +182,7 @@ export default function HotelDetails() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [showChatModal, setShowChatModal] = useState(false);
-  const [guestDetails, setGuestDetails] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    message: ''
-  });
+
   const { toast } = useToast();
 
   // Fetch hotel details
@@ -392,184 +385,12 @@ export default function HotelDetails() {
         extraBeds: 'Extra beds available for $50 per night'
       };
 
-  // Handle chat inquiry
-  const handleChatInquiry = async () => {
-    // Validate form
-    if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email || !guestDetails.phoneNumber || !guestDetails.message) {
-      toast({
-        title: "Missing information",
-        description: "Please fill in all fields to start a chat",
-        variant: "destructive"
-      });
-      return;
-    }
 
-    try {
-      // Step 1: Create or get guest user
-      const guestUserResponse = await fetch('/api/guest-users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          firstName: guestDetails.firstName,
-          lastName: guestDetails.lastName,
-          email: guestDetails.email,
-          phoneNumber: guestDetails.phoneNumber,
-        }),
-      });
-
-      if (!guestUserResponse.ok) {
-        throw new Error('Failed to create guest user');
-      }
-
-      const guestUser = await guestUserResponse.json();
-
-      // Step 2: Create conversation
-      const conversationResponse = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          guestUserId: guestUser.id,
-          itemType: 'hotel',
-          itemId: parseInt(id),
-          subject: `Inquiry about ${hotel?.name}`,
-        }),
-      });
-
-      if (!conversationResponse.ok) {
-        throw new Error('Failed to create conversation');
-      }
-
-      const conversation = await conversationResponse.json();
-
-      // Step 3: Send initial message
-      const messageResponse = await fetch(`/api/conversations/${conversation.id}/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: guestDetails.message,
-          messageType: 'text',
-        }),
-      });
-
-      if (!messageResponse.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      // Success
-      toast({
-        title: "Inquiry sent!",
-        description: "Our team will get back to you shortly.",
-      });
-
-      // Reset form and close modal
-      setGuestDetails({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        message: ''
-      });
-      setShowChatModal(false);
-    } catch (error) {
-      console.error('Chat inquiry error:', error);
-      toast({
-        title: "Failed to send inquiry",
-        description: "Please try again later or contact us directly.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setGuestDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
 
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
-        {/* Chat Dialog */}
-        <Dialog open={showChatModal} onOpenChange={setShowChatModal}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold">
-                <div className="flex items-center">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Live Chat Inquiry
-                </div>
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input 
-                    id="firstName" 
-                    name="firstName"
-                    value={guestDetails.firstName}
-                    onChange={handleInputChange}
-                    placeholder="John" 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input 
-                    id="lastName" 
-                    name="lastName"
-                    value={guestDetails.lastName}
-                    onChange={handleInputChange}
-                    placeholder="Doe" 
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  name="email"
-                  type="email"
-                  value={guestDetails.email}
-                  onChange={handleInputChange}
-                  placeholder="john.doe@example.com" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phoneNumber">Phone Number</Label>
-                <Input 
-                  id="phoneNumber" 
-                  name="phoneNumber"
-                  value={guestDetails.phoneNumber}
-                  onChange={handleInputChange}
-                  placeholder="+1 (123) 456-7890" 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">How can we help you?</Label>
-                <Textarea 
-                  id="message" 
-                  name="message"
-                  value={guestDetails.message}
-                  onChange={handleInputChange}
-                  placeholder="I'm interested in booking this hotel and have some questions..."
-                  rows={4}
-                />
-              </div>
-              <div className="mt-2 flex justify-end">
-                <Button onClick={handleChatInquiry}>Start Chat</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-neutral-600 mb-4">
           <Link href="/">
@@ -689,13 +510,11 @@ export default function HotelDetails() {
             >
               Book Now
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => setShowChatModal(true)}
-            >
-              Inquire Now
-            </Button>
+            <InquiryForm
+              productName={hotel.name}
+              defaultSubject={`Inquiry about ${hotel.name}`}
+              triggerButtonText="Inquire Now"
+            />
           </div>
           <button
             className={`p-2 rounded-full border ${isFavorite ? 'bg-red-50 border-red-200 text-red-500' : 'bg-white border-neutral-200 text-neutral-400'}`}
