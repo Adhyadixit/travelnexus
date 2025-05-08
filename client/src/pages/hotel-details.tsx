@@ -415,12 +415,6 @@ export default function HotelDetails() {
           <div className="flex items-center text-neutral-600">
             <MapPinIcon className="w-5 h-5 mr-1" />
             <span>{hotel.address}</span>
-            <a 
-              href="#map-section" 
-              className="ml-2 text-primary hover:underline"
-            >
-              View on map
-            </a>
           </div>
         </div>
         
@@ -686,43 +680,10 @@ export default function HotelDetails() {
             
             {/* Guest Reviews Section */}
             <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Guest Reviews</h2>
               <ReviewsSection itemType="hotel" itemId={parseInt(id)} />
             </section>
             
-            {/* Map Section */}
-            <section id="map-section" className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Location</h2>
-              
-              <div className="bg-neutral-100 rounded-lg overflow-hidden">
-                <div className="aspect-video rounded-lg overflow-hidden">
-                  {/* Map would go here in a real app */}
-                  <div className="w-full h-full flex flex-col items-center justify-center p-8 text-neutral-600">
-                    <MapIcon className="w-12 h-12 mb-4" />
-                    <div className="text-center">
-                      <h3 className="font-bold text-lg mb-2">Map View</h3>
-                      <p>Interactive map would be displayed here showing {hotel.name} and nearby attractions</p>
-                      <p className="mt-2 font-medium">{hotel.address}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Nearby Attractions */}
-              {nearbyAttractions.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {nearbyAttractions.map((attraction: {name: string, distance: string}, index: number) => (
-                    <div key={index} className="flex items-start">
-                      <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
-                      <div>
-                        <div className="font-medium">{attraction.name}</div>
-                        <div className="text-sm text-neutral-600">{attraction.distance}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+
             
             {/* FAQ Section */}
             <section className="mb-10">
