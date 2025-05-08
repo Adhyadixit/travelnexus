@@ -1049,7 +1049,7 @@ export default function CruiseDetails() {
                     )}
                     
                     <Button 
-                      className="w-full" 
+                      className="w-full text-black" 
                       size="lg"
                       onClick={handleBookNow}
                       disabled={!startDate || !selectedCabinType}
