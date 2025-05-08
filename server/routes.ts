@@ -1445,6 +1445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(adminEventsRoutes);
   app.use(adminHotelsRoutes);
   app.use(adminPackagesRoutes);
+  app.use(paymentDetailsRoutes);
   
   // Register direct database routes that bypass auth and storage
   app.use(directDatabaseRoutes);

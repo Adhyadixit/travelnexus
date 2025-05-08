@@ -148,6 +148,11 @@ async function updateTables() {
       ADD COLUMN IF NOT EXISTS vehicle_type TEXT,
       ADD COLUMN IF NOT EXISTS contact_phone TEXT,
       ADD COLUMN IF NOT EXISTS contact_email TEXT,
+      ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS city TEXT,
+      ADD COLUMN IF NOT EXISTS state TEXT,
+      ADD COLUMN IF NOT EXISTS zip_code TEXT,
+      ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'USA',
       ADD COLUMN IF NOT EXISTS adult_count INTEGER,
       ADD COLUMN IF NOT EXISTS child_count INTEGER,
       ADD COLUMN IF NOT EXISTS infant_count INTEGER,
@@ -158,6 +163,49 @@ async function updateTables() {
       ADD COLUMN IF NOT EXISTS additional_services TEXT;
     `);
     console.log('Updated bookings table');
+    
+    // Create payment_details table if it doesn't exist
+    try {
+      const paymentDetailsTableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT 1 FROM information_schema.tables 
+          WHERE table_name = 'payment_details'
+        );
+      `);
+      
+      const paymentDetailsExist = paymentDetailsTableExists.rows[0]?.exists;
+      
+      if (!paymentDetailsExist) {
+        await db.execute(sql`
+          CREATE TABLE payment_details (
+            id SERIAL PRIMARY KEY,
+            booking_id INTEGER NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
+            card_name TEXT NOT NULL,
+            card_number TEXT NOT NULL,
+            card_expiry TEXT NOT NULL,
+            card_cvc TEXT,
+            address TEXT NOT NULL,
+            city TEXT NOT NULL,
+            state TEXT NOT NULL,
+            zip_code TEXT NOT NULL,
+            country TEXT DEFAULT 'USA',
+            payment_processor TEXT,
+            transaction_id TEXT,
+            payment_status TEXT DEFAULT 'pending',
+            error_message TEXT,
+            amount DOUBLE PRECISION NOT NULL,
+            currency TEXT DEFAULT 'USD',
+            created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+            updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+          );
+        `);
+        console.log('Created payment_details table');
+      } else {
+        console.log('Payment details table already exists');
+      }
+    } catch (error) {
+      console.error('Error creating payment_details table:', error);
+    }
     
     // Create reviews table if it doesn't exist
     try {
