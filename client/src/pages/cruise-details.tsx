@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatCurrency } from "@/lib/utils";
+import { InquiryForm } from "@/components/inquiry-form";
 import { 
   Anchor, 
   MapPin, 
@@ -326,12 +327,18 @@ export default function CruiseDetails() {
               )}
 
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-secondary hover:bg-secondary/90 text-white">
+                <Button 
+                  className="bg-secondary hover:bg-secondary/90 text-white"
+                  onClick={handleBookNow}
+                >
                   Book Now
                 </Button>
-                <Button variant="outline" className="text-white border-white hover:bg-white/10">
-                  Enquire
-                </Button>
+                <InquiryForm
+                  productName={cruise.name}
+                  defaultSubject={`Inquiry about ${cruise.name} cruise`}
+                  triggerButtonText="Inquire Now"
+                  triggerButtonFullWidth={false}
+                />
               </div>
             </div>
 
