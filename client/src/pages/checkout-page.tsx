@@ -83,9 +83,12 @@ export default function CheckoutPage() {
     
     setIsSubmitting(true);
     try {
-      await bookingMutation.mutateAsync(bookingData);
+      // Return the created booking so it can be used for payment processing
+      const createdBooking = await bookingMutation.mutateAsync(bookingData);
+      return createdBooking; // Return the created booking with its ID
     } catch (error) {
       console.error("Booking error:", error);
+      throw error; // Re-throw the error to be caught by the checkout form
     } finally {
       setIsSubmitting(false);
     }

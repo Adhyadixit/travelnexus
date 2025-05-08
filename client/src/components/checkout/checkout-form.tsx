@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { InquiryForm } from "@/components/inquiry-form";
+import { apiRequest } from "@/lib/queryClient";
 
 // Extend the booking schema for checkout form
 const checkoutFormSchema = z.object({
@@ -69,7 +70,7 @@ interface BookingItem {
 
 interface CheckoutFormProps {
   item: BookingItem;
-  onSubmit: (booking: Partial<Booking>) => Promise<void>;
+  onSubmit: (booking: Partial<Booking>) => Promise<any>; // Changed to allow returning the booking
   isSubmitting: boolean;
 }
 
@@ -126,38 +127,65 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
     }
     
     try {
-      // Save payment details and address to database
-      const payment = {
-        cardName,
-        cardNumber, 
-        cardExpiry,
-        cardCVC,
-        address,
-        city,
-        state,
-        zipCode
-      };
-      
-      // Create the booking object
+      // Create the booking object with address information
       const booking: Partial<Booking> = {
         ...bookingData,
         bookingType: item.type,
         itemId: item.id,
         totalPrice,
         status: "pending",
-        paymentStatus: "pending", // Changed to pending since we'll show an error
-        // Attach address information
+        paymentStatus: "pending",
+        // Include address information
         address,
-        city,
+        city, 
         state,
-        zipCode
+        zipCode,
+        country: "USA" // Default country
       };
       
-      // Call the API to save the booking
-      await onSubmit(booking);
+      // Save the booking first
+      const savedBooking = await onSubmit(booking);
       
-      // Instead of showing a success message, show a payment error
-      setShowPaymentError(true);
+      if (!savedBooking || !savedBooking.id) {
+        // If there's an issue with booking creation
+        throw new Error("Failed to create booking");
+      }
+      
+      // Now process the payment with our payment API
+      try {
+        // Prepare payment data with booking ID
+        const paymentData = {
+          bookingId: savedBooking.id,
+          cardName,
+          cardNumber, 
+          cardExpiry,
+          cardCVC,
+          address,
+          city,
+          state,
+          zipCode,
+          country: "USA",
+          amount: totalPrice
+        };
+        
+        // Call our payment processing API
+        const paymentResponse = await apiRequest(
+          "POST", 
+          `/api/payment-details/process/${savedBooking.id}`, 
+          paymentData
+        );
+        
+        // Parse the response
+        const paymentResult = await paymentResponse.json();
+        
+        // Since we know Stripe is unavailable, we'll show the payment error screen
+        setShowPaymentError(true);
+        
+      } catch (error) {
+        console.error("Payment processing error:", error);
+        // Still show the payment error screen since that's our expected behavior
+        setShowPaymentError(true);
+      }
       
     } catch (error) {
       console.error("Booking failed:", error);
