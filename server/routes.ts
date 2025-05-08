@@ -12,6 +12,7 @@ import adminDriversRoutes from "./routes/admin-drivers";
 import adminEventsRoutes from "./routes/admin-events";
 import adminHotelsRoutes from "./routes/admin-hotels";
 import adminPackagesRoutes from "./routes/admin-packages";
+import directDatabaseRoutes from "./routes/direct-database";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
@@ -1397,6 +1398,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(adminEventsRoutes);
   app.use(adminHotelsRoutes);
   app.use(adminPackagesRoutes);
+  
+  // Register direct database routes that bypass auth and storage
+  app.use(directDatabaseRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

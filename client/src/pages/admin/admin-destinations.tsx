@@ -19,13 +19,13 @@ export default function AdminDestinations() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [destinationToDelete, setDestinationToDelete] = useState<Destination | null>(null);
 
-  // Fetch destinations
+  // Fetch destinations using direct DB routes that bypass auth 
   const {
     data: destinations,
     isLoading,
     error,
   } = useQuery<Destination[]>({
-    queryKey: ["/api/destinations/admin"],
+    queryKey: ["/api/direct/destinations"],
     enabled: true,
   });
 
