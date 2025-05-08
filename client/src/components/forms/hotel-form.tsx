@@ -667,7 +667,11 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
         </Tabs>
         
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} size="lg">
+          <Button 
+            type="submit" 
+            size="lg"
+            className="min-w-[150px]"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -766,7 +766,11 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
         </Tabs>
         
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} size="lg">
+          <Button 
+            type="submit" 
+            size="lg"
+            className="min-w-[150px]"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
