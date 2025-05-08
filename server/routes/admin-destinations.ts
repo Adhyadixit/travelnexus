@@ -77,7 +77,7 @@ router.post("/api/destinations/admin", isAuthenticated, isAdmin, async (req, res
  * @desc Update a destination
  * @access Private (Admin only)
  */
-router.put("/api/destinations/admin/:id", async (req, res) => {
+router.put("/api/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     
@@ -117,7 +117,7 @@ router.put("/api/destinations/admin/:id", async (req, res) => {
  * @desc Delete a destination
  * @access Private (Admin only)
  */
-router.delete("/api/destinations/admin/:id", async (req, res) => {
+router.delete("/api/destinations/admin/:id", isAuthenticated, isAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     
