@@ -27,6 +27,18 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create the HTTP server and Socket.IO server right away so they can be used in routes
+  const httpServer = createServer(app);
+  
+  // Set up Socket.IO server for real-time chat features
+  const io = new SocketIOServer(httpServer, {
+    path: '/ws',
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+  
   // Set up authentication
   setupAuth(app);
 
@@ -1627,6 +1639,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'open',
       });
       
+      // Emit socket event for real-time updates
+      io.to(`conversation-${conversationId}`).emit('message-received', newMessage);
+      console.log(`Socket event 'message-received' emitted to conversation-${conversationId}`);
+      
       res.status(201).json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -1737,17 +1753,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register direct database routes that bypass auth and storage
   app.use(directDatabaseRoutes);
-
-  const httpServer = createServer(app);
-  
-  // Set up Socket.IO server for real-time chat features
-  const io = new SocketIOServer(httpServer, {
-    path: '/ws',
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-  });
   
   // Map to track typing status by conversation ID and user IDs
   const typingUsers = new Map();
