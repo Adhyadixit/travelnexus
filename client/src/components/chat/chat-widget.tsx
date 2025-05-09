@@ -288,11 +288,22 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     name: "",
     email: "",
   });
-  // Initialize showGuestForm - only show for guests without stored ID, don't auto-reset
-  const [showGuestForm, setShowGuestForm] = useState(() => {
-    // Only show the form for completely new users who have never chatted before
-    return !user && !localStorage.getItem('guestUserId');
-  });
+  // Initialize showGuestForm - default to false, we'll set it in useEffect
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  
+  // Auto-reset guest chat on page refresh
+  useEffect(() => {
+    if (!user) {
+      // For guests, clear stored IDs on page refresh to force showing the form
+      localStorage.removeItem('guestUserId');
+      localStorage.removeItem('guestSessionId');
+      // Reset the guest state variables
+      setGuestUserId(null);
+      setSessionId(null);
+      // Show the guest form
+      setShowGuestForm(true);
+    }
+  }, [user]); // Only runs when the user auth state changes or on initial load
 
   // Create new conversation mutation
   const createConversationMutation = useMutation({
