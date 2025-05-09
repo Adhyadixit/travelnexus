@@ -79,11 +79,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold">Popular Destinations</h2>
-            <Link href="/destinations">
-              <a className="text-primary font-medium hidden md:flex items-center hover:underline">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </a>
+            <Link href="/destinations" className="text-primary font-medium hidden md:flex items-center hover:underline">
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
           
@@ -109,8 +107,8 @@ export default function HomePage() {
                 ))}
               </div>
               <div className="mt-4 text-center md:hidden">
-                <Link href="/destinations">
-                  <a className="text-primary font-medium">View All Destinations</a>
+                <Link href="/destinations" className="text-primary font-medium">
+                  View All Destinations
                 </Link>
               </div>
             </div>
@@ -123,11 +121,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold">Featured Packages</h2>
-            <Link href="/packages">
-              <a className="text-primary font-medium hidden md:flex items-center hover:underline">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </a>
+            <Link href="/packages" className="text-primary font-medium hidden md:flex items-center hover:underline">
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
           
@@ -155,8 +151,8 @@ export default function HomePage() {
           )}
           
           <div className="mt-6 text-center md:hidden">
-            <Link href="/packages">
-              <a className="text-primary font-medium">View All Packages</a>
+            <Link href="/packages" className="text-primary font-medium">
+              View All Packages
             </Link>
           </div>
         </div>
@@ -167,11 +163,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold">Luxury Hotels</h2>
-            <Link href="/hotels">
-              <a className="text-primary font-medium hidden md:flex items-center hover:underline">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </a>
+            <Link href="/hotels" className="text-primary font-medium hidden md:flex items-center hover:underline">
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
           
@@ -199,8 +193,8 @@ export default function HomePage() {
           )}
           
           <div className="mt-6 text-center md:hidden">
-            <Link href="/hotels">
-              <a className="text-primary font-medium">View All Hotels</a>
+            <Link href="/hotels" className="text-primary font-medium">
+              View All Hotels
             </Link>
           </div>
         </div>
@@ -211,11 +205,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold">Cruise Adventures</h2>
-            <Link href="/cruises">
-              <a className="text-primary font-medium hidden md:flex items-center hover:underline">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </a>
+            <Link href="/cruises" className="text-primary font-medium hidden md:flex items-center hover:underline">
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
           
@@ -255,11 +247,9 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl md:text-3xl font-heading font-bold">Private Drivers</h2>
-            <Link href="/cabs">
-              <a className="text-primary font-medium hidden md:flex items-center hover:underline">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </a>
+            <Link href="/cabs" className="text-primary font-medium hidden md:flex items-center hover:underline">
+              View All
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
           
