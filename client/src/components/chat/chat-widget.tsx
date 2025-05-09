@@ -551,9 +551,15 @@ export function ChatWidget({
         open={isOpen} 
         onOpenChange={(open) => {
           setIsOpen(open);
-          if (!open && messagesEndRef.current) {
+          if (!open) {
+            // Call onClose callback when chat is closed
+            if (onClose) {
+              onClose();
+            }
             // Reset scroll position when closing
-            messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+            if (messagesEndRef.current) {
+              messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+            }
           }
         }}
         modal={true}
