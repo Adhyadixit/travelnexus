@@ -686,7 +686,6 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                   languagesSpoken: stringToArray(data.languagesList || ""),
                   nearbyAttractions: stringToArray(data.attractionsList || ""),
                   policies: data.policiesList,
-                  roomTypes: data.roomTypesList,
                   imageGallery: JSON.stringify(data.imageGalleryUrls || []),
                 };
                 
@@ -695,7 +694,6 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                 delete formattedData.languagesList;
                 delete formattedData.attractionsList;
                 delete formattedData.policiesList;
-                delete formattedData.roomTypesList;
                 delete formattedData.imageGalleryUrls;
                 
                 console.log("Manually formatted data for submission:", formattedData);
