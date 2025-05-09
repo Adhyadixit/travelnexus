@@ -1558,6 +1558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/messages", async (req, res) => {
     try {
       const conversationId = parseInt(req.query.conversationId as string);
+      const guestUserId = req.query.guestUserId ? parseInt(req.query.guestUserId as string) : null;
       
       if (isNaN(conversationId)) {
         return res.status(400).json({ error: "Invalid conversation ID" });
@@ -1588,18 +1589,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`User ${req.user!.id} does not match conversation userId ${conversation.userId}`);
         }
       } else if (conversation.guestUserId) {
-        console.log(`Guest access check for session: ${req.sessionID}`);
-        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
-        if (guestUser) {
-          console.log(`Found guest user: ${guestUser.id}`);
-          if (guestUser.id === conversation.guestUserId) {
-            console.log('Guest user matches conversation, access granted');
-            authorized = true;
-          } else {
-            console.log(`Guest user ${guestUser.id} does not match conversation guestUserId ${conversation.guestUserId}`);
-          }
+        // First check if guestUserId was directly provided in the query
+        if (guestUserId && guestUserId === conversation.guestUserId) {
+          console.log(`Guest ID in query (${guestUserId}) matches conversation, granting direct access`);
+          authorized = true;
         } else {
-          console.log(`No guest user found for session: ${req.sessionID}`);
+          // Fall back to session-based guest verification
+          console.log(`Guest access check for session: ${req.sessionID}`);
+          const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+          if (guestUser) {
+            console.log(`Found guest user: ${guestUser.id}`);
+            if (guestUser.id === conversation.guestUserId) {
+              console.log('Guest user matches conversation, access granted');
+              authorized = true;
+            } else {
+              console.log(`Guest user ${guestUser.id} does not match conversation guestUserId ${conversation.guestUserId}`);
+            }
+          } else {
+            console.log(`No guest user found for session: ${req.sessionID}`);
+          }
         }
       } else {
         console.log('No guest user ID in conversation and user not authenticated');
@@ -1624,6 +1632,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Direct message sending for guests
+  app.post("/api/guest-send-message", async (req, res) => {
+    try {
+      const { conversationId, message, guestUserId } = req.body;
+      
+      console.log(`Guest sending message for conversation ${conversationId} with guestUserId ${guestUserId}`);
+      
+      if (!conversationId || !message || !guestUserId) {
+        return res.status(400).json({ error: "Conversation ID, message, and guestUserId are required" });
+      }
+      
+      const conversation = await storage.getConversation(parseInt(conversationId));
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Only check if guestUserId matches the conversation
+      if (conversation.guestUserId !== parseInt(guestUserId)) {
+        return res.status(403).json({ error: "Access denied - guest ID doesn't match conversation" });
+      }
+      
+      // Create the message directly
+      const messageData = {
+        conversationId: parseInt(conversationId),
+        senderId: parseInt(guestUserId),
+        senderType: 'guest',
+        content: message,
+        messageType: 'text' as const,
+        fileUrl: null,
+      };
+      
+      const newMessage = await storage.createMessage(messageData);
+      
+      // Mark messages as read by user
+      await storage.markMessagesAsReadByUser(parseInt(conversationId));
+      
+      // Ensure conversation is open
+      await storage.updateConversation(parseInt(conversationId), {
+        status: 'open',
+      });
+      
+      // Emit socket event for real-time updates
+      io.to(`conversation-${conversationId}`).emit('message-received', newMessage);
+      
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error("Error sending guest message:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
+
   // Send a message
   app.post("/api/messages", async (req, res) => {
     try {

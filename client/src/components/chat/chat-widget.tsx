@@ -173,12 +173,24 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     data: messages = [],
     isLoading: messagesLoading,
   } = useQuery<Message[]>({
-    queryKey: ["/api/messages", activeConversation?.id],
+    queryKey: ["/api/messages", activeConversation?.id, guestUserId],
     queryFn: async () => {
       if (!activeConversation) return [];
       try {
-        const res = await fetch(`/api/messages?conversationId=${activeConversation.id}`);
-        if (!res.ok) throw new Error("Failed to fetch messages");
+        // Include guestUserId for non-authenticated users to bypass session auth
+        let url = `/api/messages?conversationId=${activeConversation.id}`;
+        if (!user && guestUserId) {
+          url += `&guestUserId=${guestUserId}`;
+        }
+        
+        console.log(`Fetching messages from: ${url}`);
+        const res = await fetch(url);
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Failed to fetch messages");
+        }
+        
         return await res.json();
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -205,22 +217,32 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     mutationFn: async (message: string) => {
       if (!activeConversation) throw new Error("No active conversation");
       
-      // Include guestUserId in the request for guest users
-      const payload = {
-        conversationId: activeConversation.id,
-        message,
-        ...(guestUserId ? { guestUserId } : {})
-      };
-      
-      console.log("Sending message with payload:", payload);
-      
-      const response = await apiRequest("POST", "/api/messages", payload);
-      
-      return response.json();
+      // For guest users, use the special guest message endpoint
+      if (!user && guestUserId) {
+        const payload = {
+          conversationId: activeConversation.id,
+          message,
+          guestUserId
+        };
+        
+        console.log("Guest sending message with payload:", payload);
+        const response = await apiRequest("POST", "/api/guest-send-message", payload);
+        return response.json();
+      } else {
+        // For authenticated users, use the regular endpoint
+        const payload = {
+          conversationId: activeConversation.id,
+          message
+        };
+        
+        console.log("Sending message with payload:", payload);
+        const response = await apiRequest("POST", "/api/messages", payload);
+        return response.json();
+      }
     },
     onSuccess: () => {
       setMessageInput("");
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation?.id, guestUserId] });
     },
     onError: (error: Error) => {
       toast({
@@ -422,7 +444,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       // Listen for new messages
       const handleNewMessage = (message: any) => {
         // Update messages immediately when received via WebSocket
-        queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation.id] });
+        queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation.id, guestUserId] });
         
         // If admin sent a message, clear typing indicator
         if (message.senderType === 'admin') {
