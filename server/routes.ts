@@ -1590,8 +1590,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else if (conversation.guestUserId) {
         // First check if guestUserId was directly provided in the query
-        if (guestUserId && guestUserId === conversation.guestUserId) {
-          console.log(`Guest ID in query (${guestUserId}) matches conversation, granting direct access`);
+        const guestUserIdNum = typeof guestUserId === 'string' ? Number(guestUserId) : guestUserId;
+        if (guestUserId && guestUserIdNum === conversation.guestUserId) {
+          console.log(`Guest ID in query (${guestUserId}, parsed: ${guestUserIdNum}) matches conversation ${conversation.guestUserId}, granting direct access`);
           authorized = true;
         } else {
           // Fall back to session-based guest verification
@@ -1740,8 +1741,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else if (conversation.guestUserId) {
         // First check if guestUserId was provided directly in the request
-        if (guestUserId && guestUserId === conversation.guestUserId) {
-          console.log(`Guest user ID provided in request (${guestUserId}) matches conversation guestUserId`);
+        const guestUserIdNum = typeof guestUserId === 'string' ? Number(guestUserId) : guestUserId;
+        if (guestUserId && guestUserIdNum === conversation.guestUserId) {
+          console.log(`Guest user ID provided in request (${guestUserId}, parsed: ${guestUserIdNum}) matches conversation guestUserId ${conversation.guestUserId}`);
           senderId = conversation.guestUserId;
           senderType = 'guest';
           authorized = true;
