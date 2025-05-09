@@ -21,9 +21,9 @@ import { format } from "date-fns";
 type Message = {
   id: number;
   conversationId: number;
-  body: string;
-  type: string;
-  sentAt: string;
+  content: string;    // Changed from 'body' to 'content' to match database
+  senderType: string; // Changed from 'type' to 'senderType' to match database
+  createdAt: string;  // Changed from 'sentAt' to 'createdAt' to match database
   readAt: string | null;
 };
 
@@ -223,12 +223,12 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
               ) : (
                 <>
                   {messages.map((message) => {
-                    const isUser = message.type !== "admin";
+                    const isUser = message.senderType !== "admin";
                     return (
                       <div
                         key={message.id}
                         className={cn(
-                          "flex",
+                          "flex mb-2",
                           isUser ? "justify-end" : "justify-start"
                         )}
                       >
@@ -240,9 +240,9 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                               : "bg-muted"
                           )}
                         >
-                          <p className="text-sm">{message.body}</p>
+                          <p className="text-sm">{message.content}</p>
                           <p className="text-xs mt-1 opacity-70 text-right">
-                            {formatMessageDate(message.sentAt)}
+                            {formatMessageDate(message.createdAt)}
                           </p>
                         </div>
                       </div>
@@ -256,11 +256,12 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
             {/* Message input */}
             <SheetFooter className="sticky bottom-0 bg-background border-t p-3">
               <div className="flex w-full space-x-2">
-                <Textarea
+                <input
+                  type="text"
                   placeholder="Type your message..."
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
-                  className="min-h-[80px] resize-none flex-1"
+                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -271,7 +272,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                 />
                 <Button
                   size="icon"
-                  className="self-end h-10 w-10"
+                  className="h-10 w-10"
                   disabled={!activeConversation || !messageInput.trim() || sendMessageMutation.isPending}
                   onClick={handleSendMessage}
                 >
