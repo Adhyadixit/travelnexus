@@ -63,9 +63,23 @@ import { format } from "date-fns";
 export default function PackageDetails() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const Layout = isMobile ? MobileLayout : DesktopLayout;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  
+  // State for inquiry-related chat
+  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
+  const [autoOpenChat, setAutoOpenChat] = useState(false);
+  
+  // Create the Layout component with chat props
+  const Layout = isMobile 
+    ? (props: any) => (
+        <MobileLayout 
+          {...props} 
+          autoOpenChat={autoOpenChat} 
+          currentConversationId={currentConversationId}
+        />
+      ) 
+    : DesktopLayout;
   
   // State for booking
   const [startDate, setStartDate] = useState<Date>();
@@ -351,6 +365,10 @@ export default function PackageDetails() {
                     productName={packageData.name}
                     defaultSubject={`Inquiry about ${packageData.name} package`}
                     triggerButtonText="Inquire Now"
+                    onInquirySubmitted={(conversationId) => {
+                      setCurrentConversationId(conversationId);
+                      setAutoOpenChat(true);
+                    }}
                   />
                 </div>
               </div>
@@ -1077,6 +1095,10 @@ export default function PackageDetails() {
                       defaultSubject={`Inquiry about ${packageData.name} package`}
                       triggerButtonText="Need Help? Inquire Now"
                       triggerButtonFullWidth={true}
+                      onInquirySubmitted={(conversationId) => {
+                        setCurrentConversationId(conversationId);
+                        setAutoOpenChat(true);
+                      }}
                     />
                   </div>
                 </div>
