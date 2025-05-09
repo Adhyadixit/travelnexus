@@ -375,6 +375,14 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     // Handle case with no active conversation
     if (!activeConversation) {
       console.log('No active conversation, creating a new one');
+      
+      // If guest user without stored user ID, show the form first
+      if (!user && !guestUserId) {
+        console.log("New guest user, showing information form first");
+        setShowGuestForm(true);
+        return;
+      }
+      
       createConversationMutation.mutate(messageInput);
       return;
     }
