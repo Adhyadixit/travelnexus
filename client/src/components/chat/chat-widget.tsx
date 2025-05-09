@@ -398,7 +398,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
   return (
     <>
       {/* Fixed chat button for mobile */}
-      <div className="fixed bottom-16 right-4 z-50 md:hidden">
+      <div className="fixed bottom-24 right-4 z-50 md:hidden">
         <Button
           onClick={() => setIsOpen(true)}
           size="icon"
@@ -419,7 +419,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           }
         }}
       >
-        <SheetContent side="bottom" className="h-[65vh] p-0">
+        <SheetContent side="bottom" className="h-[60vh] pb-16 p-0">
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>Customer Support</SheetTitle>
             <SheetDescription>
@@ -429,7 +429,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
 
           <div className="flex flex-col h-full">
             {/* Messages area - ensuring proper scrolling with fixed height */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(65vh - 120px)' }}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(60vh - 140px)' }}>
               {showGuestForm ? (
                 <div className="p-4 rounded-lg border">
                   <h3 className="text-lg font-semibold mb-4">Enter Your Information</h3>
