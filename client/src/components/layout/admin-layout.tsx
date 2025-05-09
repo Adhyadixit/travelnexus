@@ -40,12 +40,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg p-4 hidden md:block">
+      <div className="w-64 bg-white shadow-lg p-4 hidden md:flex md:flex-col h-screen">
         <div className="flex items-center justify-center p-4">
           <h1 className="text-xl font-bold text-primary">TravelEase Admin</h1>
         </div>
         
-        <nav className="mt-6 space-y-1">
+        <nav className="mt-6 space-y-1 flex-grow overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location === item.href;
             const Icon = item.icon;
@@ -69,7 +69,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         
-        <div className="absolute bottom-4 left-4 right-4">
+        <div className="mt-6 pt-6 border-t border-gray-200">
           <Button
             variant="outline"
             className="w-full justify-start"
