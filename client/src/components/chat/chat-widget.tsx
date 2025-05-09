@@ -288,7 +288,11 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     name: "",
     email: "",
   });
-  const [showGuestForm, setShowGuestForm] = useState(false);
+  // Initialize showGuestForm to true for guests who haven't stored their ID
+  const [showGuestForm, setShowGuestForm] = useState(() => {
+    // Show the form if it's a guest user without a stored ID
+    return !user && !localStorage.getItem('guestUserId');
+  });
 
   // Create new conversation mutation
   const createConversationMutation = useMutation({
@@ -555,8 +559,8 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                   onClick={resetGuestState}
                   className="text-xs"
                 >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Reset Guest Chat
+                  <MessageCircle className="h-3 w-3 mr-1" />
+                  Reset Chat
                 </Button>
               )}
             </div>
