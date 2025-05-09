@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Loader2 } from "lucide-react";
+import { MessageCircle, Send, Loader2, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { TypingIndicator } from "./typing-indicator";
 
@@ -90,6 +90,30 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     console.log("Loaded guestUserId from localStorage:", savedId);
     return savedId ? parseInt(savedId, 10) : null;
   });
+  
+  // Debug function to reset guest state completely
+  const resetGuestState = () => {
+    localStorage.removeItem('guestUserId');
+    localStorage.removeItem('guestSessionId');
+    setGuestUserId(null);
+    setSessionId(null);
+    
+    // Show success toast
+    toast({
+      title: "Guest state reset",
+      description: "Guest chat state has been completely reset. You can now start a new chat as a guest.",
+      variant: "default",
+    });
+    
+    // Force show guest form
+    setShowGuestForm(true);
+    
+    // Refresh guest conversations
+    queryClient.invalidateQueries({ 
+      queryKey: ["/api/guest-conversations"],
+      refetchType: "all"
+    });
+  };
   
   // Log guestUserId on mount to help debugging
   useEffect(() => {
@@ -517,10 +541,25 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           }}
         >
           <SheetHeader className="px-4 py-3 border-b">
-            <SheetTitle>Customer Support</SheetTitle>
-            <SheetDescription>
-              Chat with our team for assistance
-            </SheetDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <SheetTitle>Customer Support</SheetTitle>
+                <SheetDescription>
+                  Chat with our team for assistance
+                </SheetDescription>
+              </div>
+              {!user && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={resetGuestState}
+                  className="text-xs"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Reset Guest Chat
+                </Button>
+              )}
+            </div>
           </SheetHeader>
 
           <div className="flex flex-col h-full">
