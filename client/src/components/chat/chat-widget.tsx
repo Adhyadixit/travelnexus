@@ -219,15 +219,21 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       
       // For guest users, use the special guest message endpoint
       if (!user && guestUserId) {
+        // Make sure the IDs are numbers, not strings
         const payload = {
-          conversationId: activeConversation.id,
+          conversationId: Number(activeConversation.id),
           message,
-          guestUserId
+          guestUserId: Number(guestUserId)
         };
         
         console.log("Guest sending message with payload:", payload);
-        const response = await apiRequest("POST", "/api/guest-send-message", payload);
-        return response.json();
+        try {
+          const response = await apiRequest("POST", "/api/guest-send-message", payload);
+          return response.json();
+        } catch (error) {
+          console.error("Failed to send guest message:", error);
+          throw new Error("Failed to send message. Please try again.");
+        }
       } else {
         // For authenticated users, use the regular endpoint
         const payload = {

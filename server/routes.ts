@@ -1643,21 +1643,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Conversation ID, message, and guestUserId are required" });
       }
       
-      const conversation = await storage.getConversation(parseInt(conversationId));
+      // Parse IDs to ensure they're numbers
+      const conversationIdNum = typeof conversationId === 'string' ? parseInt(conversationId) : conversationId;
+      const guestUserIdNum = typeof guestUserId === 'string' ? parseInt(guestUserId) : guestUserId;
+      
+      if (isNaN(conversationIdNum) || isNaN(guestUserIdNum)) {
+        return res.status(400).json({ error: "Invalid ID format" });
+      }
+      
+      console.log(`Parsed IDs: conversationId=${conversationIdNum}, guestUserId=${guestUserIdNum}`);
+      
+      const conversation = await storage.getConversation(conversationIdNum);
       
       if (!conversation) {
         return res.status(404).json({ error: "Conversation not found" });
       }
       
       // Only check if guestUserId matches the conversation
-      if (conversation.guestUserId !== parseInt(guestUserId)) {
-        return res.status(403).json({ error: "Access denied - guest ID doesn't match conversation" });
+      if (conversation.guestUserId !== guestUserIdNum) {
+        return res.status(403).json({ 
+          error: "Access denied - guest ID doesn't match conversation",
+          expected: conversation.guestUserId,
+          received: guestUserIdNum
+        });
       }
       
       // Create the message directly
       const messageData = {
-        conversationId: parseInt(conversationId),
-        senderId: parseInt(guestUserId),
+        conversationId: conversationIdNum,
+        senderId: guestUserIdNum,
         senderType: 'guest',
         content: message,
         messageType: 'text' as const,
@@ -1667,15 +1681,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newMessage = await storage.createMessage(messageData);
       
       // Mark messages as read by user
-      await storage.markMessagesAsReadByUser(parseInt(conversationId));
+      await storage.markMessagesAsReadByUser(conversationIdNum);
       
       // Ensure conversation is open
-      await storage.updateConversation(parseInt(conversationId), {
+      await storage.updateConversation(conversationIdNum, {
         status: 'open',
       });
       
       // Emit socket event for real-time updates
-      io.to(`conversation-${conversationId}`).emit('message-received', newMessage);
+      io.to(`conversation-${conversationIdNum}`).emit('message-received', newMessage);
       
       res.status(201).json(newMessage);
     } catch (error) {
