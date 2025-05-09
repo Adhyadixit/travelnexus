@@ -78,10 +78,16 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     }
   }, [autoOpen]);
   
-  // Store the last session ID for guest users
-  const [sessionId, setSessionId] = useState<string | null>(
-    localStorage.getItem('guestSessionId')
-  );
+  // Store the last session ID and guest ID for guest users
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    const savedId = localStorage.getItem('guestSessionId');
+    return savedId || null;
+  });
+  
+  const [guestUserId, setGuestUserId] = useState<number | null>(() => {
+    const savedId = localStorage.getItem('guestUserId');
+    return savedId ? parseInt(savedId, 10) : null;
+  });
   
   // Get user conversations or current conversation
   const {
@@ -118,10 +124,25 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
         // For guest users, try to fetch guest conversations
         try {
           console.log("Fetching guest conversations...");
-          const res = await fetch("/api/guest-conversations");
+          
+          // If we have a stored guestUserId, include it in the request
+          const url = guestUserId 
+            ? `/api/guest-conversations?guestUserId=${guestUserId}` 
+            : "/api/guest-conversations";
+            
+          const res = await fetch(url);
           if (!res.ok) throw new Error("Failed to fetch guest conversations");
           const data = await res.json();
           console.log("Retrieved guest conversations:", data);
+          
+          // If we got conversations back and don't have a guestUserId stored yet,
+          // store the ID from the first conversation
+          if (data.length > 0 && !guestUserId && data[0].guestUserId) {
+            const newGuestId = data[0].guestUserId;
+            localStorage.setItem('guestUserId', String(newGuestId));
+            setGuestUserId(newGuestId);
+          }
+          
           return data;
         } catch (error) {
           console.error("Error fetching guest conversations:", error);
@@ -234,14 +255,22 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     },
     onSuccess: (data) => {
       console.log("New conversation created:", data);
-      // Refresh conversations data based on user type
-      if (user) {
+      
+      // Store guest user ID in localStorage for persistence
+      if (!user && data.guestUserId) {
+        localStorage.setItem('guestUserId', String(data.guestUserId));
+        setGuestUserId(data.guestUserId);
+        
+        // Also update the query parameters for guest conversations
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/guest-conversations"],
+          refetchType: "all"
+        });
+      } else if (user) {
         queryClient.invalidateQueries({ queryKey: ["/api/user-conversations"] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["/api/guest-conversations"] });
       }
+      
       setMessageInput("");
-      // Hide guest form if it was shown
       setShowGuestForm(false);
     },
     onError: (error: Error) => {
@@ -310,10 +339,14 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     console.log(`Sending message to conversation ID: ${activeConversation.id}`, messageInput);
     
     try {
-      // First, store guest session ID if this is a guest
+      // First, store guest user ID if this is a guest
       if (!user && activeConversation.guestUserId) {
+        // Store both the session ID and the guest user ID
         localStorage.setItem('guestSessionId', String(activeConversation.guestUserId));
+        localStorage.setItem('guestUserId', String(activeConversation.guestUserId));
         setSessionId(String(activeConversation.guestUserId));
+        setGuestUserId(activeConversation.guestUserId);
+        console.log(`Stored guestUserId ${activeConversation.guestUserId} in localStorage`);
       }
       
       // Send the message

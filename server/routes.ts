@@ -1474,16 +1474,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       let conversationsData: Conversation[] = [];
       
-      // For guest users, check the session ID
-      console.log(`Checking for guest user with session ID: ${req.sessionID}`);
-      const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+      // Check if a specific guestUserId is provided in the query params (for persistence)
+      const guestUserId = req.query.guestUserId ? parseInt(req.query.guestUserId as string) : null;
       
-      if (guestUser) {
-        console.log(`Found guest user with ID ${guestUser.id} for session ${req.sessionID}`);
-        conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
-        console.log(`Found ${conversationsData.length} conversations for guest user ${guestUser.id}`);
+      if (guestUserId) {
+        // If a specific guestUserId is provided, use that directly
+        console.log(`Using provided guestUserId: ${guestUserId}`);
+        conversationsData = await storage.getConversationsByGuestUser(guestUserId);
+        console.log(`Found ${conversationsData.length} conversations for guest user ${guestUserId}`);
       } else {
-        console.log(`No guest user found for session ${req.sessionID}`);
+        // Otherwise, try to find the guest user by session ID
+        console.log(`Checking for guest user with session ID: ${req.sessionID}`);
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        
+        if (guestUser) {
+          console.log(`Found guest user with ID ${guestUser.id} for session ${req.sessionID}`);
+          conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
+          console.log(`Found ${conversationsData.length} conversations for guest user ${guestUser.id}`);
+        } else {
+          console.log(`No guest user found for session ${req.sessionID}`);
+        }
       }
       
       res.json(conversationsData);
