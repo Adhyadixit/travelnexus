@@ -10,7 +10,9 @@ import {
   bookingTypeEnum,
   guestUsers, type GuestUser, type InsertGuestUser,
   conversations, type Conversation, type InsertConversation,
-  messages, type Message, type InsertMessage
+  messages, type Message, type InsertMessage,
+  hotelRoomTypes, type HotelRoomType, type InsertHotelRoomType,
+  hotelRoomImages, type HotelRoomImage, type InsertHotelRoomImage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lte, desc, asc, like, sql, count } from "drizzle-orm";
@@ -122,6 +124,22 @@ export interface IStorage {
   getUnreadMessageCountForUser(userId: number): Promise<number>;
   markMessagesAsReadByAdmin(conversationId: number): Promise<void>;
   markMessagesAsReadByUser(conversationId: number): Promise<void>;
+
+  // Hotel Room Types operations
+  getAllRoomTypes(): Promise<HotelRoomType[]>;
+  getRoomTypesByHotel(hotelId: number): Promise<HotelRoomType[]>;
+  getRoomType(id: number): Promise<HotelRoomType | undefined>;
+  createRoomType(roomType: InsertHotelRoomType): Promise<HotelRoomType>;
+  updateRoomType(id: number, data: Partial<InsertHotelRoomType>): Promise<HotelRoomType | undefined>;
+  deleteRoomType(id: number): Promise<void>;
+  getFeaturedRoomTypesByHotel(hotelId: number): Promise<HotelRoomType[]>;
+  
+  // Hotel Room Images operations
+  getRoomImagesByRoomType(roomTypeId: number): Promise<HotelRoomImage[]>;
+  getRoomImage(id: number): Promise<HotelRoomImage | undefined>;
+  createRoomImage(image: InsertHotelRoomImage): Promise<HotelRoomImage>;
+  updateRoomImage(id: number, data: Partial<InsertHotelRoomImage>): Promise<HotelRoomImage | undefined>;
+  deleteRoomImage(id: number): Promise<void>;
 
   // Session store
   sessionStore: SessionStore;
@@ -676,6 +694,88 @@ export class DatabaseStorage implements IStorage {
     } else {
       await this.markMessagesAsReadByUser(conversationId);
     }
+  }
+
+  // Hotel Room Types operations
+  async getAllRoomTypes(): Promise<HotelRoomType[]> {
+    return await db.select().from(hotelRoomTypes);
+  }
+
+  async getRoomTypesByHotel(hotelId: number): Promise<HotelRoomType[]> {
+    return await db.select()
+      .from(hotelRoomTypes)
+      .where(eq(hotelRoomTypes.hotelId, hotelId));
+  }
+
+  async getRoomType(id: number): Promise<HotelRoomType | undefined> {
+    const [roomType] = await db.select()
+      .from(hotelRoomTypes)
+      .where(eq(hotelRoomTypes.id, id));
+    return roomType;
+  }
+
+  async createRoomType(roomTypeData: InsertHotelRoomType): Promise<HotelRoomType> {
+    const [roomType] = await db.insert(hotelRoomTypes)
+      .values(roomTypeData)
+      .returning();
+    return roomType;
+  }
+
+  async updateRoomType(id: number, data: Partial<InsertHotelRoomType>): Promise<HotelRoomType | undefined> {
+    const [updatedRoomType] = await db.update(hotelRoomTypes)
+      .set(data)
+      .where(eq(hotelRoomTypes.id, id))
+      .returning();
+    return updatedRoomType;
+  }
+
+  async deleteRoomType(id: number): Promise<void> {
+    await db.delete(hotelRoomTypes)
+      .where(eq(hotelRoomTypes.id, id));
+  }
+
+  async getFeaturedRoomTypesByHotel(hotelId: number): Promise<HotelRoomType[]> {
+    return await db.select()
+      .from(hotelRoomTypes)
+      .where(and(
+        eq(hotelRoomTypes.hotelId, hotelId),
+        eq(hotelRoomTypes.featured, true)
+      ));
+  }
+
+  // Hotel Room Images operations
+  async getRoomImagesByRoomType(roomTypeId: number): Promise<HotelRoomImage[]> {
+    return await db.select()
+      .from(hotelRoomImages)
+      .where(eq(hotelRoomImages.roomTypeId, roomTypeId))
+      .orderBy(hotelRoomImages.displayOrder);
+  }
+
+  async getRoomImage(id: number): Promise<HotelRoomImage | undefined> {
+    const [image] = await db.select()
+      .from(hotelRoomImages)
+      .where(eq(hotelRoomImages.id, id));
+    return image;
+  }
+
+  async createRoomImage(imageData: InsertHotelRoomImage): Promise<HotelRoomImage> {
+    const [image] = await db.insert(hotelRoomImages)
+      .values(imageData)
+      .returning();
+    return image;
+  }
+
+  async updateRoomImage(id: number, data: Partial<InsertHotelRoomImage>): Promise<HotelRoomImage | undefined> {
+    const [updatedImage] = await db.update(hotelRoomImages)
+      .set(data)
+      .where(eq(hotelRoomImages.id, id))
+      .returning();
+    return updatedImage;
+  }
+
+  async deleteRoomImage(id: number): Promise<void> {
+    await db.delete(hotelRoomImages)
+      .where(eq(hotelRoomImages.id, id));
   }
 }
 
