@@ -44,6 +44,7 @@ interface InquiryFormProps {
   productName?: string;
   triggerButtonText?: string;
   triggerButtonFullWidth?: boolean;
+  onInquirySubmitted?: (conversationId: number) => void;
 }
 
 export function InquiryForm({
@@ -51,6 +52,7 @@ export function InquiryForm({
   productName = "",
   triggerButtonText = "Inquire Now",
   triggerButtonFullWidth = false,
+  onInquirySubmitted,
 }: InquiryFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
@@ -79,13 +81,18 @@ export function InquiryForm({
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Inquiry Sent",
         description: "We've received your inquiry and will get back to you soon.",
       });
       form.reset();
       setIsOpen(false);
+      
+      // If a callback was provided, call it with the conversation ID
+      if (onInquirySubmitted && data && data.id) {
+        onInquirySubmitted(data.id);
+      }
     },
     onError: (error: Error) => {
       toast({

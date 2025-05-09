@@ -102,10 +102,10 @@ export default function AdminMessages() {
     isLoading: messagesLoading,
     error: messagesError,
   } = useQuery<Message[]>({
-    queryKey: ["/api/direct/messages", selectedConversation?.id],
+    queryKey: ["/api/messages", selectedConversation?.id],
     queryFn: async () => {
       if (!selectedConversation) return [];
-      const res = await fetch(`/api/direct/messages?conversationId=${selectedConversation.id}`);
+      const res = await fetch(`/api/messages?conversationId=${selectedConversation.id}`);
       if (!res.ok) throw new Error('Failed to fetch messages');
       return res.json();
     },
@@ -115,9 +115,9 @@ export default function AdminMessages() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ conversationId, message }: { conversationId: number; message: string }) => {
-      const response = await apiRequest("POST", `/api/conversations/${conversationId}/messages`, {
-        body: message,
-        type: "admin",
+      const response = await apiRequest("POST", `/api/messages`, {
+        conversationId: conversationId,
+        message: message,
       });
       return response.json();
     },
@@ -130,6 +130,7 @@ export default function AdminMessages() {
       });
     },
     onError: (error: Error) => {
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
         description: `Failed to send message: ${error.message}`,

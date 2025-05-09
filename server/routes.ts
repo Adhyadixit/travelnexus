@@ -1345,6 +1345,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch chat statistics" });
     }
   });
+  
+  // Get conversations for the current user
+  app.get("/api/user-conversations", async (req, res) => {
+    try {
+      let conversationsData = [];
+      
+      if (req.isAuthenticated()) {
+        // Get authenticated user's conversations
+        conversationsData = await storage.getConversationsByUser(req.user!.id);
+      } else {
+        // For guest users, check the session ID
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (guestUser) {
+          conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
+        }
+      }
+      
+      res.json(conversationsData);
+    } catch (error) {
+      console.error("Error fetching user conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+  
+  // Get guest user conversations by session
+  app.get("/api/guest-conversations", async (req, res) => {
+    try {
+      let conversationsData = [];
+      
+      // Get guest user by session ID
+      const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+      if (guestUser) {
+        conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
+      }
+      
+      res.json(conversationsData);
+    } catch (error) {
+      console.error("Error fetching guest conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+  
+  // Get messages for a conversation
+  app.get("/api/messages", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.query.conversationId as string);
+      
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ error: "Invalid conversation ID" });
+      }
+      
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Check authorization
+      let authorized = false;
+      
+      if (req.isAuthenticated()) {
+        if (req.user!.role === 'admin') {
+          authorized = true;
+        } else if (conversation.userId === req.user!.id) {
+          authorized = true;
+        }
+      } else if (conversation.guestUserId) {
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (guestUser && guestUser.id === conversation.guestUserId) {
+          authorized = true;
+        }
+      }
+      
+      if (!authorized) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      const messages = await storage.getMessagesByConversation(conversationId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+  
+  // Send a message
+  app.post("/api/messages", async (req, res) => {
+    try {
+      const { conversationId, message } = req.body;
+      
+      if (!conversationId || !message) {
+        return res.status(400).json({ error: "Conversation ID and message are required" });
+      }
+      
+      const conversation = await storage.getConversation(parseInt(conversationId));
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      // Check authorization
+      let authorized = false;
+      let senderId = 0;
+      let senderType = '';
+      
+      if (req.isAuthenticated()) {
+        senderId = req.user!.id;
+        senderType = req.user!.role === 'admin' ? 'admin' : 'user';
+        
+        if (req.user!.role === 'admin') {
+          authorized = true;
+        } else if (conversation.userId === req.user!.id) {
+          authorized = true;
+        }
+      } else if (conversation.guestUserId) {
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        if (guestUser && guestUser.id === conversation.guestUserId) {
+          senderId = guestUser.id;
+          senderType = 'guest';
+          authorized = true;
+        }
+      }
+      
+      if (!authorized) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      // Create the message
+      const messageData = {
+        conversationId: parseInt(conversationId),
+        senderId,
+        senderType,
+        content: message,
+        messageType: 'text' as const,
+        fileUrl: null,
+      };
+      
+      const newMessage = await storage.createMessage(messageData);
+      
+      // Update conversation's last message time
+      await storage.updateConversation(parseInt(conversationId), {
+        lastMessageAt: new Date(),
+        // Update read status based on sender
+        readByAdmin: senderType === 'admin',
+        readByUser: senderType === 'user' || senderType === 'guest',
+      });
+      
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ error: "Failed to send message" });
+    }
+  });
 
   // Image upload route for Cloudinary integration
   app.post("/api/upload-image", async (req, res) => {
