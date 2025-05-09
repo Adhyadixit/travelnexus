@@ -1627,7 +1627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send a message
   app.post("/api/messages", async (req, res) => {
     try {
-      const { conversationId, message } = req.body;
+      const { conversationId, message, guestUserId } = req.body;
       
       console.log(`Sending message for conversation ID: ${conversationId}`, message);
       
@@ -1665,22 +1665,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`User ${req.user!.id} doesn't match conversation userId ${conversation.userId}`);
         }
       } else if (conversation.guestUserId) {
-        console.log(`Guest user trying to send message for session: ${req.sessionID}`);
-        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
-        
-        if (guestUser) {
-          console.log(`Found guest user: ${guestUser.id}`);
-          
-          if (guestUser.id === conversation.guestUserId) {
-            console.log('Guest user matches conversation, can send message');
-            senderId = guestUser.id;
-            senderType = 'guest';
-            authorized = true;
-          } else {
-            console.log(`Guest user ${guestUser.id} doesn't match conversation guestUserId ${conversation.guestUserId}`);
-          }
+        // First check if guestUserId was provided directly in the request
+        if (guestUserId && guestUserId === conversation.guestUserId) {
+          console.log(`Guest user ID provided in request (${guestUserId}) matches conversation guestUserId`);
+          senderId = conversation.guestUserId;
+          senderType = 'guest';
+          authorized = true;
         } else {
-          console.log(`No guest user found for session: ${req.sessionID}`);
+          // Fall back to session-based guest user verification
+          console.log(`Guest user trying to send message for session: ${req.sessionID}`);
+          const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+          
+          if (guestUser) {
+            console.log(`Found guest user: ${guestUser.id}`);
+            
+            if (guestUser.id === conversation.guestUserId) {
+              console.log('Guest user matches conversation, can send message');
+              senderId = guestUser.id;
+              senderType = 'guest';
+              authorized = true;
+            } else {
+              console.log(`Guest user ${guestUser.id} doesn't match conversation guestUserId ${conversation.guestUserId}`);
+            }
+          } else {
+            console.log(`No guest user found for session: ${req.sessionID}`);
+          }
         }
       } else {
         console.log('No guest user ID in conversation and user not authenticated');

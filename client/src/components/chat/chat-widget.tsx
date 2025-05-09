@@ -205,10 +205,16 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     mutationFn: async (message: string) => {
       if (!activeConversation) throw new Error("No active conversation");
       
-      const response = await apiRequest("POST", "/api/messages", {
+      // Include guestUserId in the request for guest users
+      const payload = {
         conversationId: activeConversation.id,
-        message
-      });
+        message,
+        ...(guestUserId ? { guestUserId } : {})
+      };
+      
+      console.log("Sending message with payload:", payload);
+      
+      const response = await apiRequest("POST", "/api/messages", payload);
       
       return response.json();
     },
