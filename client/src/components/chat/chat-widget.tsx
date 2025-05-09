@@ -99,15 +99,19 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       } else {
         // For guest users, try to fetch guest conversations
         try {
+          console.log("Fetching guest conversations...");
           const res = await fetch("/api/guest-conversations");
           if (!res.ok) throw new Error("Failed to fetch guest conversations");
-          return await res.json();
+          const data = await res.json();
+          console.log("Retrieved guest conversations:", data);
+          return data;
         } catch (error) {
           console.error("Error fetching guest conversations:", error);
           return [];
         }
       }
     },
+    refetchInterval: 5000, // Poll every 5 seconds to check for new conversations
     enabled: true // Always enabled for both users and guests
   });
 
@@ -116,7 +120,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     ? userConversations.find(c => c.id === currentConversationId) 
     : userConversations[0];
 
-  // Get messages for selected conversation
+  // Get messages for selected conversation with polling for regular updates
   const {
     data: messages = [],
     isLoading: messagesLoading,
@@ -134,6 +138,8 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       }
     },
     enabled: !!activeConversation,
+    // Poll every 3 seconds to get new messages
+    refetchInterval: 3000,
   });
 
   // Format date
@@ -315,8 +321,8 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           </SheetHeader>
 
           <div className="flex flex-col h-full">
-            {/* Messages area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Messages area - ensuring proper scrolling with fixed height */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(85vh - 140px)' }}>
               {showGuestForm ? (
                 <div className="p-4 rounded-lg border">
                   <h3 className="text-lg font-semibold mb-4">Enter Your Information</h3>
