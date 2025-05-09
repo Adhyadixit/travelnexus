@@ -84,10 +84,19 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     return savedId || null;
   });
   
+  // Important: Load guest user ID from localStorage for persistence across sessions
   const [guestUserId, setGuestUserId] = useState<number | null>(() => {
     const savedId = localStorage.getItem('guestUserId');
+    console.log("Loaded guestUserId from localStorage:", savedId);
     return savedId ? parseInt(savedId, 10) : null;
   });
+  
+  // Log guestUserId on mount to help debugging
+  useEffect(() => {
+    if (guestUserId) {
+      console.log(`Using stored guest user ID: ${guestUserId}`);
+    }
+  }, [guestUserId]);
   
   // Get user conversations or current conversation
   const {
@@ -455,12 +464,12 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       >
         <SheetContent 
           side="bottom" 
-          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-4 md:left-auto md:bottom-auto animate-none"
+          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-4 md:left-auto md:bottom-auto"
           style={{
             transform: 'none', 
             position: 'fixed',
             animation: 'none',
-            transition: 'opacity 0.15s ease-in-out',
+            transition: 'opacity 0.2s ease',
             boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.1)',
             zIndex: 100
           }}
