@@ -1357,7 +1357,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get conversations for the current user
+  // Get conversations for authenticated users
   app.get("/api/user-conversations", async (req, res) => {
     try {
       let conversationsData: Conversation[] = [];
@@ -1374,17 +1374,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           conversationsData = await storage.getConversationsByUser(userId);
         }
       } else {
-        // For guest users, check the session ID
-        console.log(`Checking for guest user with session ID: ${req.sessionID}`);
-        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
-        
-        if (guestUser) {
-          console.log(`Found guest user with ID ${guestUser.id} for session ${req.sessionID}`);
-          conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
-          console.log(`Found ${conversationsData.length} conversations for guest user ${guestUser.id}`);
-        } else {
-          console.log(`No guest user found for session ${req.sessionID}`);
-        }
+        // Not authenticated
+        return res.status(401).json({ error: "Not authenticated" });
       }
       
       res.json(conversationsData);
@@ -1394,15 +1385,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get guest user conversations by session
+  // Get conversations for guest users
   app.get("/api/guest-conversations", async (req, res) => {
     try {
       let conversationsData: Conversation[] = [];
       
-      // Get guest user by session ID
+      // For guest users, check the session ID
+      console.log(`Checking for guest user with session ID: ${req.sessionID}`);
       const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+      
       if (guestUser) {
+        console.log(`Found guest user with ID ${guestUser.id} for session ${req.sessionID}`);
         conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
+        console.log(`Found ${conversationsData.length} conversations for guest user ${guestUser.id}`);
+      } else {
+        console.log(`No guest user found for session ${req.sessionID}`);
       }
       
       res.json(conversationsData);

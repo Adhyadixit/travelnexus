@@ -86,7 +86,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
         }
       }
       
-      // Otherwise fetch all user conversations if authenticated
+      // Fetch user conversations if authenticated
       if (user) {
         try {
           const res = await fetch("/api/user-conversations");
@@ -96,12 +96,19 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           console.error("Error fetching user conversations:", error);
           return [];
         }
+      } else {
+        // For guest users, try to fetch guest conversations
+        try {
+          const res = await fetch("/api/guest-conversations");
+          if (!res.ok) throw new Error("Failed to fetch guest conversations");
+          return await res.json();
+        } catch (error) {
+          console.error("Error fetching guest conversations:", error);
+          return [];
+        }
       }
-      
-      // No user and no specific conversation ID
-      return [];
     },
-    enabled: !!user || !!currentConversationId
+    enabled: true // Always enabled for both users and guests
   });
 
   // Get active conversation (first one for now, or specified conversation)
@@ -203,8 +210,12 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     },
     onSuccess: (data) => {
       console.log("New conversation created:", data);
-      // Force a refresh of conversations data
-      queryClient.invalidateQueries({ queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", currentConversationId] });
+      // Refresh conversations data based on user type
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ["/api/user-conversations"] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["/api/guest-conversations"] });
+      }
       setMessageInput("");
       // Hide guest form if it was shown
       setShowGuestForm(false);
