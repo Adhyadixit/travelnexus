@@ -246,11 +246,13 @@ export function DesktopLayout({
             <MessageCircle className="h-6 w-6" />
           </Button>
         )}
-        <ChatWidget 
-          autoOpen={isChatOpen}
-          onClose={() => setIsChatOpen(false)}
-          initialConversationId={currentConversationId}
-        />
+        {isChatOpen && (
+          <ChatWidget 
+            autoOpen={true}
+            onClose={() => setIsChatOpen(false)}
+            initialConversationId={currentConversationId}
+          />
+        )}
       </div>
       
       <footer className="bg-neutral-100 text-neutral-800 py-12">

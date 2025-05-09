@@ -216,6 +216,14 @@ export function ChatWidget({
     ? userConversations.find(c => c.id === activeConversationId) 
     : userConversations[0];
 
+  // Initial chat setup - if we're a guest with no conversations, show the form immediately
+  useEffect(() => {
+    if (!user && isOpen && (!userConversations || userConversations.length === 0)) {
+      console.log("No conversations found for guest, showing guest form");
+      setShowGuestForm(true);
+    }
+  }, [isOpen, user, userConversations]);
+
   // Get messages for selected conversation with polling for regular updates
   const {
     data: messages = [],
@@ -228,6 +236,7 @@ export function ChatWidget({
       
       // If we're a guest without a guestUserId, show the guest form first
       if (!user && !guestUserId) {
+        console.log("No guest user ID for message fetch, showing guest form");
         setShowGuestForm(true);
         return [];
       }
@@ -246,11 +255,20 @@ export function ChatWidget({
           // If we get a 401 or 403 as a guest, we need to show the guest form
           if ((res.status === 401 || res.status === 403) && !user) {
             console.log("Auth error for guest user, showing form");
+            // Clear the stored guest ID since it's invalid
+            if (guestUserId) {
+              console.log("Clearing invalid guest user ID");
+              localStorage.removeItem('guestUserId');
+              localStorage.removeItem('guestSessionId');
+              setGuestUserId(null);
+              setSessionId(null);
+            }
             setShowGuestForm(true);
             return [];
           }
           
           const errorData = await res.json().catch(() => ({}));
+          console.error(`Error response from server: ${res.status}`, errorData);
           throw new Error(errorData.error || "Failed to fetch messages");
         }
         
@@ -263,6 +281,17 @@ export function ChatWidget({
     enabled: !!activeConversation,
     // Poll every 3 seconds to get new messages
     refetchInterval: 3000,
+    // Don't retry on 401/403 failures
+    retry: (failureCount, error) => {
+      // If it's an auth error for a guest user, don't retry
+      if (error instanceof Error && 
+          (error.message.includes("Unauthorized") || error.message.includes("Access denied")) && 
+          !user) {
+        return false;
+      }
+      // Otherwise retry up to 3 times
+      return failureCount < 3;
+    }
   });
 
   // Format date
@@ -657,7 +686,21 @@ export function ChatWidget({
                         className="flex-1"
                         onClick={() => {
                           if (guestInfo.name && guestInfo.email) {
-                            createConversationMutation.mutate(messageInput);
+                            // Clear any existing guest ID that might be invalid
+                            if (guestUserId) {
+                              console.log("Clearing existing guest ID for new guest user");
+                              localStorage.removeItem('guestUserId');
+                              localStorage.removeItem('guestSessionId');
+                              setGuestUserId(null);
+                              setSessionId(null);
+                            }
+                            
+                            // Use the message input if it exists, otherwise use a default message
+                            const message = messageInput.trim() 
+                              ? messageInput
+                              : "Hello, I'd like some information about your services.";
+                              
+                            createConversationMutation.mutate(message);
                           } else {
                             toast({
                               title: "Missing information",
