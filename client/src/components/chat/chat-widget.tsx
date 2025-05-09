@@ -62,10 +62,18 @@ interface ChatWidgetProps {
   initialConversationId?: number | null;
 }
 
+interface ChatWidgetProps {
+  currentConversationId?: number | null;
+  autoOpen?: boolean;
+  initialConversationId?: number | null;
+  onClose?: () => void;
+}
+
 export function ChatWidget({ 
   currentConversationId = null, 
   autoOpen = false,
-  initialConversationId = null
+  initialConversationId = null,
+  onClose
 }: ChatWidgetProps) {
   // Use initialConversationId if provided, otherwise use currentConversationId
   const activeConversationId = initialConversationId || currentConversationId;
