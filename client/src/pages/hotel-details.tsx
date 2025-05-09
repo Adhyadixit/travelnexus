@@ -170,9 +170,23 @@ const AMENITY_ICONS: Record<string, React.ReactNode> = {
 export default function HotelDetails() {
   const { id } = useParams<{ id: string }>();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const Layout = isMobile ? MobileLayout : DesktopLayout;
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  
+  // State for inquiry-related chat
+  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
+  const [autoOpenChat, setAutoOpenChat] = useState(false);
+  
+  // Create the Layout component with chat props
+  const Layout = isMobile 
+    ? (props: any) => (
+        <MobileLayout 
+          {...props} 
+          autoOpenChat={autoOpenChat} 
+          currentConversationId={currentConversationId}
+        />
+      ) 
+    : DesktopLayout;
 
   // State for booking
   const [startDate, setStartDate] = useState<Date>();
@@ -514,6 +528,10 @@ export default function HotelDetails() {
               productName={hotel.name}
               defaultSubject={`Inquiry about ${hotel.name}`}
               triggerButtonText="Inquire Now"
+              onInquirySubmitted={(conversationId) => {
+                setCurrentConversationId(conversationId);
+                setAutoOpenChat(true);
+              }}
             />
           </div>
           <button
