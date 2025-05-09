@@ -39,6 +39,7 @@ export function DesktopLayout({
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(autoOpenChat);
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -235,9 +236,16 @@ export function DesktopLayout({
       </main>
       
       {/* Chat Widget for Web (Desktop) - Fixed on the bottom right */}
-      <div className="hidden md:block">
+      <div className="fixed bottom-8 right-8 z-50 hidden md:block">
+        <Button
+          onClick={() => setIsChatOpen(true)} 
+          size="icon"
+          className="h-14 w-14 rounded-full shadow-lg"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
         <ChatWidget 
-          autoOpen={autoOpenChat}
+          autoOpen={isChatOpen}
           initialConversationId={currentConversationId}
         />
       </div>
