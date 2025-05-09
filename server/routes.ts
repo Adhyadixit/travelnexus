@@ -27,7 +27,7 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Create the HTTP server and Socket.IO server right away so they can be used in routes
+  // Create the HTTP server
   const httpServer = createServer(app);
   
   // Set up Socket.IO server for real-time chat features
@@ -37,6 +37,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
       origin: "*",
       methods: ["GET", "POST"]
     }
+  });
+  
+  // Map to track typing status by conversation ID and user IDs
+  const typingUsers = new Map();
+  
+  // Socket.IO connection handling
+  io.on('connection', (socket) => {
+    console.log('A client connected');
+    
+    // Join a conversation room
+    socket.on('join-conversation', (conversationId) => {
+      console.log(`Client joining conversation: ${conversationId}`);
+      socket.join(`conversation-${conversationId}`);
+    });
+    
+    // Leave a conversation room
+    socket.on('leave-conversation', (conversationId) => {
+      console.log(`Client leaving conversation: ${conversationId}`);
+      socket.leave(`conversation-${conversationId}`);
+    });
+    
+    // Handle typing indicators
+    socket.on('typing-start', ({ conversationId, userId, userType }) => {
+      const key = `${conversationId}-${userId}-${userType}`;
+      typingUsers.set(key, true);
+      
+      // Notify others in the conversation that this user is typing
+      socket.to(`conversation-${conversationId}`).emit('user-typing', {
+        conversationId,
+        userId,
+        userType,
+        isTyping: true
+      });
+    });
+    
+    // Handle typing stopped
+    socket.on('typing-stop', ({ conversationId, userId, userType }) => {
+      const key = `${conversationId}-${userId}-${userType}`;
+      typingUsers.delete(key);
+      
+      // Notify others that this user stopped typing
+      socket.to(`conversation-${conversationId}`).emit('user-typing', {
+        conversationId,
+        userId,
+        userType,
+        isTyping: false
+      });
+    });
+    
+    // Handle new message notifications
+    socket.on('new-message', (message) => {
+      // Broadcast to all clients in the conversation room
+      io.to(`conversation-${message.conversationId}`).emit('message-received', message);
+      
+      // Clear typing indicator for this user
+      const key = `${message.conversationId}-${message.senderId}-${message.senderType}`;
+      typingUsers.delete(key);
+      
+      // Notify that user stopped typing
+      socket.to(`conversation-${message.conversationId}`).emit('user-typing', {
+        conversationId: message.conversationId,
+        userId: message.senderId,
+        userType: message.senderType,
+        isTyping: false
+      });
+    });
+    
+    // Handle disconnect
+    socket.on('disconnect', () => {
+      console.log('A client disconnected');
+    });
   });
   
   // Set up authentication
@@ -1753,77 +1824,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register direct database routes that bypass auth and storage
   app.use(directDatabaseRoutes);
-  
-  // Map to track typing status by conversation ID and user IDs
-  const typingUsers = new Map();
-  
-  // Socket.IO connection handling
-  io.on('connection', (socket) => {
-    console.log('A client connected');
-    
-    // Join a conversation room
-    socket.on('join-conversation', (conversationId) => {
-      console.log(`Client joining conversation: ${conversationId}`);
-      socket.join(`conversation-${conversationId}`);
-    });
-    
-    // Leave a conversation room
-    socket.on('leave-conversation', (conversationId) => {
-      console.log(`Client leaving conversation: ${conversationId}`);
-      socket.leave(`conversation-${conversationId}`);
-    });
-    
-    // Handle typing indicators
-    socket.on('typing-start', ({ conversationId, userId, userType }) => {
-      const key = `${conversationId}-${userId}-${userType}`;
-      typingUsers.set(key, true);
-      
-      // Notify others in the conversation that this user is typing
-      socket.to(`conversation-${conversationId}`).emit('user-typing', {
-        conversationId,
-        userId,
-        userType,
-        isTyping: true
-      });
-    });
-    
-    // Handle typing stopped
-    socket.on('typing-stop', ({ conversationId, userId, userType }) => {
-      const key = `${conversationId}-${userId}-${userType}`;
-      typingUsers.delete(key);
-      
-      // Notify others that this user stopped typing
-      socket.to(`conversation-${conversationId}`).emit('user-typing', {
-        conversationId,
-        userId,
-        userType,
-        isTyping: false
-      });
-    });
-    
-    // Handle new message notifications
-    socket.on('new-message', (message) => {
-      // Broadcast to all clients in the conversation room
-      io.to(`conversation-${message.conversationId}`).emit('message-received', message);
-      
-      // Clear typing indicator for this user
-      const key = `${message.conversationId}-${message.senderId}-${message.senderType}`;
-      typingUsers.delete(key);
-      
-      // Notify that user stopped typing
-      socket.to(`conversation-${message.conversationId}`).emit('user-typing', {
-        conversationId: message.conversationId,
-        userId: message.senderId,
-        userType: message.senderType,
-        isTyping: false
-      });
-    });
-    
-    // Handle disconnect
-    socket.on('disconnect', () => {
-      console.log('A client disconnected');
-    });
-  });
   
   return httpServer;
 }
