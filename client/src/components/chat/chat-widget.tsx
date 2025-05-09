@@ -451,8 +451,20 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
             messagesEndRef.current.scrollIntoView({ behavior: "auto" });
           }
         }}
+        modal={true}
       >
-        <SheetContent side="right" className="w-full sm:w-[350px] mx-auto inset-0 h-[60vh] top-[20vh] rounded-t-xl shadow-lg p-0 md:right-4">
+        <SheetContent 
+          side="bottom" 
+          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-4 md:left-auto md:bottom-auto animate-none"
+          style={{
+            transform: 'none', 
+            position: 'fixed',
+            animation: 'none',
+            transition: 'opacity 0.15s ease-in-out',
+            boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.1)',
+            zIndex: 100
+          }}
+        >
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>Customer Support</SheetTitle>
             <SheetDescription>

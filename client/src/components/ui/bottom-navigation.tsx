@@ -22,7 +22,7 @@ export function BottomNavigation() {
       <ExploreMenu open={exploreMenuOpen} onClose={() => setExploreMenuOpen(false)} />
       
       <nav 
-        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center z-50 py-2 px-4 md:hidden"
+        className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-between items-center z-[999] py-2 px-4 md:hidden"
       >
         <Link href="/" className={cn(
           "flex flex-col items-center",
