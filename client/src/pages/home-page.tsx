@@ -235,8 +235,8 @@ export default function HomePage() {
           )}
           
           <div className="mt-6 text-center md:hidden">
-            <Link href="/cruises">
-              <a className="text-primary font-medium">View All Cruises</a>
+            <Link href="/cruises" className="text-primary font-medium">
+              View All Cruises
             </Link>
           </div>
         </div>
@@ -286,8 +286,8 @@ export default function HomePage() {
           )}
           
           <div className="mt-6 text-center md:hidden">
-            <Link href="/cabs">
-              <a className="text-primary font-medium">View All Drivers</a>
+            <Link href="/cabs" className="text-primary font-medium">
+              View All Drivers
             </Link>
           </div>
         </div>
