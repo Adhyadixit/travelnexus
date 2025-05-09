@@ -70,21 +70,36 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     data: userConversations = [],
     isLoading: conversationsLoading
   } = useQuery<Conversation[]>({
-    queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations"],
+    queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", currentConversationId],
     queryFn: async () => {
-      if (!user && !currentConversationId) return [];
-      
-      try {
-        const url = user 
-          ? "/api/user-conversations" 
-          : "/api/guest-conversations";
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch conversations");
-        return await res.json();
-      } catch (error) {
-        console.error("Error fetching conversations:", error);
-        return [];
+      // If we have a specific conversation ID, prioritize that
+      if (currentConversationId) {
+        try {
+          // When we have a specific conversation ID, try to get just that one
+          const res = await fetch(`/api/conversations/${currentConversationId}`);
+          if (!res.ok) throw new Error("Failed to fetch conversation");
+          const conversation = await res.json();
+          return [conversation]; // Return as array to match expected type
+        } catch (error) {
+          console.error(`Error fetching conversation ${currentConversationId}:`, error);
+          return [];
+        }
       }
+      
+      // Otherwise fetch all user conversations if authenticated
+      if (user) {
+        try {
+          const res = await fetch("/api/user-conversations");
+          if (!res.ok) throw new Error("Failed to fetch conversations");
+          return await res.json();
+        } catch (error) {
+          console.error("Error fetching user conversations:", error);
+          return [];
+        }
+      }
+      
+      // No user and no specific conversation ID
+      return [];
     },
     enabled: !!user || !!currentConversationId
   });
