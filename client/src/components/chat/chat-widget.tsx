@@ -398,13 +398,13 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
   return (
     <>
       {/* Fixed chat button for mobile */}
-      <div className="fixed bottom-20 right-4 z-40 md:hidden">
+      <div className="fixed bottom-16 right-4 z-50 md:hidden">
         <Button
           onClick={() => setIsOpen(true)}
           size="icon"
-          className="h-12 w-12 rounded-full shadow-lg"
+          className="h-10 w-10 rounded-full shadow-lg"
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5" />
         </Button>
       </div>
 
@@ -419,7 +419,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           }
         }}
       >
-        <SheetContent side="bottom" className="h-[85vh] p-0">
+        <SheetContent side="bottom" className="h-[65vh] p-0">
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>Customer Support</SheetTitle>
             <SheetDescription>
@@ -429,7 +429,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
 
           <div className="flex flex-col h-full">
             {/* Messages area - ensuring proper scrolling with fixed height */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(85vh - 140px)' }}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ maxHeight: 'calc(65vh - 120px)' }}>
               {showGuestForm ? (
                 <div className="p-4 rounded-lg border">
                   <h3 className="text-lg font-semibold mb-4">Enter Your Information</h3>
@@ -555,7 +555,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
             </div>
 
             {/* Message input */}
-            <SheetFooter className="sticky bottom-0 bg-background border-t p-3">
+            <SheetFooter className="sticky bottom-0 bg-background border-t p-3 z-50">
               <div className="flex w-full space-x-2">
                 <input
                   type="text"
