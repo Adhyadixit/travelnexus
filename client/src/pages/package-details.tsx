@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Package, Destination } from "@shared/schema";

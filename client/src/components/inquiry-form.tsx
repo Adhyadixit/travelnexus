@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,7 @@ export function InquiryForm({
 }: InquiryFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Create form with zod validation
   const form = useForm<InquiryFormValues>({
@@ -101,6 +103,13 @@ export function InquiryForm({
       // If a callback was provided, call it with the conversation ID
       if (onInquirySubmitted && data && data.id) {
         console.log(`Triggering callback with conversation ID: ${data.id}`);
+        
+        // Save the guestUserId in localStorage for persistent chat access
+        if (data.guestUserId) {
+          localStorage.setItem('guestUserId', String(data.guestUserId));
+        }
+        
+        // Call the callback to handle opening the chat widget
         onInquirySubmitted(data.id);
       }
     },
