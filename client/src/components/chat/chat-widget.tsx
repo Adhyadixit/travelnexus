@@ -164,6 +164,32 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     },
   });
 
+  // Create new conversation mutation
+  const createConversationMutation = useMutation({
+    mutationFn: async (message: string) => {
+      // For logged-in users, create a new conversation
+      const response = await apiRequest("POST", "/api/conversations", {
+        subject: "New Support Request",
+        message: message,
+        itemType: "support"
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log("New conversation created:", data);
+      // Force a refresh of conversations data
+      queryClient.invalidateQueries({ queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", currentConversationId] });
+      setMessageInput("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: `Failed to create conversation: ${error.message}`,
+        variant: "destructive"
+      });
+    }
+  });
+
   // Handle send message
   const handleSendMessage = () => {
     // Check if we have necessary data
@@ -172,13 +198,21 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       return;
     }
     
+    // Handle case with no active conversation
     if (!activeConversation) {
-      console.log('No active conversation');
-      toast({
-        title: "Error",
-        description: "Cannot send message: No active conversation",
-        variant: "destructive"
-      });
+      console.log('No active conversation, creating a new one');
+      
+      // Only allow creating new conversations for logged-in users
+      if (user) {
+        createConversationMutation.mutate(messageInput);
+      } else {
+        toast({
+          title: "Please submit an inquiry first",
+          description: "You need to submit an inquiry to start a conversation with our support team.",
+          variant: "default"
+        });
+        setIsOpen(false);
+      }
       return;
     }
     
@@ -309,34 +343,42 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
 
             {/* Message input */}
             <SheetFooter className="sticky bottom-0 bg-background border-t p-3">
-              <div className="flex w-full space-x-2">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  disabled={!activeConversation}
-                />
-                <Button
-                  size="icon"
-                  className="h-10 w-10"
-                  disabled={!activeConversation || !messageInput.trim() || sendMessageMutation.isPending}
-                  onClick={handleSendMessage}
+              {!user && !activeConversation ? (
+                <Button 
+                  className="w-full" 
+                  onClick={() => setIsOpen(false)}
                 >
-                  {sendMessageMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4" />
-                  )}
+                  Submit an Inquiry to Start Chatting
                 </Button>
-              </div>
+              ) : (
+                <div className="flex w-full space-x-2">
+                  <input
+                    type="text"
+                    placeholder="Type your message..."
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                  />
+                  <Button
+                    size="icon"
+                    className="h-10 w-10"
+                    disabled={!messageInput.trim() || sendMessageMutation.isPending}
+                    onClick={handleSendMessage}
+                  >
+                    {sendMessageMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              )}
             </SheetFooter>
           </div>
         </SheetContent>
