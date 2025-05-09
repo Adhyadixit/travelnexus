@@ -21,7 +21,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
-import ChatWidget from "@/components/chat/chat-widget";
+import { ChatWidget } from "@/components/chat/chat-widget";
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
