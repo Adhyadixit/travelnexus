@@ -419,7 +419,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           }
         }}
       >
-        <SheetContent side="bottom" className="h-[60vh] pb-16 p-0">
+        <SheetContent side="right" className="w-full sm:w-[350px] mx-auto inset-0 h-[60vh] top-[20vh] rounded-t-xl shadow-lg p-0 md:right-4">
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>Customer Support</SheetTitle>
             <SheetDescription>
@@ -555,7 +555,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
             </div>
 
             {/* Message input */}
-            <SheetFooter className="sticky bottom-0 bg-background border-t p-3 z-50">
+            <SheetFooter className="absolute bottom-0 left-0 right-0 bg-background border-t p-3 z-50">
               <div className="flex w-full space-x-2">
                 <input
                   type="text"
