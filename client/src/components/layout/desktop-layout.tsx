@@ -26,11 +26,15 @@ import ChatWidget from "@/components/chat/chat-widget";
 interface DesktopLayoutProps {
   children: React.ReactNode;
   hideNavigation?: boolean;
+  autoOpenChat?: boolean;
+  currentConversationId?: number | null;
 }
 
 export function DesktopLayout({ 
   children,
-  hideNavigation = false
+  hideNavigation = false,
+  autoOpenChat = false,
+  currentConversationId = null
 }: DesktopLayoutProps) {
   const [location] = useLocation();
   const { user, logoutMutation } = useAuth();
@@ -232,7 +236,10 @@ export function DesktopLayout({
       
       {/* Chat Widget for Web (Desktop) - Fixed on the bottom right */}
       <div className="hidden md:block">
-        <ChatWidget />
+        <ChatWidget 
+          autoOpen={autoOpenChat}
+          initialConversationId={currentConversationId}
+        />
       </div>
       
       <footer className="bg-neutral-100 text-neutral-800 py-12">

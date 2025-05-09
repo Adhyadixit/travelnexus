@@ -59,9 +59,16 @@ type Conversation = {
 interface ChatWidgetProps {
   currentConversationId?: number | null;
   autoOpen?: boolean;
+  initialConversationId?: number | null;
 }
 
-export function ChatWidget({ currentConversationId = null, autoOpen = false }: ChatWidgetProps) {
+export function ChatWidget({ 
+  currentConversationId = null, 
+  autoOpen = false,
+  initialConversationId = null
+}: ChatWidgetProps) {
+  // Use initialConversationId if provided, otherwise use currentConversationId
+  const activeConversationId = initialConversationId || currentConversationId;
   const [isOpen, setIsOpen] = useState(autoOpen);
   const [messageInput, setMessageInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -127,18 +134,18 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     data: userConversations = [],
     isLoading: conversationsLoading
   } = useQuery<Conversation[]>({
-    queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", currentConversationId],
+    queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", activeConversationId],
     queryFn: async () => {
       // If we have a specific conversation ID, prioritize that
-      if (currentConversationId) {
+      if (activeConversationId) {
         try {
           // When we have a specific conversation ID, try to get just that one
-          const res = await fetch(`/api/conversations/${currentConversationId}`);
+          const res = await fetch(`/api/conversations/${activeConversationId}`);
           if (!res.ok) throw new Error("Failed to fetch conversation");
           const conversation = await res.json();
           return [conversation]; // Return as array to match expected type
         } catch (error) {
-          console.error(`Error fetching conversation ${currentConversationId}:`, error);
+          console.error(`Error fetching conversation ${activeConversationId}:`, error);
           return [];
         }
       }
@@ -188,8 +195,8 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
   });
 
   // Get active conversation (first one for now, or specified conversation)
-  const activeConversation = currentConversationId 
-    ? userConversations.find(c => c.id === currentConversationId) 
+  const activeConversation = activeConversationId 
+    ? userConversations.find(c => c.id === activeConversationId) 
     : userConversations[0];
 
   // Get messages for selected conversation with polling for regular updates
