@@ -115,8 +115,9 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
   });
 
   // Format date
-  const formatMessageDate = (dateString: string): string => {
+  const formatMessageDate = (dateString: string | undefined): string => {
     try {
+      if (!dateString) return "";
       return format(new Date(dateString), "h:mm a");
     } catch (error) {
       return "";
