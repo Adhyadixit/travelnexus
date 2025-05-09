@@ -164,29 +164,60 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     },
   });
 
+  // Guest info state for first-time guest chat
+  const [guestInfo, setGuestInfo] = useState({
+    name: "",
+    email: "",
+  });
+  const [showGuestForm, setShowGuestForm] = useState(false);
+
   // Create new conversation mutation
   const createConversationMutation = useMutation({
     mutationFn: async (message: string) => {
-      // For logged-in users, create a new conversation
-      const response = await apiRequest("POST", "/api/conversations", {
-        subject: "New Support Request",
-        message: message,
-        itemType: "support"
-      });
-      return response.json();
+      // If user is logged in, create with user account
+      if (user) {
+        const response = await apiRequest("POST", "/api/conversations", {
+          subject: "New Support Request",
+          message: message,
+          itemType: "livechat"
+        });
+        return response.json();
+      } 
+      // For guests, create with guest info
+      else {
+        if (!guestInfo.name || !guestInfo.email) {
+          // If we don't have guest info, show form instead of creating conversation
+          setShowGuestForm(true);
+          throw new Error("Guest info required");
+        }
+
+        const response = await apiRequest("POST", "/api/conversations", {
+          guestName: guestInfo.name,
+          guestEmail: guestInfo.email,
+          subject: "Live Chat Support",
+          message: message,
+          itemType: "livechat"
+        });
+        return response.json();
+      }
     },
     onSuccess: (data) => {
       console.log("New conversation created:", data);
       // Force a refresh of conversations data
       queryClient.invalidateQueries({ queryKey: [user ? "/api/user-conversations" : "/api/guest-conversations", currentConversationId] });
       setMessageInput("");
+      // Hide guest form if it was shown
+      setShowGuestForm(false);
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: `Failed to create conversation: ${error.message}`,
-        variant: "destructive"
-      });
+      // Only show error if it's not because we need guest info
+      if (error.message !== "Guest info required") {
+        toast({
+          title: "Error",
+          description: `Failed to create conversation: ${error.message}`,
+          variant: "destructive"
+        });
+      }
     }
   });
 
@@ -198,21 +229,15 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       return;
     }
     
+    // If showing guest form, don't send message
+    if (showGuestForm) {
+      return;
+    }
+    
     // Handle case with no active conversation
     if (!activeConversation) {
       console.log('No active conversation, creating a new one');
-      
-      // Only allow creating new conversations for logged-in users
-      if (user) {
-        createConversationMutation.mutate(messageInput);
-      } else {
-        toast({
-          title: "Please submit an inquiry first",
-          description: "You need to submit an inquiry to start a conversation with our support team.",
-          variant: "default"
-        });
-        setIsOpen(false);
-      }
+      createConversationMutation.mutate(messageInput);
       return;
     }
     
@@ -281,7 +306,66 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
           <div className="flex flex-col h-full">
             {/* Messages area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {conversationsLoading || messagesLoading ? (
+              {showGuestForm ? (
+                <div className="p-4 rounded-lg border">
+                  <h3 className="text-lg font-semibold mb-4">Enter Your Information</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Name</label>
+                      <input
+                        type="text"
+                        value={guestInfo.name}
+                        onChange={(e) => setGuestInfo(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="Your name"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Email</label>
+                      <input
+                        type="email"
+                        value={guestInfo.email}
+                        onChange={(e) => setGuestInfo(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="Your email"
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="flex space-x-2 mt-4">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => setShowGuestForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        className="flex-1"
+                        onClick={() => {
+                          if (guestInfo.name && guestInfo.email) {
+                            createConversationMutation.mutate(messageInput);
+                          } else {
+                            toast({
+                              title: "Missing information",
+                              description: "Please provide both name and email to start chatting",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
+                        disabled={createConversationMutation.isPending}
+                      >
+                        {createConversationMutation.isPending ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Please wait...
+                          </>
+                        ) : (
+                          "Start Chat"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : conversationsLoading || messagesLoading ? (
                 <div className="flex justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
@@ -290,7 +374,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                   <MessageCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>No active conversations</p>
                   <p className="text-sm mt-2">
-                    Our support team is ready to help you. Start a conversation now.
+                    Our support team is ready to help you. Type a message below to start chatting.
                   </p>
                 </div>
               ) : messages.length === 0 ? (
@@ -343,42 +427,33 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
 
             {/* Message input */}
             <SheetFooter className="sticky bottom-0 bg-background border-t p-3">
-              {!user && !activeConversation ? (
-                <Button 
-                  className="w-full" 
-                  onClick={() => setIsOpen(false)}
+              <div className="flex w-full space-x-2">
+                <input
+                  type="text"
+                  placeholder="Type your message..."
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                />
+                <Button
+                  size="icon"
+                  className="h-10 w-10"
+                  disabled={!messageInput.trim() || sendMessageMutation.isPending || createConversationMutation.isPending}
+                  onClick={handleSendMessage}
                 >
-                  Submit an Inquiry to Start Chatting
+                  {sendMessageMutation.isPending || createConversationMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
                 </Button>
-              ) : (
-                <div className="flex w-full space-x-2">
-                  <input
-                    type="text"
-                    placeholder="Type your message..."
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                  />
-                  <Button
-                    size="icon"
-                    className="h-10 w-10"
-                    disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                    onClick={handleSendMessage}
-                  >
-                    {sendMessageMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              )}
+              </div>
             </SheetFooter>
           </div>
         </SheetContent>
