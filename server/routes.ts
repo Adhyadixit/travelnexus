@@ -21,7 +21,8 @@ import {
   bookings, bookingTypeEnum,
   destinations, packages, hotels, drivers, cruises, events, users, reviews,
   guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
-  hotelRoomTypes, hotelRoomImages, insertDestinationSchema
+  hotelRoomTypes, hotelRoomImages, insertDestinationSchema,
+  type Conversation, type Message, type InsertMessage
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1349,7 +1350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get conversations for the current user
   app.get("/api/user-conversations", async (req, res) => {
     try {
-      let conversationsData = [];
+      let conversationsData: Conversation[] = [];
       
       if (req.isAuthenticated()) {
         // Get authenticated user's conversations
@@ -1372,7 +1373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get guest user conversations by session
   app.get("/api/guest-conversations", async (req, res) => {
     try {
-      let conversationsData = [];
+      let conversationsData: Conversation[] = [];
       
       // Get guest user by session ID
       const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
@@ -1484,12 +1485,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const newMessage = await storage.createMessage(messageData);
       
-      // Update conversation's last message time
+      // Update conversation's read status based on sender
       await storage.updateConversation(parseInt(conversationId), {
-        lastMessageAt: new Date(),
         // Update read status based on sender
         readByAdmin: senderType === 'admin',
         readByUser: senderType === 'user' || senderType === 'guest',
+        // Also update the status to ensure it's open
+        status: 'open',
       });
       
       res.status(201).json(newMessage);

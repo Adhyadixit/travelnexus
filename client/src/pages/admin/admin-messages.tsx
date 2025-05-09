@@ -122,7 +122,7 @@ export default function AdminMessages() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/direct/messages", selectedConversation?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedConversation?.id] });
       setMessageInput("");
       toast({
         title: "Message sent",
