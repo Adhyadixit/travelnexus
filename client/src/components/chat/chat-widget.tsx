@@ -202,6 +202,15 @@ export function ChatWidget({
     enabled: true // Always enabled for both users and guests
   });
 
+  // Show guest form if there are no conversations for guest users
+  useEffect(() => {
+    // For guest users, if we have an ID but no conversations, show the form
+    if (!user && guestUserId && userConversations.length === 0) {
+      console.log("No conversations found for guest user, showing form");
+      setShowGuestForm(true);
+    }
+  }, [userConversations, user, guestUserId]);
+
   // Get active conversation (first one for now, or specified conversation)
   const activeConversation = activeConversationId 
     ? userConversations.find(c => c.id === activeConversationId) 
@@ -211,10 +220,18 @@ export function ChatWidget({
   const {
     data: messages = [],
     isLoading: messagesLoading,
+    error: messagesError
   } = useQuery<Message[]>({
     queryKey: ["/api/messages", activeConversation?.id, guestUserId],
     queryFn: async () => {
       if (!activeConversation) return [];
+      
+      // If we're a guest without a guestUserId, show the guest form first
+      if (!user && !guestUserId) {
+        setShowGuestForm(true);
+        return [];
+      }
+      
       try {
         // Include guestUserId for non-authenticated users to bypass session auth
         let url = `/api/messages?conversationId=${activeConversation.id}`;
@@ -226,7 +243,14 @@ export function ChatWidget({
         const res = await fetch(url);
         
         if (!res.ok) {
-          const errorData = await res.json();
+          // If we get a 401 or 403 as a guest, we need to show the guest form
+          if ((res.status === 401 || res.status === 403) && !user) {
+            console.log("Auth error for guest user, showing form");
+            setShowGuestForm(true);
+            return [];
+          }
+          
+          const errorData = await res.json().catch(() => ({}));
           throw new Error(errorData.error || "Failed to fetch messages");
         }
         
