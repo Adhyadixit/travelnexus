@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Plus, X, AlertCircle } from "lucide-react";
 import RoomImagesManager from "@/components/rooms/room-images-manager";
+import RoomTypesManager from "@/components/rooms/room-types-manager";
 
 // Extend the insert schema for form validation
 const hotelFormSchema = insertHotelSchema.extend({
@@ -38,7 +39,6 @@ const hotelFormSchema = insertHotelSchema.extend({
   languagesList: z.string().optional(),
   attractionsList: z.string().optional(),
   policiesList: z.string().optional(),
-  roomTypesList: z.string().optional(),
   hotelType: z.enum(['hotel', 'resort', 'villa', 'independent_house']).default('hotel'),
 });
 
@@ -110,11 +110,6 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
     attractionsList: arrayToString(parseJsonOrDefault(initialData?.nearbyAttractions || null, [])),
     featured: initialData?.featured ?? false,
     freeCancellation: initialData?.freeCancellation ?? false,
-    roomTypesList: stringifyJsonSafely(parseJsonOrDefault(initialData?.roomTypes || null, [
-      { name: "Standard Room", price: 0, maxOccupancy: 2 },
-      { name: "Deluxe Room", price: 50, maxOccupancy: 2 },
-      { name: "Suite", price: 100, maxOccupancy: 4 }
-    ])),
   };
 
   const form = useForm<HotelFormValues>({
@@ -134,7 +129,6 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
         languagesSpoken: stringToArray(data.languagesList || ""),
         nearbyAttractions: stringToArray(data.attractionsList || ""),
         policies: data.policiesList,
-        roomTypes: data.roomTypesList,
         imageGallery: JSON.stringify(data.imageGalleryUrls || []),
       };
       
@@ -143,7 +137,6 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
       delete formattedData.languagesList;
       delete formattedData.attractionsList;
       delete formattedData.policiesList;
-      delete formattedData.roomTypesList;
       delete formattedData.imageGalleryUrls;
       
       console.log("Formatted data for submission:", formattedData);
@@ -564,32 +557,20 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
             <Card>
               <CardHeader>
                 <CardTitle>Room Types</CardTitle>
-                <CardDescription>Specify the different room types available at this hotel</CardDescription>
+                <CardDescription>Manage the different room types available at this hotel</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="roomTypesList"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Room Types (JSON format)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder={'[\n  {\n    "name": "Standard Room",\n    "price": 0,\n    "maxOccupancy": 2,\n    "description": "Cozy room with city view",\n    "beds": "1 King or 2 Twin",\n    "amenities": ["TV", "Mini-bar", "Safe"]\n  },\n  {\n    "name": "Deluxe Room",\n    "price": 50,\n    "maxOccupancy": 2,\n    "description": "Spacious room with premium amenities",\n    "beds": "1 King",\n    "amenities": ["TV", "Mini-bar", "Safe", "Bathtub"]\n  }\n]'}
-                          className="min-h-[400px] font-mono text-sm" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter room types in JSON format. The price field represents additional cost over base price.
-                      </FormDescription>
-                      <FormDescription className="mt-2 text-primary">
-                        Note: After saving the hotel, use the Room Images tab to manage images for each room type.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {initialData ? (
+                  <RoomTypesManager hotelId={initialData.id} />
+                ) : (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Hotel not saved</AlertTitle>
+                    <AlertDescription>
+                      Please save the hotel first before managing room types.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

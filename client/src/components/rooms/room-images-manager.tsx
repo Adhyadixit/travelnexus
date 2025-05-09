@@ -73,7 +73,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Create a new room type
   const createRoomTypeMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/hotel-room-types", {
+      const res = await apiRequest("POST", `/api/hotels/${hotelId}/room-types`, {
         ...data,
         hotelId,
         amenities: JSON.stringify(data.amenities.split("\n").filter(Boolean)),
@@ -81,7 +81,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       return await res.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${hotelId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hotels/${hotelId}/room-types`] });
       setIsAddingRoomType(false);
       setNewRoomType({
         name: "",
@@ -108,10 +108,10 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Delete a room type
   const deleteRoomTypeMutation = useMutation({
     mutationFn: async (roomTypeId: number) => {
-      await apiRequest("DELETE", `/api/hotel-room-types/${roomTypeId}`);
+      await apiRequest("DELETE", `/api/room-types/${roomTypeId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${hotelId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hotels/${hotelId}/room-types`] });
       setSelectedRoomType(null);
       toast({
         title: "Room type deleted",
@@ -130,11 +130,11 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Add a new image to a room type
   const addImageMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/hotel-room-images", data);
+      const res = await apiRequest("POST", `/api/room-types/${selectedRoomType}/images`, data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
       setIsAddingImage(false);
       setNewImage({
         imageUrl: "",
@@ -159,10 +159,10 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Delete an image
   const deleteImageMutation = useMutation({
     mutationFn: async (imageId: number) => {
-      await apiRequest("DELETE", `/api/hotel-room-images/${imageId}`);
+      await apiRequest("DELETE", `/api/room-images/${imageId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
       toast({
         title: "Image deleted",
         description: "The image has been deleted successfully.",
@@ -180,11 +180,11 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Update an image to set it as featured
   const updateImageMutation = useMutation({
     mutationFn: async ({ imageId, data }: { imageId: number; data: any }) => {
-      const res = await apiRequest("PUT", `/api/hotel-room-images/${imageId}`, data);
+      const res = await apiRequest("PUT", `/api/room-images/${imageId}`, data);
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
       toast({
         title: "Image updated",
         description: "The image has been updated successfully.",
