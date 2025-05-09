@@ -46,7 +46,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     isLoading: roomTypesLoading,
     error: roomTypesError,
   } = useQuery<HotelRoomType[]>({
-    queryKey: [`/api/hotel-room-types/${hotelId}`],
+    queryKey: [`/api/hotels/${hotelId}/room-types`],
     enabled: !!hotelId,
   });
 
@@ -56,7 +56,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     isLoading: roomImagesLoading,
     error: roomImagesError,
   } = useQuery<HotelRoomImage[]>({
-    queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`],
+    queryKey: [`/api/room-types/${selectedRoomType}/images`],
     enabled: !!selectedRoomType,
   });
 
