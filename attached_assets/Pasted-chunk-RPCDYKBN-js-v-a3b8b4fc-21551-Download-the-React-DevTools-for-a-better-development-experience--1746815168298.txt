@@ -1,0 +1,55 @@
+chunk-RPCDYKBN.js?v=a3b8b4fc:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+chunk-RPCDYKBN.js?v=a3b8b4fc:521 Warning: validateDOMNesting(...): <a> cannot appear as a descendant of <a>.
+    at a
+    at a
+    at https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=a3b8b4fc:352:18
+    at div
+    at div
+    at section
+    at main
+    at div
+    at DesktopLayout (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/src/components/layout/desktop-layout.tsx:49:3)
+    at HomePage (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/src/pages/home-page.tsx:35:20)
+    at Route (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=a3b8b4fc:338:16)
+    at Switch (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=a3b8b4fc:394:17)
+    at Router
+    at Provider (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5AJU3CG7.js?v=a3b8b4fc:38:15)
+    at TooltipProvider (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=a3b8b4fc:63:5)
+    at AuthProvider (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at ThemeProvider (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/src/components/theme-provider.tsx:25:3)
+    at QueryClientProvider (https://41119843-b551-44d4-af3e-ff8963ce24dd-00-zqveqo0k3fa.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=a3b8b4fc:2875:3)
+    at App
+printWarning @ chunk-RPCDYKBN.js?v=a3b8b4fc:521
+chat-widget.tsx:97 Loaded guestUserId from localStorage: 21
+chat-widget.tsx:128 Using stored guest user ID: 21
+chat-widget.tsx:166 Fetching guest conversations...
+chat-widget.tsx:176 Retrieved guest conversations: Array(2)
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33
+socket.ts:61 Joining conversation: 33
+/api/user:1 
+            
+            
+           Failed to load resource: the server responded with a status of 401 (Unauthorized)
+socket.ts:42 Socket.IO connected
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33
+chat-widget.tsx:166 Fetching guest conversations...
+chat-widget.tsx:176 Retrieved guest conversations: Array(2)
+chat-widget.tsx:128 Using stored guest user ID: 21
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33&guestUserId=21
+chat-widget.tsx:97 Loaded guestUserId from localStorage: 21
+socket.ts:69 Leaving conversation: 33
+chat-widget.tsx:128 Using stored guest user ID: 21
+socket.ts:61 Joining conversation: 33
+Node cannot be found in the current page.
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33
+chat-widget.tsx:97 Loaded guestUserId from localStorage: null
+socket.ts:69 Leaving conversation: 33
+socket.ts:61 Joining conversation: 33
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33
+chat-widget.tsx:166 Fetching guest conversations...
+chat-widget.tsx:176 Retrieved guest conversations: (2) [{…}, {…}]
+chat-widget.tsx:128 Using stored guest user ID: 21
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33&guestUserId=21
+chat-widget.tsx:166 Fetching guest conversations...
+chat-widget.tsx:176 Retrieved guest conversations: (2) [{…}, {…}]
+chat-widget.tsx:217 Fetching messages from: /api/messages?conversationId=33&guestUserId=21

@@ -237,15 +237,18 @@ export function DesktopLayout({
       
       {/* Chat Widget for Web (Desktop) - Fixed on the bottom right */}
       <div className="fixed bottom-8 right-8 z-50 hidden md:block">
-        <Button
-          onClick={() => setIsChatOpen(true)} 
-          size="icon"
-          className="h-14 w-14 rounded-full shadow-lg"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
+        {!isChatOpen && (
+          <Button
+            onClick={() => setIsChatOpen(true)} 
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-lg"
+          >
+            <MessageCircle className="h-6 w-6" />
+          </Button>
+        )}
         <ChatWidget 
           autoOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
           initialConversationId={currentConversationId}
         />
       </div>
