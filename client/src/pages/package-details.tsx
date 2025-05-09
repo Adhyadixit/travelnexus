@@ -155,13 +155,36 @@ export default function PackageDetails() {
     );
   }
 
-  // Parse JSON fields
-  const citiesCovered = packageData.citiesCovered ? JSON.parse(packageData.citiesCovered || '[]') : [];
-  const excludedItems = packageData.excluded ? JSON.parse(packageData.excluded || '[]') : [];
-  const hotelInfo = packageData.hotels ? JSON.parse(packageData.hotels || '[]') : [];
-  const itineraryData = packageData.itinerary ? JSON.parse(packageData.itinerary || '{}') : {};
-  const highlights = packageData.highlights ? JSON.parse(packageData.highlights || '[]') : [];
-  const meals = packageData.meals ? JSON.parse(packageData.meals || '{}') : {};
+  // Parse JSON fields safely with error handling
+  const safeJsonParse = (jsonString: string | null | undefined, defaultValue: any) => {
+    if (!jsonString) return defaultValue;
+    
+    try {
+      const parsed = JSON.parse(jsonString);
+      
+      // Check if the result is valid for arrays (should be an array and not empty object)
+      if (Array.isArray(defaultValue) && (!Array.isArray(parsed) || (parsed.length === 0 && Object.keys(parsed).length === 0))) {
+        return defaultValue;
+      }
+      
+      // Check if the result is valid for objects (should be an object and not empty array)
+      if (!Array.isArray(defaultValue) && (typeof parsed !== 'object' || parsed === null)) {
+        return defaultValue;
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.error(`Error parsing JSON: ${error}`);
+      return defaultValue;
+    }
+  };
+  
+  const citiesCovered = safeJsonParse(packageData.citiesCovered, []);
+  const excludedItems = safeJsonParse(packageData.excluded, []);
+  const hotelInfo = safeJsonParse(packageData.hotels, []);
+  const itineraryData = safeJsonParse(packageData.itinerary, {});
+  const highlights = safeJsonParse(packageData.highlights, []);
+  const meals = safeJsonParse(packageData.meals, {});
 
   // Sample reviews (since we don't have real review data)
   const REVIEWS = [

@@ -41,28 +41,75 @@ export function generateId(): string {
 }
 
 // Parse included items from JSON string
-export function parseIncludedItems(includedJson: string): string[] {
+export function parseIncludedItems(includedJson: string | null | undefined): string[] {
+  if (!includedJson) return [];
+  
   try {
-    return JSON.parse(includedJson);
+    const parsed = JSON.parse(includedJson);
+    
+    // Handle case when it's an object but should be an array
+    if (!Array.isArray(parsed)) {
+      if (typeof parsed === 'object' && parsed !== null) {
+        // If it's an empty object, return empty array
+        if (Object.keys(parsed).length === 0) {
+          return [];
+        }
+        // Otherwise try to convert object values to array
+        return Object.values(parsed);
+      }
+      // If it's not an object or array, return empty array
+      return [];
+    }
+    
+    return parsed;
   } catch (e) {
+    console.error("Error parsing included items:", e);
     return [];
   }
 }
 
 // Parse amenities from JSON string
-export function parseAmenities(amenitiesJson: string): string[] {
+export function parseAmenities(amenitiesJson: string | null | undefined): string[] {
+  if (!amenitiesJson) return [];
+  
   try {
-    return JSON.parse(amenitiesJson);
+    const parsed = JSON.parse(amenitiesJson);
+    
+    // Handle case when it's an object but should be an array
+    if (!Array.isArray(parsed)) {
+      if (typeof parsed === 'object' && parsed !== null) {
+        // If it's an empty object, return empty array
+        if (Object.keys(parsed).length === 0) {
+          return [];
+        }
+        // Otherwise try to convert object values to array
+        return Object.values(parsed);
+      }
+      // If it's not an object or array, return empty array
+      return [];
+    }
+    
+    return parsed;
   } catch (e) {
+    console.error("Error parsing amenities:", e);
     return [];
   }
 }
 
 // Parse itinerary from JSON string
-export function parseItinerary(itineraryJson: string): Record<string, string> {
+export function parseItinerary(itineraryJson: string | null | undefined): Record<string, string> {
+  if (!itineraryJson) return {};
+  
   try {
-    return JSON.parse(itineraryJson);
+    const parsed = JSON.parse(itineraryJson);
+    
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return {};
+    }
+    
+    return parsed;
   } catch (e) {
+    console.error("Error parsing itinerary:", e);
     return {};
   }
 }
