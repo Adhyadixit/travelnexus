@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { 
-  Search, Heart, User, LogOut, LogIn, Menu, X 
+  Search, Heart, User, LogOut, LogIn, Menu, X, MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,6 +21,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import ChatWidget from "@/components/chat/chat-widget";
 
 interface DesktopLayoutProps {
   children: React.ReactNode;
@@ -228,6 +229,11 @@ export function DesktopLayout({
       <main className="flex-grow">
         {children}
       </main>
+      
+      {/* Chat Widget for Web (Desktop) - Fixed on the bottom right */}
+      <div className="hidden md:block">
+        <ChatWidget />
+      </div>
       
       <footer className="bg-neutral-100 text-neutral-800 py-12">
         <div className="container mx-auto px-4">
