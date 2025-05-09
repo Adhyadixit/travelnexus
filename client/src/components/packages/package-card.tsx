@@ -13,23 +13,19 @@ interface PackageCardProps {
 export function PackageCard({ package: pkg, className }: PackageCardProps) {
   return (
     <div className={`bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow ${className}`}>
-      <Link href={`/packages/${pkg.id}`}>
-        <a className="block">
-          <img 
-            src={pkg.imageUrl} 
-            alt={pkg.name} 
-            className="w-full h-48 object-cover"
-          />
-        </a>
+      <Link href={`/packages/${pkg.id}`} className="block">
+        <img 
+          src={pkg.imageUrl} 
+          alt={pkg.name} 
+          className="w-full h-48 object-cover"
+        />
       </Link>
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
-          <Link href={`/packages/${pkg.id}`}>
-            <a className="block">
-              <h3 className="font-heading font-semibold text-lg hover:text-primary transition-colors">
-                {pkg.name}
-              </h3>
-            </a>
+          <Link href={`/packages/${pkg.id}`} className="block">
+            <h3 className="font-heading font-semibold text-lg hover:text-primary transition-colors">
+              {pkg.name}
+            </h3>
           </Link>
           {pkg.trending && (
             <Badge variant="secondary" className="bg-primary-light">Trending</Badge>
@@ -43,7 +39,7 @@ export function PackageCard({ package: pkg, className }: PackageCardProps) {
         <div className="flex items-center mb-4">
           <Star className="text-secondary w-4 h-4 fill-current mr-1" />
           <span className="text-neutral-700 font-medium text-sm">{pkg.rating?.toFixed(1) || "New"}</span>
-          {pkg.reviewCount > 0 && (
+          {pkg.reviewCount !== null && pkg.reviewCount > 0 && (
             <span className="text-neutral-500 text-sm ml-1">({pkg.reviewCount} reviews)</span>
           )}
         </div>
