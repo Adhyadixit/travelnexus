@@ -1402,6 +1402,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get a specific conversation by ID
+  app.get("/api/conversations/:id", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ error: "Invalid conversation ID" });
+      }
+      
+      const conversation = await storage.getConversation(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      console.log(`Found conversation: ${JSON.stringify(conversation)}`);
+      
+      // Check authorization
+      let hasAccess = false;
+      
+      if (req.isAuthenticated()) {
+        // Admin can access any conversation
+        if (req.user!.role === 'admin') {
+          console.log('Admin user has access');
+          hasAccess = true;
+        }
+        // User can access their own conversations
+        else if (conversation.userId === req.user!.id) {
+          console.log('User has access to their conversation');
+          hasAccess = true;
+        }
+      } else if (conversation.guestUserId) {
+        // For guest users, check if the session matches
+        const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        
+        if (guestUser && guestUser.id === conversation.guestUserId) {
+          console.log('Guest user has access to their conversation');
+          hasAccess = true;
+        }
+      }
+      
+      if (!hasAccess) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+      
+      return res.json(conversation);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ error: "Failed to fetch conversation" });
+    }
+  });
+
   // Get messages for a conversation
   app.get("/api/messages", async (req, res) => {
     try {

@@ -72,16 +72,25 @@ export function InquiryForm({
   // Send message mutation
   const inquiryMutation = useMutation({
     mutationFn: async (data: InquiryFormValues) => {
+      console.log("Submitting inquiry:", data);
       const response = await apiRequest("POST", "/api/conversations", {
         guestName: data.name,
         guestEmail: data.email,
         guestPhone: data.phone,
         subject: data.subject,
         message: data.message,
+        itemType: "inquiry",
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to submit inquiry");
+      }
+      
       return response.json();
     },
     onSuccess: (data) => {
+      console.log("Inquiry submitted successfully:", data);
       toast({
         title: "Inquiry Sent",
         description: "We've received your inquiry and will get back to you soon.",
@@ -91,6 +100,7 @@ export function InquiryForm({
       
       // If a callback was provided, call it with the conversation ID
       if (onInquirySubmitted && data && data.id) {
+        console.log(`Triggering callback with conversation ID: ${data.id}`);
         onInquirySubmitted(data.id);
       }
     },
