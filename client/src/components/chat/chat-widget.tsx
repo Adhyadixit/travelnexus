@@ -5,6 +5,15 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 import {
+  joinConversation,
+  leaveConversation,
+  sendTypingIndicator,
+  sendNewMessageNotification,
+  subscribeToTypingIndicators,
+  subscribeToNewMessages,
+  unsubscribeFromEvent
+} from "@/lib/socket";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -16,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { TypingIndicator } from "./typing-indicator";
 
 // Message type from schema with fallback fields for compatibility
 type Message = {
@@ -54,6 +64,9 @@ interface ChatWidgetProps {
 export function ChatWidget({ currentConversationId = null, autoOpen = false }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(autoOpen);
   const [messageInput, setMessageInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [adminTyping, setAdminTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -64,6 +77,11 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       setIsOpen(true);
     }
   }, [autoOpen]);
+  
+  // Store the last session ID for guest users
+  const [sessionId, setSessionId] = useState<string | null>(
+    localStorage.getItem('guestSessionId')
+  );
   
   // Get user conversations or current conversation
   const {
@@ -238,6 +256,37 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     }
   });
 
+  // Handle input change with typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setMessageInput(value);
+    
+    // Send typing indicator if we have an active conversation
+    if (activeConversation && value.trim() !== '') {
+      if (!isTyping) {
+        setIsTyping(true);
+        const userId = user ? user.id : (activeConversation.guestUserId || 0);
+        const userType = user ? "user" : "guest";
+        sendTypingIndicator(activeConversation.id, userId, userType, true);
+      }
+      
+      // Clear existing timeout if there is one
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+      
+      // Set a new timeout to stop typing indicator after 2 seconds of inactivity
+      const timeout = setTimeout(() => {
+        setIsTyping(false);
+        const userId = user ? user.id : (activeConversation.guestUserId || 0);
+        const userType = user ? "user" : "guest";
+        sendTypingIndicator(activeConversation.id, userId, userType, false);
+      }, 2000);
+      
+      setTypingTimeout(timeout);
+    }
+  };
+  
   // Handle send message
   const handleSendMessage = () => {
     // Check if we have necessary data
@@ -261,7 +310,25 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     console.log(`Sending message to conversation ID: ${activeConversation.id}`, messageInput);
     
     try {
+      // First, store guest session ID if this is a guest
+      if (!user && activeConversation.guestUserId) {
+        localStorage.setItem('guestSessionId', String(activeConversation.guestUserId));
+        setSessionId(String(activeConversation.guestUserId));
+      }
+      
+      // Send the message
       sendMessageMutation.mutate(messageInput);
+      
+      // Reset typing indicator
+      setIsTyping(false);
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+        setTypingTimeout(null);
+      }
+      
+      const userId = user ? user.id : (activeConversation.guestUserId || 0);
+      const userType = user ? "user" : "guest";
+      sendTypingIndicator(activeConversation.id, userId, userType, false);
     } catch (error) {
       console.error('Error in send message mutation:', error);
       toast({
@@ -287,6 +354,46 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       }, 100);
     }
   }, [isOpen]);
+  
+  // Handle WebSocket connections for the active conversation
+  useEffect(() => {
+    if (activeConversation?.id) {
+      // Join the conversation channel
+      joinConversation(activeConversation.id);
+      
+      // Listen for typing events
+      const handleTypingEvent = (data: any) => {
+        // Only show typing indicator for admin when user or guest is viewing
+        if (data.userType === 'admin' && data.isTyping) {
+          setAdminTyping(true);
+        } else if (data.userType === 'admin' && !data.isTyping) {
+          setAdminTyping(false);
+        }
+      };
+      
+      // Listen for new messages
+      const handleNewMessage = (message: any) => {
+        // Update messages immediately when received via WebSocket
+        queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation.id] });
+        
+        // If admin sent a message, clear typing indicator
+        if (message.senderType === 'admin') {
+          setAdminTyping(false);
+        }
+      };
+      
+      // Subscribe to events
+      subscribeToTypingIndicators(handleTypingEvent);
+      subscribeToNewMessages(handleNewMessage);
+      
+      // Cleanup when component unmounts or conversation changes
+      return () => {
+        leaveConversation(activeConversation.id);
+        unsubscribeFromEvent('user-typing');
+        unsubscribeFromEvent('message-received');
+      };
+    }
+  }, [activeConversation?.id]);
 
   return (
     <>
@@ -405,9 +512,6 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
               ) : (
                 <>
                   {messages.map((message) => {
-                    // Debug the message data
-                    console.log('Message data:', message);
-                    
                     // Determine if user or admin message
                     const isUser = message.senderType !== "admin";
                     
@@ -437,6 +541,14 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                       </div>
                     );
                   })}
+                  
+                  {/* Admin typing indicator */}
+                  {adminTyping && (
+                    <div className="flex justify-start mb-2">
+                      <TypingIndicator className="max-w-[80%]" />
+                    </div>
+                  )}
+                  
                   <div ref={messagesEndRef} />
                 </>
               )}
@@ -449,7 +561,7 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                   type="text"
                   placeholder="Type your message..."
                   value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
+                  onChange={handleInputChange}
                   className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
