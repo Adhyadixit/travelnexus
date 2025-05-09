@@ -322,7 +322,12 @@ export default function AdminMessages() {
                   ) : (
                     <div className="space-y-4">
                       {messages.map((message) => {
-                        const isAdmin = message.type === "admin";
+                        // Support both message.type and message.senderType (API inconsistency)
+                        const isAdmin = message.senderType === "admin" || message.type === "admin";
+                        
+                        // Debug what fields are available
+                        console.log("Message fields:", Object.keys(message), message);
+                        
                         return (
                           <div
                             key={message.id}
@@ -335,9 +340,10 @@ export default function AdminMessages() {
                                   : "bg-muted"
                               }`}
                             >
-                              <p className="text-sm">{message.body}</p>
+                              {/* Support different field names for message content */}
+                              <p className="text-sm">{message.content || message.body || "N/A"}</p>
                               <p className="text-xs mt-1 text-right">
-                                {formatDate(message.sentAt)}
+                                {formatDate(message.createdAt || message.sentAt || new Date().toISOString())}
                               </p>
                             </div>
                           </div>

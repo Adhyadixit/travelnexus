@@ -1074,16 +1074,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.isAuthenticated()) {
         // Create guest user if not already present
         if (req.body.guestName && req.body.guestEmail) {
-          console.log("Creating new guest user for inquiry");
-          const guestUser = await storage.createGuestUser({
-            firstName: req.body.guestName.split(' ')[0] || req.body.guestName,
-            lastName: req.body.guestName.split(' ').slice(1).join(' ') || '-',
-            email: req.body.guestEmail,
-            phoneNumber: req.body.guestPhone || '',
-            sessionId: req.sessionID,
-          });
+          console.log("Creating or finding guest user for inquiry");
+          
+          // First check if guest user already exists with this session ID
+          let guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+          
+          if (!guestUser) {
+            // Only create if user doesn't exist
+            guestUser = await storage.createGuestUser({
+              firstName: req.body.guestName.split(' ')[0] || req.body.guestName,
+              lastName: req.body.guestName.split(' ').slice(1).join(' ') || '-',
+              email: req.body.guestEmail,
+              phoneNumber: req.body.guestPhone || '',
+              sessionId: req.sessionID,
+            });
+            console.log(`Created new guest user with ID: ${guestUser.id}`);
+          } else {
+            console.log(`Found existing guest user with ID: ${guestUser.id}`);
+          }
+          
           guestUserId = guestUser.id;
-          console.log(`Created guest user with ID: ${guestUserId}`);
         } else if (req.body.guestUserId) {
           // Use existing guest user ID if provided
           guestUserId = req.body.guestUserId;
