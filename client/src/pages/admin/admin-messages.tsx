@@ -73,13 +73,28 @@ type Conversation = {
   guestUser?: GuestUser;
 };
 
+// Enhanced Message type to handle both API return formats
 type Message = {
   id: number;
   conversationId: number;
-  body: string;
-  type: string;
-  sentAt: string;
-  readAt: string | null;
+  
+  // Message content (can be body or content depending on API)
+  body?: string;
+  content?: string;
+  
+  // Sender info (can be type or senderType)
+  type?: string;
+  senderType?: string;
+  senderId?: number;
+  
+  // Timestamps (can be sentAt or createdAt)
+  sentAt?: string;
+  createdAt?: string;
+  
+  // Other fields
+  readAt?: string | null;
+  messageType?: string;
+  fileUrl?: string | null;
 };
 
 export default function AdminMessages() {

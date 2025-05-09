@@ -470,11 +470,42 @@ export class DatabaseStorage implements IStorage {
 
   // Guest User operations
   async createGuestUser(guestData: InsertGuestUser): Promise<GuestUser> {
-    const [newGuestUser] = await db
-      .insert(guestUsers)
-      .values(guestData)
-      .returning();
-    return newGuestUser;
+    try {
+      // Try to find existing guest user with this session ID first
+      const existingUser = await this.getGuestUserBySessionId(guestData.sessionId);
+      if (existingUser) {
+        // If user exists, update their information instead of creating a new one
+        const [updatedUser] = await db
+          .update(guestUsers)
+          .set({
+            firstName: guestData.firstName,
+            lastName: guestData.lastName,
+            email: guestData.email,
+            phoneNumber: guestData.phoneNumber
+          })
+          .where(eq(guestUsers.id, existingUser.id))
+          .returning();
+        return updatedUser;
+      }
+      
+      // Otherwise create a new user
+      const [newGuestUser] = await db
+        .insert(guestUsers)
+        .values(guestData)
+        .returning();
+      return newGuestUser;
+    } catch (error: any) {
+      // Handle potential race condition where user was created between our check and insert
+      if (error && error.code === '23505' && error.constraint === 'guest_users_session_id_key') {
+        // If it's a duplicate session ID error, try to get the existing user
+        const existingUser = await this.getGuestUserBySessionId(guestData.sessionId);
+        if (existingUser) {
+          return existingUser;
+        }
+      }
+      // If it's not a duplicate error or we couldn't find the user afterward, rethrow
+      throw error;
+    }
   }
 
   async getGuestUserBySessionId(sessionId: string): Promise<GuestUser | undefined> {
