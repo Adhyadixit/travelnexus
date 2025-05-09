@@ -288,9 +288,9 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
     name: "",
     email: "",
   });
-  // Initialize showGuestForm to true for guests who haven't stored their ID
+  // Initialize showGuestForm - only show for guests without stored ID, don't auto-reset
   const [showGuestForm, setShowGuestForm] = useState(() => {
-    // Show the form if it's a guest user without a stored ID
+    // Only show the form for completely new users who have never chatted before
     return !user && !localStorage.getItem('guestUserId');
   });
 
