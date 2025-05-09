@@ -1469,6 +1469,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Direct database access for admin panel
+  app.get("/api/direct/conversations", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      console.log('Admin accessing direct conversations endpoint');
+      const conversationsData = await storage.getAllConversations();
+      
+      // Convert field unreadByAdmin to a boolean property if needed
+      const formattedConversations = conversationsData.map(conversation => ({
+        ...conversation,
+        unreadByAdmin: !conversation.readByAdmin
+      }));
+      
+      res.json(formattedConversations);
+    } catch (error) {
+      console.error("Error fetching all conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+  
   // Get conversations for guest users
   app.get("/api/guest-conversations", async (req, res) => {
     try {
