@@ -1486,11 +1486,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newMessage = await storage.createMessage(messageData);
       
       // Update conversation's read status based on sender
+      if (senderType === 'admin') {
+        await storage.markMessagesAsReadByAdmin(parseInt(conversationId));
+      } else {
+        await storage.markMessagesAsReadByUser(parseInt(conversationId));
+      }
+      
+      // Also update the status to ensure it's open
       await storage.updateConversation(parseInt(conversationId), {
-        // Update read status based on sender
-        readByAdmin: senderType === 'admin',
-        readByUser: senderType === 'user' || senderType === 'guest',
-        // Also update the status to ensure it's open
         status: 'open',
       });
       
