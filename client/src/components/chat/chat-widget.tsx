@@ -88,9 +88,9 @@ export function ChatWidget({
   
   // Open chat when autoOpen changes to true
   useEffect(() => {
-    if (autoOpen) {
-      setIsOpen(true);
-    }
+    console.log("ChatWidget autoOpen prop:", autoOpen);
+    // Always set isOpen to match autoOpen exactly
+    setIsOpen(autoOpen);
   }, [autoOpen]);
   
   // Store the last session ID and guest ID for guest users

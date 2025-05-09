@@ -237,6 +237,7 @@ export function DesktopLayout({
       
       {/* Chat Widget for Web (Desktop) - Fixed on the bottom right */}
       <div className="fixed bottom-8 right-8 z-50 hidden md:block">
+        {/* Show chat button when chat is not open */}
         {!isChatOpen && (
           <Button
             onClick={() => setIsChatOpen(true)} 
@@ -246,13 +247,13 @@ export function DesktopLayout({
             <MessageCircle className="h-6 w-6" />
           </Button>
         )}
-        {isChatOpen && (
-          <ChatWidget 
-            autoOpen={true}
-            onClose={() => setIsChatOpen(false)}
-            initialConversationId={currentConversationId}
-          />
-        )}
+        
+        {/* Always render the ChatWidget but control visibility with autoOpen */}
+        <ChatWidget 
+          autoOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          initialConversationId={currentConversationId}
+        />
       </div>
       
       <footer className="bg-neutral-100 text-neutral-800 py-12">
