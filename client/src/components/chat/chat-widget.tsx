@@ -53,6 +53,13 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
   const { user } = useAuth();
   const { toast } = useToast();
   
+  // Open chat when autoOpen changes to true
+  useEffect(() => {
+    if (autoOpen) {
+      setIsOpen(true);
+    }
+  }, [autoOpen]);
+  
   // Get user conversations or current conversation
   const {
     data: userConversations = [],
@@ -172,7 +179,16 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
       </div>
 
       {/* Chat Sheet */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <Sheet 
+        open={isOpen} 
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open && messagesEndRef.current) {
+            // Reset scroll position when closing
+            messagesEndRef.current.scrollIntoView({ behavior: "auto" });
+          }
+        }}
+      >
         <SheetContent side="bottom" className="h-[85vh] p-0">
           <SheetHeader className="px-4 py-3 border-b">
             <SheetTitle>Customer Support</SheetTitle>
