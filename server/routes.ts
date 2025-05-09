@@ -1354,12 +1354,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (req.isAuthenticated()) {
         // Get authenticated user's conversations
-        conversationsData = await storage.getConversationsByUser(req.user!.id);
+        const userId = req.user!.id;
+        console.log(`Fetching conversations for authenticated user ${userId}`);
+        
+        if (req.user!.role === 'admin') {
+          console.log('Admin user detected, fetching all conversations');
+          conversationsData = await storage.getAllConversations();
+        } else {
+          conversationsData = await storage.getConversationsByUser(userId);
+        }
       } else {
         // For guest users, check the session ID
+        console.log(`Checking for guest user with session ID: ${req.sessionID}`);
         const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
+        
         if (guestUser) {
+          console.log(`Found guest user with ID ${guestUser.id} for session ${req.sessionID}`);
           conversationsData = await storage.getConversationsByGuestUser(guestUser.id);
+          console.log(`Found ${conversationsData.length} conversations for guest user ${guestUser.id}`);
+        } else {
+          console.log(`No guest user found for session ${req.sessionID}`);
         }
       }
       
@@ -1397,33 +1411,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid conversation ID" });
       }
       
+      console.log(`Fetching messages for conversation ID: ${conversationId}`);
       const conversation = await storage.getConversation(conversationId);
       
       if (!conversation) {
+        console.log(`Conversation ID ${conversationId} not found`);
         return res.status(404).json({ error: "Conversation not found" });
       }
+      
+      console.log(`Found conversation:`, JSON.stringify(conversation));
       
       // Check authorization
       let authorized = false;
       
       if (req.isAuthenticated()) {
+        console.log(`Authenticated user checking access: ${req.user!.id}, role: ${req.user!.role}`);
         if (req.user!.role === 'admin') {
+          console.log('Admin user has access');
           authorized = true;
         } else if (conversation.userId === req.user!.id) {
+          console.log('User matches conversation userId, access granted');
           authorized = true;
+        } else {
+          console.log(`User ${req.user!.id} does not match conversation userId ${conversation.userId}`);
         }
       } else if (conversation.guestUserId) {
+        console.log(`Guest access check for session: ${req.sessionID}`);
         const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
-        if (guestUser && guestUser.id === conversation.guestUserId) {
-          authorized = true;
+        if (guestUser) {
+          console.log(`Found guest user: ${guestUser.id}`);
+          if (guestUser.id === conversation.guestUserId) {
+            console.log('Guest user matches conversation, access granted');
+            authorized = true;
+          } else {
+            console.log(`Guest user ${guestUser.id} does not match conversation guestUserId ${conversation.guestUserId}`);
+          }
+        } else {
+          console.log(`No guest user found for session: ${req.sessionID}`);
         }
+      } else {
+        console.log('No guest user ID in conversation and user not authenticated');
       }
       
       if (!authorized) {
+        console.log('Access denied to conversation');
         return res.status(403).json({ error: "Access denied" });
       }
       
       const messages = await storage.getMessagesByConversation(conversationId);
+      console.log(`Found ${messages.length} messages for conversation ${conversationId}`);
+      
+      if (messages.length > 0) {
+        console.log('First message sample:', JSON.stringify(messages[0]));
+      }
+      
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -1436,15 +1477,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { conversationId, message } = req.body;
       
+      console.log(`Sending message for conversation ID: ${conversationId}`, message);
+      
       if (!conversationId || !message) {
+        console.log('Missing conversation ID or message content');
         return res.status(400).json({ error: "Conversation ID and message are required" });
       }
       
       const conversation = await storage.getConversation(parseInt(conversationId));
       
       if (!conversation) {
+        console.log(`Conversation ID ${conversationId} not found`);
         return res.status(404).json({ error: "Conversation not found" });
       }
+      
+      console.log(`Found conversation for message:`, JSON.stringify(conversation));
       
       // Check authorization
       let authorized = false;
@@ -1454,22 +1501,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.isAuthenticated()) {
         senderId = req.user!.id;
         senderType = req.user!.role === 'admin' ? 'admin' : 'user';
+        console.log(`Authenticated user sending message: ${senderId}, role: ${senderType}`);
         
         if (req.user!.role === 'admin') {
+          console.log('Admin user has access to send messages');
           authorized = true;
         } else if (conversation.userId === req.user!.id) {
+          console.log('User matches conversation userId, can send message');
           authorized = true;
+        } else {
+          console.log(`User ${req.user!.id} doesn't match conversation userId ${conversation.userId}`);
         }
       } else if (conversation.guestUserId) {
+        console.log(`Guest user trying to send message for session: ${req.sessionID}`);
         const guestUser = await storage.getGuestUserBySessionId(req.sessionID);
-        if (guestUser && guestUser.id === conversation.guestUserId) {
-          senderId = guestUser.id;
-          senderType = 'guest';
-          authorized = true;
+        
+        if (guestUser) {
+          console.log(`Found guest user: ${guestUser.id}`);
+          
+          if (guestUser.id === conversation.guestUserId) {
+            console.log('Guest user matches conversation, can send message');
+            senderId = guestUser.id;
+            senderType = 'guest';
+            authorized = true;
+          } else {
+            console.log(`Guest user ${guestUser.id} doesn't match conversation guestUserId ${conversation.guestUserId}`);
+          }
+        } else {
+          console.log(`No guest user found for session: ${req.sessionID}`);
         }
+      } else {
+        console.log('No guest user ID in conversation and user not authenticated');
       }
       
       if (!authorized) {
+        console.log('Access denied to send message');
         return res.status(403).json({ error: "Access denied" });
       }
       
@@ -1483,16 +1549,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileUrl: null,
       };
       
+      console.log('Creating message with data:', JSON.stringify(messageData));
       const newMessage = await storage.createMessage(messageData);
+      console.log('Message created successfully:', JSON.stringify(newMessage));
       
       // Update conversation's read status based on sender
       if (senderType === 'admin') {
+        console.log('Marking messages as read by admin');
         await storage.markMessagesAsReadByAdmin(parseInt(conversationId));
       } else {
+        console.log('Marking messages as read by user/guest');
         await storage.markMessagesAsReadByUser(parseInt(conversationId));
       }
       
       // Also update the status to ensure it's open
+      console.log('Updating conversation status to open');
       await storage.updateConversation(parseInt(conversationId), {
         status: 'open',
       });

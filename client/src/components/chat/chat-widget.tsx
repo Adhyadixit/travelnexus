@@ -17,14 +17,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
-// Message type from schema
+// Message type from schema with fallback fields for compatibility
 type Message = {
   id: number;
   conversationId: number;
-  content: string;    // Changed from 'body' to 'content' to match database
-  senderType: string; // Changed from 'type' to 'senderType' to match database
-  createdAt: string;  // Changed from 'sentAt' to 'createdAt' to match database
-  readAt: string | null;
+  content?: string;
+  body?: string;
+  senderType?: string;
+  type?: string;
+  createdAt?: string;
+  sentAt?: string;
+  created_at?: string;
+  readAt?: string | null;
+  [key: string]: any; // Allow any other properties that might be in the message
 };
 
 // Conversation type from schema
@@ -145,8 +150,34 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
 
   // Handle send message
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeConversation) return;
-    sendMessageMutation.mutate(messageInput);
+    // Check if we have necessary data
+    if (!messageInput.trim()) {
+      console.log('Message input is empty');
+      return;
+    }
+    
+    if (!activeConversation) {
+      console.log('No active conversation');
+      toast({
+        title: "Error",
+        description: "Cannot send message: No active conversation",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log(`Sending message to conversation ID: ${activeConversation.id}`, messageInput);
+    
+    try {
+      sendMessageMutation.mutate(messageInput);
+    } catch (error) {
+      console.error('Error in send message mutation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Scroll to bottom of messages
@@ -223,7 +254,12 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
               ) : (
                 <>
                   {messages.map((message) => {
+                    // Debug the message data
+                    console.log('Message data:', message);
+                    
+                    // Determine if user or admin message
                     const isUser = message.senderType !== "admin";
+                    
                     return (
                       <div
                         key={message.id}
@@ -234,15 +270,17 @@ export function ChatWidget({ currentConversationId = null, autoOpen = false }: C
                       >
                         <div
                           className={cn(
-                            "max-w-[80%] rounded-lg p-3",
+                            "max-w-[80%] rounded-lg p-3 shadow-sm",
                             isUser
                               ? "bg-primary text-primary-foreground"
                               : "bg-muted"
                           )}
                         >
-                          <p className="text-sm">{message.content}</p>
+                          <p className="text-sm whitespace-pre-wrap break-words">
+                            {message.content || message.body || "No message content"}
+                          </p>
                           <p className="text-xs mt-1 opacity-70 text-right">
-                            {formatMessageDate(message.createdAt)}
+                            {formatMessageDate(message.createdAt || message.sentAt || message.created_at)}
                           </p>
                         </div>
                       </div>
