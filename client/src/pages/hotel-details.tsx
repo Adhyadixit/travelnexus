@@ -999,12 +999,13 @@ export default function HotelDetails() {
 
                   {/* Room Image Carousel */}
                   {selectedRoom && dbRoomTypes && (
-                    <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border">
+                    <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border bg-neutral-50">
+                      <h3 className="p-2 text-center text-sm">Room: {dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}</h3>
                       <RoomImageCarousel
                         roomId={selectedRoom}
                         roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
                         images={[]}
-                        fallbackImage={hotel?.imageUrl}
+                        fallbackImage={hotel?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
                       />
                     </div>
                   )}

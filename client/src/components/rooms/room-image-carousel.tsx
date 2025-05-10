@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { safeJsonParse } from "@/lib/utils";
@@ -20,42 +20,68 @@ export function RoomImageCarousel({
 }: RoomImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Fetch room images from the API
-  const { data: roomImages } = useQuery({
-    queryKey: [`/api/hotel-room-types/${roomId}/images`],
-    queryFn: async () => {
+  // Fetch room images from the API using a direct API call for now
+  const [roomImageUrls, setRoomImageUrls] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRoomImages = async () => {
+      if (!roomId) return;
+      
+      setLoading(true);
       try {
-        const res = await apiRequest("GET", `/api/hotel-room-types/${roomId}/images`);
-        return await res.json();
+        const response = await fetch(`/api/hotel-room-types/${roomId}/images`);
+        
+        if (!response.ok) {
+          throw new Error(`Error fetching room images: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Room images API response:', data);
+        
+        if (Array.isArray(data) && data.length > 0) {
+          const urls = data.map((img: any) => img.imageUrl);
+          setRoomImageUrls(urls);
+        } else {
+          setRoomImageUrls([]);
+        }
       } catch (error) {
         console.error("Error fetching room images:", error);
-        return [];
+        setError("Failed to load room images");
+      } finally {
+        setLoading(false);
       }
-    },
-    enabled: !!roomId,
+    };
+
+    fetchRoomImages();
+  }, [roomId]);
+  
+  // Parse passed images as fallback
+  const parsedPassedImages = useMemo(() => {
+    if (typeof images === 'string') {
+      return safeJsonParse(images, []);
+    }
+    return Array.isArray(images) ? images : [];
+  }, [images]);
+  
+  // Use images in this priority: API images -> passed images -> fallback image
+  const allImages = roomImageUrls.length > 0 
+    ? roomImageUrls 
+    : parsedPassedImages.length > 0
+      ? parsedPassedImages
+      : fallbackImage ? [fallbackImage] : [];
+  
+  console.log('Room image carousel:', { 
+    roomId, 
+    roomName, 
+    roomImageUrls, 
+    parsedPassedImages, 
+    fallbackImage,
+    allImages,
+    loading,
+    error
   });
-  
-  // First try to use images from the API
-  let imageUrls: string[] = [];
-  
-  if (roomImages && roomImages.length > 0) {
-    // Extract image URLs from the API response
-    imageUrls = roomImages.map((img: any) => img.imageUrl);
-  } else {
-    // Fallback to passed images prop
-    const parsedImages = typeof images === 'string' 
-      ? safeJsonParse(images, [])
-      : Array.isArray(images) ? images : [];
-    
-    imageUrls = parsedImages;
-  }
-  
-  console.log('Room images:', { roomId, roomName, apiImages: roomImages, passedImages: images, finalImageUrls: imageUrls });
-  
-  // Use fallback if no images are available from any source
-  const allImages = imageUrls.length > 0 
-    ? imageUrls 
-    : fallbackImage ? [fallbackImage] : [];
   
   if (allImages.length === 0) {
     return (
