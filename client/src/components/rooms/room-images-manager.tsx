@@ -62,6 +62,10 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     error: roomImagesError,
   } = useQuery<HotelRoomImage[]>({
     queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/hotel-room-types/${selectedRoomType}/images`);
+      return res.json();
+    },
     enabled: !!selectedRoomType,
   });
 
@@ -164,7 +168,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Delete an image
   const deleteImageMutation = useMutation({
     mutationFn: async (imageId: number) => {
-      await apiRequest("DELETE", `/api/room-images/${imageId}`);
+      await apiRequest("DELETE", `/api/hotel-room-images/${imageId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
@@ -185,7 +189,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Update an image to set it as featured
   const updateImageMutation = useMutation({
     mutationFn: async ({ imageId, data }: { imageId: number; data: any }) => {
-      const res = await apiRequest("PUT", `/api/room-images/${imageId}`, data);
+      const res = await apiRequest("PUT", `/api/hotel-room-images/${imageId}`, data);
       return await res.json();
     },
     onSuccess: () => {
