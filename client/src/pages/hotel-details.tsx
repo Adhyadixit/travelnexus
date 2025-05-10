@@ -493,33 +493,46 @@ export default function HotelDetails() {
 
         {/* Image Gallery Section */}
         <div className="grid grid-cols-12 gap-2 mb-6 relative">
-          {/* Main large image */}
-          <div className="col-span-12 md:col-span-8 relative overflow-hidden rounded-xl">
-            <img 
-              src={currentImage} 
-              alt={`${hotel.name} - Image ${activeImageIndex + 1}`} 
-              className="w-full h-96 object-cover"
-              onClick={() => setIsLightboxOpen(true)}
-            />
+          {/* Main large image with enhanced mobile support */}
+          <div className="col-span-12 md:col-span-8 relative overflow-hidden rounded-xl mobile-gallery">
+            <div 
+              className="w-full mobile-slider touch-pan-x" 
+              style={{ 
+                overflowX: isMobile ? 'auto' : 'hidden',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              <img 
+                src={currentImage} 
+                alt={`${hotel.name} - Image ${activeImageIndex + 1}`} 
+                className="w-full h-96 object-cover cursor-pointer"
+                onClick={() => setIsLightboxOpen(true)}
+              />
+            </div>
+            
             <button 
-              className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-md text-neutral-700 hover:text-primary transition-colors"
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-md text-neutral-700 hover:text-primary transition-colors z-10"
               onClick={() => setIsLightboxOpen(true)}
             >
               <Maximize className="w-5 h-5" />
             </button>
 
-            {/* Image navigation arrows */}
+            {/* Image navigation arrows - larger on mobile */}
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full text-neutral-700 hover:text-primary transition-colors"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md"
               onClick={handlePrevImage}
+              aria-label="Previous image"
+              style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
             </button>
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full text-neutral-700 hover:text-primary transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md"
               onClick={handleNextImage}
+              aria-label="Next image"
+              style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
             </button>
           </div>
 
@@ -530,7 +543,7 @@ export default function HotelDetails() {
                 <img 
                   src={img} 
                   alt={`${hotel.name} - Thumbnail ${idx + 1}`} 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover cursor-pointer"
                   onClick={() => {
                     setActiveImageIndex(idx + 1);
                     setIsLightboxOpen(true);
@@ -540,10 +553,25 @@ export default function HotelDetails() {
             ))}
           </div>
 
-          {/* Image counter indicator */}
-          <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full">
+          {/* Image counter indicator - enhanced for mobile */}
+          <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full z-10 backdrop-blur-sm">
             {activeImageIndex + 1} / {galleryImages.length}
           </div>
+          
+          {/* Mobile dot indicators */}
+          {isMobile && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+              <div className="mobile-gallery-dots">
+                {galleryImages.map((_, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`mobile-gallery-dot ${idx === activeImageIndex ? 'active' : ''}`}
+                    onClick={() => setActiveImageIndex(idx)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Quick Info Bar */}

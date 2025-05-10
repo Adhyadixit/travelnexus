@@ -65,16 +65,20 @@ const Carousel = React.forwardRef<
       loop: true,
       draggable: true,
       speed: 10,
-      inViewThreshold: 0.5,
-      align: "center",
       ...opts,
     };
     
+    // Pass the options directly to avoid typing issues
     const [carouselRef, api] = useEmblaCarousel(
       {
-        ...opts,
-        ...(isMobile ? mobileOptions : {}),
         axis: orientation === "horizontal" ? "x" : "y",
+        ...(isMobile ? {
+          dragFree: true,
+          loop: true,
+          draggable: true,
+          speed: 10,
+        } : {}),
+        ...opts
       },
       plugins
     )

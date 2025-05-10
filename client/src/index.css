@@ -20,10 +20,53 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
   }
   
   .mobile-slider::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Enhanced image gallery for mobile */
+  .mobile-gallery {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    touch-action: pan-x;
+  }
+  
+  .mobile-gallery-item {
+    scroll-snap-align: center;
+  }
+  
+  .mobile-gallery-nav {
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    bottom: 1rem;
+    z-index: 10;
+  }
+  
+  .mobile-gallery-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .mobile-gallery-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-gallery-dot.active {
+    background-color: white;
+    transform: scale(1.25);
   }
 }
 
