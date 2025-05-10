@@ -29,6 +29,9 @@ const reviewFormSchema = z.object({
   comment: z.string().min(10, "Review must be at least 10 characters").max(1000, "Review cannot exceed 1000 characters"),
   dateOfStay: z.string().optional(),
   images: z.string().optional(),
+  helpfulVotes: z.number().optional(),
+  verified: z.boolean().optional(),
+  status: z.string().optional(),
 });
 
 type ReviewFormValues = z.infer<typeof reviewFormSchema>;
@@ -54,7 +57,16 @@ export function ReviewForm({ itemType, itemId }: ReviewFormProps) {
   
   const submitReviewMutation = useMutation({
     mutationFn: async (data: ReviewFormValues) => {
-      const res = await apiRequest("POST", "/api/reviews", data);
+      // Prepare the review data with all required fields for the server
+      const reviewData = {
+        ...data,
+        helpfulVotes: 0,
+        verified: Boolean(data.dateOfStay),
+        status: "approved",
+      };
+      
+      // Send the complete review data
+      const res = await apiRequest("POST", "/api/reviews", reviewData);
       return await res.json();
     },
     onSuccess: () => {
