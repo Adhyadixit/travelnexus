@@ -33,7 +33,7 @@ export default function AuthPage() {
           <div className="w-full max-w-md">
             <div className="text-center mb-8">
               <h1 className="text-2xl md:text-3xl font-heading font-bold text-primary">
-                Welcome to TravelEase<span className="text-secondary">.</span>
+                Welcome to Travel Ease by Expedia<span className="text-secondary">.</span>
               </h1>
               <p className="text-neutral-600 mt-2">
                 Sign in to your account or create a new one
@@ -74,7 +74,7 @@ export default function AuthPage() {
               Discover the World with Us
             </h2>
             <p className="text-lg mb-6">
-              Join TravelEase and gain access to exclusive travel deals, personalized recommendations, and seamless booking experiences.
+              Join Travel Ease by Expedia and gain access to exclusive travel deals, personalized recommendations, and seamless booking experiences.
             </p>
             <div>
               <div className="flex items-center mb-4">

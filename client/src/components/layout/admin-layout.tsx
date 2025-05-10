@@ -42,7 +42,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg p-4 hidden md:flex md:flex-col h-screen">
         <div className="flex items-center justify-center p-4">
-          <h1 className="text-xl font-bold text-primary">TravelEase Admin</h1>
+          <h1 className="text-xl font-bold text-primary">Travel Ease by Expedia Admin</h1>
         </div>
         
         <nav className="mt-6 space-y-1 flex-grow overflow-y-auto">
