@@ -300,7 +300,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value ?? false}
+                            checked={asCheckedState(field.value)}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -321,7 +321,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={asCheckedState(field.value)}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -342,7 +342,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={asCheckedState(field.value)}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -501,7 +501,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={asCheckedState(field.value)}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
