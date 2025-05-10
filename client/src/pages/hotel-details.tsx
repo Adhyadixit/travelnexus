@@ -712,10 +712,12 @@ export default function HotelDetails() {
                               // If room is selected, scroll to the booking form for date selection
                               if (bookingFormRef.current) {
                                 setTimeout(() => {
-                                  bookingFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                  const formRef = bookingFormRef.current;
+                                  formRef?.scrollIntoView({ behavior: 'smooth' });
+                                  
                                   // Highlight date picker to guide user to next step
-                                  if (!startDate && bookingFormRef.current) {
-                                    const datePickerContainer = bookingFormRef.current.querySelector('.date-picker-container');
+                                  if (!startDate && formRef) {
+                                    const datePickerContainer = formRef.querySelector('.date-picker-container');
                                     if (datePickerContainer) {
                                       datePickerContainer.classList.add('highlight-pulse');
                                       setTimeout(() => {
