@@ -47,6 +47,10 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     error: roomTypesError,
   } = useQuery<HotelRoomType[]>({
     queryKey: [`/api/hotels/${hotelId}/room-types`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/hotels/${hotelId}/room-types`);
+      return res.json();
+    },
     enabled: !!hotelId,
   });
 
@@ -73,7 +77,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Create a new room type
   const createRoomTypeMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", `/api/hotels/${hotelId}/room-types`, {
+      const res = await apiRequest("POST", `/api/hotel-room-types`, {
         ...data,
         hotelId,
         amenities: JSON.stringify(data.amenities.split("\n").filter(Boolean)),

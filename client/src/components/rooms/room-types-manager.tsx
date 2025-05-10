@@ -44,20 +44,24 @@ export function RoomTypesManager({ hotelId }: RoomTypesManagerProps) {
     refetch: refetchRoomTypes
   } = useQuery<HotelRoomType[]>({
     queryKey: [`/api/hotels/${hotelId}/room-types`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/hotels/${hotelId}/room-types`);
+      return res.json();
+    },
     enabled: !!hotelId,
   });
 
   // Create a new room type
   const createRoomTypeMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", `/api/hotels/${hotelId}/room-types`, {
+      const res = await apiRequest("POST", `/api/hotel-room-types`, {
         ...data,
         hotelId,
         amenities: JSON.stringify(data.amenities.split("\n").filter(Boolean)),
       });
       return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (newRoomType) => {
       queryClient.invalidateQueries({ queryKey: [`/api/hotels/${hotelId}/room-types`] });
       setIsAddingRoomType(false);
       setNewRoomType({
@@ -71,6 +75,7 @@ export function RoomTypesManager({ hotelId }: RoomTypesManagerProps) {
         title: "Room type created",
         description: "The room type has been created successfully.",
       });
+      console.log("New room type created:", newRoomType);
       refetchRoomTypes();
     },
     onError: (error: Error) => {
