@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, parseAmenities } from "@/lib/utils";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { InquiryForm } from "@/components/inquiry-form";
-import { RoomImageCarousel } from "@/components/rooms/room-image-carousel";
+import { SimpleRoomImageDisplay } from "@/components/rooms/simple-room-image-display";
 import { 
   CalendarIcon, 
   ChevronLeft, 
