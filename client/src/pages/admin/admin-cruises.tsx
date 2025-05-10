@@ -19,6 +19,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const cruiseFormSchema = insertCruiseSchema.extend({
   price: z.coerce.number().min(1, "Price must be greater than 0"),
@@ -53,9 +54,8 @@ export default function AdminCruises() {
   const [selectedCruise, setSelectedCruise] = useState<Cruise | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // New states for cabin type management
+  // Cabin type management states
   const [cabinTypes, setCabinTypes] = useState<CruiseCabinType[]>([]);
-  const [isAddCabinTypeOpen, setIsAddCabinTypeOpen] = useState(false);
   const [editingCabinType, setEditingCabinType] = useState<CruiseCabinType | null>(null);
   
   // Fetch cabin types when a cruise is selected for editing
@@ -140,7 +140,7 @@ export default function AdminCruises() {
         title: "Success",
         description: "Cabin type added successfully",
       });
-      setIsAddCabinTypeOpen(false);
+      // No need to close any dialog, just reset the form
       addCabinTypeForm.reset();
     },
     onError: (error: any) => {
@@ -483,20 +483,36 @@ export default function AdminCruises() {
               </DialogHeader>
               
               <Form {...createForm}>
-                <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4 py-4">
-                  <FormField
-                    control={createForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cruise Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Caribbean Paradise Cruise" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cruise Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Mediterranean Dream Cruise" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="company"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cruise Line</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Royal Caribbean, Carnival, etc." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <FormField
                     control={createForm.control}
@@ -506,9 +522,9 @@ export default function AdminCruises() {
                         <FormLabel>Description</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe the cruise experience"
+                            placeholder="Describe the cruise experience" 
                             rows={4}
-                            {...field}
+                            {...field} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -516,310 +532,15 @@ export default function AdminCruises() {
                     )}
                   />
                   
-                  <div className="space-y-6">
-                    <h3 className="text-lg font-medium">Images</h3>
-                    <FormField
-                      control={createForm.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Main Image</FormLabel>
-                          <FormControl>
-                            <ImageUpload
-                              value={field.value}
-                              onChange={field.onChange}
-                              folder="travelease/cruises"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Image Gallery</FormLabel>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const currentValue = createForm.getValues("imageGallery");
-                            try {
-                              const currentGallery = currentValue ? JSON.parse(currentValue) : [];
-                              const newGallery = [...currentGallery, ""];
-                              createForm.setValue("imageGallery", JSON.stringify(newGallery));
-                            } catch (error) {
-                              // If JSON parsing fails, start a new array
-                              createForm.setValue("imageGallery", JSON.stringify([""]));
-                            }
-                          }}
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Image
-                        </Button>
-                      </div>
-                      
-                      <FormField
-                        control={createForm.control}
-                        name="imageGallery"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <div className="space-y-4">
-                                {(() => {
-                                  let galleryImages: string[] = [];
-                                  try {
-                                    galleryImages = field.value ? JSON.parse(field.value) : [];
-                                  } catch (error) {
-                                    // If parsing fails, use empty array
-                                  }
-                                  
-                                  return galleryImages.map((url, index) => (
-                                    <div key={index} className="relative border rounded-md p-4">
-                                      <div className="absolute top-2 right-2">
-                                        <Button
-                                          type="button"
-                                          variant="destructive"
-                                          size="icon"
-                                          onClick={() => {
-                                            const newGallery = [...galleryImages];
-                                            newGallery.splice(index, 1);
-                                            field.onChange(JSON.stringify(newGallery));
-                                          }}
-                                        >
-                                          <X className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                      
-                                      <div className="mt-6">
-                                        <ImageUpload
-                                          value={url}
-                                          onChange={(newUrl) => {
-                                            const newGallery = [...galleryImages];
-                                            newGallery[index] = newUrl;
-                                            field.onChange(JSON.stringify(newGallery));
-                                          }}
-                                          folder="travelease/cruises/gallery"
-                                        />
-                                      </div>
-                                    </div>
-                                  ));
-                                })()}
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              Add multiple images to showcase different aspects of the cruise
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 pt-4 border-t">
-                    <FormField
-                      control={createForm.control}
-                      name="cabinTypes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex justify-between items-center">
-                            <FormLabel>Cabin Types</FormLabel>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const currentValue = field.value || "[]";
-                                try {
-                                  const currentCabins = JSON.parse(currentValue);
-                                  const newCabins = [...currentCabins, {
-                                    type: "New Cabin Type",
-                                    price: 0,
-                                    description: "Description of cabin amenities",
-                                    imageUrl: ""
-                                  }];
-                                  field.onChange(JSON.stringify(newCabins));
-                                } catch (error) {
-                                  // If JSON parsing fails, start a new array
-                                  field.onChange(JSON.stringify([{
-                                    type: "Interior",
-                                    price: 799,
-                                    description: "Cozy interior cabin",
-                                    imageUrl: ""
-                                  }]));
-                                }
-                              }}
-                            >
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add Cabin Type
-                            </Button>
-                          </div>
-                          <FormControl>
-                            <div className="space-y-4 mt-4">
-                              {(() => {
-                                let cabins: Array<{
-                                  type: string;
-                                  price: number;
-                                  description: string;
-                                  imageUrl: string;
-                                }> = [];
-                                
-                                try {
-                                  cabins = field.value ? JSON.parse(field.value) : [];
-                                  // If it's just a simple object, convert it to array format
-                                  if (!Array.isArray(cabins)) {
-                                    const newCabins = [];
-                                    for (const [type, price] of Object.entries(cabins)) {
-                                      newCabins.push({
-                                        type,
-                                        price: parseFloat(String(price).replace(/[^0-9.]/g, '')),
-                                        description: `${type} cabin`,
-                                        imageUrl: ""
-                                      });
-                                    }
-                                    cabins = newCabins;
-                                    field.onChange(JSON.stringify(newCabins)); 
-                                  }
-                                } catch (error) {
-                                  // If parsing fails, use empty array
-                                  cabins = [];
-                                }
-                                
-                                return cabins.map((cabin, index) => (
-                                  <Card key={index} className="relative">
-                                    <CardHeader className="pb-2">
-                                      <div className="absolute top-2 right-2">
-                                        <Button
-                                          type="button"
-                                          variant="destructive"
-                                          size="icon"
-                                          onClick={() => {
-                                            const newCabins = [...cabins];
-                                            newCabins.splice(index, 1);
-                                            field.onChange(JSON.stringify(newCabins));
-                                          }}
-                                        >
-                                          <X className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                      <CardTitle className="text-md">
-                                        <Input 
-                                          value={cabin.type} 
-                                          onChange={(e) => {
-                                            const newCabins = [...cabins];
-                                            newCabins[index] = {
-                                              ...newCabins[index],
-                                              type: e.target.value
-                                            };
-                                            field.onChange(JSON.stringify(newCabins));
-                                          }}
-                                          placeholder="Cabin Type"
-                                          className="font-semibold text-base"
-                                        />
-                                      </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                      <div>
-                                        <FormLabel className="text-sm">Price (USD)</FormLabel>
-                                        <div className="flex mt-1">
-                                          <span className="inline-flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">
-                                            $
-                                          </span>
-                                          <Input
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={cabin.price}
-                                            onChange={(e) => {
-                                              const newCabins = [...cabins];
-                                              newCabins[index] = {
-                                                ...newCabins[index],
-                                                price: parseFloat(e.target.value) || 0
-                                              };
-                                              field.onChange(JSON.stringify(newCabins));
-                                            }}
-                                            className="rounded-l-none"
-                                          />
-                                        </div>
-                                      </div>
-                                      
-                                      <div>
-                                        <FormLabel className="text-sm">Description</FormLabel>
-                                        <Textarea
-                                          value={cabin.description}
-                                          onChange={(e) => {
-                                            const newCabins = [...cabins];
-                                            newCabins[index] = {
-                                              ...newCabins[index],
-                                              description: e.target.value
-                                            };
-                                            field.onChange(JSON.stringify(newCabins));
-                                          }}
-                                          placeholder="Describe cabin amenities and features"
-                                          className="mt-1"
-                                          rows={3}
-                                        />
-                                      </div>
-                                      
-                                      <div>
-                                        <FormLabel className="text-sm">Cabin Image</FormLabel>
-                                        <div className="mt-1">
-                                          <ImageUpload
-                                            value={cabin.imageUrl}
-                                            onChange={(url) => {
-                                              const newCabins = [...cabins];
-                                              newCabins[index] = {
-                                                ...newCabins[index],
-                                                imageUrl: url
-                                              };
-                                              field.onChange(JSON.stringify(newCabins));
-                                            }}
-                                            folder="travelease/cruises/cabins"
-                                          />
-                                        </div>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ));
-                              })()}
-                            </div>
-                          </FormControl>
-                          <FormDescription>
-                            Add different cabin types with prices and details
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={createForm.control}
                       name="price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Base Price ($)</FormLabel>
+                          <FormLabel>Starting Price (USD)</FormLabel>
                           <FormControl>
-                            <Input type="number" min="0" step="0.01" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={createForm.control}
-                      name="duration"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Duration (days)</FormLabel>
-                          <FormControl>
-                            <Input type="number" min="1" {...field} />
+                            <Input type="number" min="0" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -828,10 +549,10 @@ export default function AdminCruises() {
                     
                     <FormField
                       control={createForm.control}
-                      name="capacity"
+                      name="duration"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Capacity</FormLabel>
+                          <FormLabel>Duration (Days)</FormLabel>
                           <FormControl>
                             <Input type="number" min="1" {...field} />
                           </FormControl>
@@ -843,15 +564,15 @@ export default function AdminCruises() {
                   
                   <FormField
                     control={createForm.control}
-                    name="itinerary"
+                    name="imageUrl"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Itinerary (JSON format)</FormLabel>
+                        <FormLabel>Primary Image</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder='{"day1": "Departure", "day2": "At Sea", "day3": "Port Visit"}'
-                            rows={4}
-                            {...field}
+                          <ImageUpload 
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            folder="travelease/cruises"
                           />
                         </FormControl>
                         <FormMessage />
@@ -859,142 +580,193 @@ export default function AdminCruises() {
                     )}
                   />
                   
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                      Cancel
-                    </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={createForm.control}
+                      name="departure"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Departure Port</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Miami, Venice, etc." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={createForm.control}
+                      name="featured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>Featured</FormLabel>
+                            <p className="text-sm text-muted-foreground">
+                              Show this cruise in featured sections
+                            </p>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <DialogFooter>
                     <Button type="submit" disabled={createCruiseMutation.isPending}>
                       {createCruiseMutation.isPending ? "Creating..." : "Create Cruise"}
                     </Button>
-                  </div>
+                  </DialogFooter>
                 </form>
               </Form>
             </DialogContent>
           </Dialog>
         </div>
         
-        <Card className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle>Search Cruises</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search by name or description..." 
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex justify-between items-center mb-4">
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Search cruises..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
         
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle>All Cruises</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
+        {isLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="p-4 border rounded-lg">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-4" />
+                <div className="flex justify-between">
+                  <Skeleton className="h-4 w-1/4" />
+                  <div className="space-x-2">
+                    <Skeleton className="h-8 w-8 inline-block" />
+                    <Skeleton className="h-8 w-8 inline-block" />
+                  </div>
+                </div>
               </div>
-            ) : filteredCruises.length === 0 ? (
-              <div className="text-center py-6">
-                <Ship className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-lg font-medium mb-1">No Cruises Found</p>
-                <p className="text-muted-foreground mb-4">
-                  {searchQuery ? "Try a different search term" : "Add your first cruise to get started"}
-                </p>
-                <Button onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New Cruise
-                </Button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Duration</TableHead>
-                      <TableHead>Capacity</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCruises.map((cruise) => (
-                      <TableRow key={cruise.id}>
-                        <TableCell className="font-medium">{cruise.name}</TableCell>
-                        <TableCell>{cruise.duration} days</TableCell>
-                        <TableCell>100 passengers</TableCell>
-                        <TableCell>{formatCurrency(cruise.price)}</TableCell>
-                        <TableCell>
-                          <div className="px-2 py-1 rounded-full text-xs font-medium inline-block bg-green-100 text-green-800">
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCruises.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex flex-col items-center space-y-2">
+                        <Ship className="h-8 w-8 text-muted-foreground" />
+                        <p className="text-muted-foreground">No cruises found</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setIsCreateDialogOpen(true)}
+                        >
+                          Add your first cruise
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCruises.map((cruise) => (
+                    <TableRow key={cruise.id}>
+                      <TableCell>
+                        <div className="font-medium">{cruise.name}</div>
+                        <div className="text-sm text-muted-foreground truncate max-w-md">
+                          {cruise.departure}
+                        </div>
+                      </TableCell>
+                      <TableCell>{cruise.company}</TableCell>
+                      <TableCell>{cruise.duration} days</TableCell>
+                      <TableCell>{formatCurrency(cruise.price)}</TableCell>
+                      <TableCell>
+                        {cruise.featured && (
+                          <Badge className="mr-1">Featured</Badge>
+                        )}
+                        {cruise.available ? (
+                          <Badge variant="outline" className="border-green-500 text-green-600">
                             Available
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleEditClick(cruise)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              onClick={() => handleDeleteClick(cruise)}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="border-amber-500 text-amber-600">
+                            Unavailable
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick(cruise)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(cruise)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
       
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Cruise</DialogTitle>
             <DialogDescription>
-              Update cruise information
+              Update the details for {selectedCruise?.name}
             </DialogDescription>
           </DialogHeader>
           
           <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6 py-4">
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-8">
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Basic Information</h3>
-                <FormField
-                  control={editForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cruise Name</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cruise Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Mediterranean Dream Cruise" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
                   <FormField
                     control={editForm.control}
                     name="company"
@@ -1002,7 +774,7 @@ export default function AdminCruises() {
                       <FormItem>
                         <FormLabel>Cruise Line</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Royal Caribbean" {...field} />
+                          <Input placeholder="Royal Caribbean, Carnival, etc." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1016,26 +788,42 @@ export default function AdminCruises() {
                       <FormItem>
                         <FormLabel>Ship Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Oasis of the Seas" {...field} />
+                          <Input placeholder="Allure of the Seas, etc." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-                  <FormField
-                    control={editForm.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Price ($)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <FormField
+                      control={editForm.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Starting Price ($)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={editForm.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Duration (Days)</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="1" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
                 
                 <FormField
@@ -1045,28 +833,10 @@ export default function AdminCruises() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea rows={4} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium">Images</h3>
-                
-                <FormField
-                  control={editForm.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Main Image</FormLabel>
-                      <FormControl>
-                        <ImageUpload
-                          value={field.value}
-                          onChange={field.onChange}
-                          folder="travelease/cruises"
+                        <Textarea 
+                          placeholder="Describe the cruise experience" 
+                          rows={4}
+                          {...field} 
                         />
                       </FormControl>
                       <FormMessage />
@@ -1074,80 +844,40 @@ export default function AdminCruises() {
                   )}
                 />
                 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <FormLabel>Image Gallery</FormLabel>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const currentValue = editForm.getValues("imageGallery");
-                        try {
-                          const currentGallery = currentValue ? JSON.parse(currentValue) : [];
-                          const newGallery = [...currentGallery, ""];
-                          editForm.setValue("imageGallery", JSON.stringify(newGallery));
-                        } catch (error) {
-                          // If JSON parsing fails, start a new array
-                          editForm.setValue("imageGallery", JSON.stringify([""]));
-                        }
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Image
-                    </Button>
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Primary Image</FormLabel>
+                        <FormControl>
+                          <ImageUpload 
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            folder="travelease/cruises"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
                   <FormField
                     control={editForm.control}
                     name="imageGallery"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Image Gallery (JSON format)</FormLabel>
                         <FormControl>
-                          <div className="space-y-4">
-                            {(() => {
-                              let galleryImages: string[] = [];
-                              try {
-                                galleryImages = field.value ? JSON.parse(field.value) : [];
-                              } catch (error) {
-                                // If parsing fails, use empty array
-                              }
-                              
-                              return galleryImages.map((url, index) => (
-                                <div key={index} className="relative border rounded-md p-4">
-                                  <div className="absolute top-2 right-2">
-                                    <Button
-                                      type="button"
-                                      variant="destructive"
-                                      size="icon"
-                                      onClick={() => {
-                                        const newGallery = [...galleryImages];
-                                        newGallery.splice(index, 1);
-                                        field.onChange(JSON.stringify(newGallery));
-                                      }}
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                  
-                                  <div className="mt-6">
-                                    <ImageUpload
-                                      value={url}
-                                      onChange={(newUrl) => {
-                                        const newGallery = [...galleryImages];
-                                        newGallery[index] = newUrl;
-                                        field.onChange(JSON.stringify(newGallery));
-                                      }}
-                                      folder="travelease/cruises/gallery"
-                                    />
-                                  </div>
-                                </div>
-                              ));
-                            })()}
-                          </div>
+                          <Textarea 
+                            placeholder='["url1.jpg", "url2.jpg", "url3.jpg"]'
+                            rows={4}
+                            {...field} 
+                          />
                         </FormControl>
                         <FormDescription>
-                          Add multiple images to showcase different aspects of the cruise
+                          Enter image URLs as a JSON array
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -1157,37 +887,7 @@ export default function AdminCruises() {
               </div>
               
               <div className="space-y-6">
-                <h3 className="text-lg font-medium">Trip Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="duration"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Duration (days)</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={editForm.control}
-                    name="capacity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Ship Capacity</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
+                <h3 className="text-lg font-medium">Itinerary & Schedule</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -1196,7 +896,7 @@ export default function AdminCruises() {
                       <FormItem>
                         <FormLabel>Departure Port</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Miami, Florida" {...field} />
+                          <Input placeholder="Miami, Venice, etc." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1210,15 +910,13 @@ export default function AdminCruises() {
                       <FormItem>
                         <FormLabel>Return Port (if different)</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Fort Lauderdale, Florida" {...field} />
+                          <Input placeholder="Same as departure if empty" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
                   <FormField
                     control={editForm.control}
                     name="boardingTime"
@@ -1226,7 +924,7 @@ export default function AdminCruises() {
                       <FormItem>
                         <FormLabel>Boarding Time</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 3:00 PM" {...field} />
+                          <Input placeholder="e.g. 4:00 PM" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1247,37 +945,16 @@ export default function AdminCruises() {
                     )}
                   />
                 </div>
-              </div>
-              
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium">Itinerary & Ports</h3>
-                <FormField
-                  control={editForm.control}
-                  name="itinerary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Itinerary (JSON format)</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder='{"day1": "Departure from Miami", "day2": "At Sea", "day3": "Nassau, Bahamas"}'
-                          rows={5}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 
                 <FormField
                   control={editForm.control}
                   name="portsOfCall"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ports of Call (JSON array)</FormLabel>
+                      <FormLabel>Ports of Call (JSON format)</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder='["Nassau, Bahamas", "Charlotte Amalie, St. Thomas", "Philipsburg, St. Maarten"]'
+                          placeholder='["Naples, Italy", "Barcelona, Spain", "Marseille, France"]'
                           rows={3}
                           {...field} 
                         />
@@ -1289,180 +966,8 @@ export default function AdminCruises() {
               </div>
               
               <div className="space-y-6">
-                <h3 className="text-lg font-medium">Ship Amenities & Features</h3>
+                <h3 className="text-lg font-medium">Ship Features</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={editForm.control}
-                    name="cabinTypes"
-                    render={({ field }) => (
-                      <FormItem className="col-span-1 md:col-span-2">
-                        <div className="flex items-center justify-between">
-                          <FormLabel>Cabin Types</FormLabel>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const currentValue = field.value || "[]";
-                              try {
-                                const currentCabins = JSON.parse(currentValue);
-                                const newCabins = [...currentCabins, {
-                                  type: "New Cabin Type",
-                                  price: 0,
-                                  description: "Description of cabin amenities",
-                                  imageUrl: ""
-                                }];
-                                field.onChange(JSON.stringify(newCabins));
-                              } catch (error) {
-                                // If JSON parsing fails, start a new array
-                                field.onChange(JSON.stringify([{
-                                  type: "Interior",
-                                  price: 799,
-                                  description: "Cozy interior cabin",
-                                  imageUrl: ""
-                                }]));
-                              }
-                            }}
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Cabin Type
-                          </Button>
-                        </div>
-                        <FormControl>
-                          <div className="space-y-4 mt-4">
-                            {(() => {
-                              let cabins: Array<{
-                                type: string;
-                                price: number;
-                                description: string;
-                                imageUrl: string;
-                              }> = [];
-                              
-                              try {
-                                cabins = field.value ? JSON.parse(field.value) : [];
-                                // If it's just a simple object, convert it to array format
-                                if (!Array.isArray(cabins)) {
-                                  const newCabins = [];
-                                  for (const [type, price] of Object.entries(cabins)) {
-                                    newCabins.push({
-                                      type,
-                                      price: parseFloat(String(price).replace(/[^0-9.]/g, '')),
-                                      description: `${type} cabin`,
-                                      imageUrl: ""
-                                    });
-                                  }
-                                  cabins = newCabins;
-                                  field.onChange(JSON.stringify(newCabins)); 
-                                }
-                              } catch (error) {
-                                // If parsing fails, use empty array
-                                cabins = [];
-                              }
-                              
-                              return cabins.map((cabin, index) => (
-                                <Card key={index} className="relative">
-                                  <CardHeader className="pb-2">
-                                    <div className="absolute top-2 right-2">
-                                      <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="icon"
-                                        onClick={() => {
-                                          const newCabins = [...cabins];
-                                          newCabins.splice(index, 1);
-                                          field.onChange(JSON.stringify(newCabins));
-                                        }}
-                                      >
-                                        <X className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                    <CardTitle className="text-md">
-                                      <Input 
-                                        value={cabin.type} 
-                                        onChange={(e) => {
-                                          const newCabins = [...cabins];
-                                          newCabins[index] = {
-                                            ...newCabins[index],
-                                            type: e.target.value
-                                          };
-                                          field.onChange(JSON.stringify(newCabins));
-                                        }}
-                                        placeholder="Cabin Type"
-                                        className="font-semibold text-base"
-                                      />
-                                    </CardTitle>
-                                  </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <div>
-                                      <FormLabel className="text-sm">Price (USD)</FormLabel>
-                                      <div className="flex mt-1">
-                                        <span className="inline-flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">
-                                          $
-                                        </span>
-                                        <Input 
-                                          type="number" 
-                                          value={cabin.price} 
-                                          onChange={(e) => {
-                                            const newCabins = [...cabins];
-                                            newCabins[index] = {
-                                              ...newCabins[index],
-                                              price: parseFloat(e.target.value) || 0
-                                            };
-                                            field.onChange(JSON.stringify(newCabins));
-                                          }}
-                                          className="rounded-l-none"
-                                          placeholder="Price"
-                                        />
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <FormLabel className="text-sm">Description</FormLabel>
-                                      <Textarea 
-                                        value={cabin.description || ""} 
-                                        onChange={(e) => {
-                                          const newCabins = [...cabins];
-                                          newCabins[index] = {
-                                            ...newCabins[index],
-                                            description: e.target.value
-                                          };
-                                          field.onChange(JSON.stringify(newCabins));
-                                        }}
-                                        placeholder="Describe cabin amenities and features"
-                                        rows={2}
-                                        className="mt-1"
-                                      />
-                                    </div>
-                                    <div>
-                                      <FormLabel className="text-sm">Cabin Image</FormLabel>
-                                      <div className="mt-1">
-                                        <ImageUpload
-                                          value={cabin.imageUrl || ""}
-                                          onChange={(url) => {
-                                            const newCabins = [...cabins];
-                                            newCabins[index] = {
-                                              ...newCabins[index],
-                                              imageUrl: url
-                                            };
-                                            field.onChange(JSON.stringify(newCabins));
-                                          }}
-                                          folder="travelease/cruises/cabins"
-                                        />
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ));
-                            })()}
-                          </div>
-                        </FormControl>
-                        <FormDescription>
-                          Add different cabin types with pricing and images
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
                   <FormField
                     control={editForm.control}
                     name="amenities"
@@ -1480,9 +985,7 @@ export default function AdminCruises() {
                       </FormItem>
                     )}
                   />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  
                   <FormField
                     control={editForm.control}
                     name="dining"
@@ -1586,11 +1089,9 @@ export default function AdminCruises() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
@@ -1609,11 +1110,9 @@ export default function AdminCruises() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          <Checkbox
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
                           />
                         </FormControl>
                         <div className="space-y-1 leading-none">
@@ -1629,114 +1128,455 @@ export default function AdminCruises() {
               </div>
               
               {/* Cabin Types Management Section */}
-              <div className="space-y-6">
+              <div className="space-y-6 border-t pt-6 mt-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-medium">Cabin Types</h3>
-                  <Button 
-                    type="button" 
-                    onClick={() => setIsAddCabinTypeOpen(true)} 
-                    variant="outline" 
-                    size="sm"
-                    disabled={!selectedCruise?.id}
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Cabin Type
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="button" 
+                      onClick={() => {
+                        addCabinTypeForm.reset({
+                          name: "New Cabin Type",
+                          description: "Description of cabin amenities",
+                          price: 0,
+                          capacity: 2,
+                          image: "",
+                          features: "[]",
+                          featured: false,
+                          availability: 10,
+                          active: true
+                        });
+                        setEditingCabinType(null);
+                      }}
+                      variant="outline" 
+                      size="sm"
+                      disabled={!selectedCruise?.id}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add New Cabin Type
+                    </Button>
+                  </div>
                 </div>
                 
-                {cabinTypes.length === 0 ? (
-                  <div className="text-center py-8 border rounded-md bg-muted/20">
-                    <Bed className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">No cabin types defined for this cruise</p>
-                    <p className="text-xs text-muted-foreground mt-1">Add cabin types to display pricing and availability options</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {cabinTypes.map((cabinType) => (
-                      <Card key={cabinType.id} className="overflow-hidden">
-                        <div className="flex flex-col md:flex-row">
-                          {cabinType.image && (
-                            <div className="h-32 md:h-auto md:w-32 lg:w-48 overflow-hidden">
-                              <img 
-                                src={cabinType.image} 
-                                alt={cabinType.name} 
-                                className="h-full w-full object-cover"
+                {/* Add/Edit Cabin Type Form Section */}
+                {!editingCabinType ? (
+                  selectedCruise?.id ? (
+                    <Card className="shadow-sm border-dashed">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">Add New Cabin Type</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Form {...addCabinTypeForm}>
+                          <form onSubmit={addCabinTypeForm.handleSubmit(onAddCabinTypeSubmit)} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField
+                                control={addCabinTypeForm.control}
+                                name="name"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Cabin Name</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Interior Stateroom" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={addCabinTypeForm.control}
+                                name="price"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Price per Person</FormLabel>
+                                    <FormControl>
+                                      <div className="flex items-center">
+                                        <span className="bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">$</span>
+                                        <Input type="number" className="rounded-l-none" {...field} />
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
                               />
                             </div>
-                          )}
-                          <div className="flex-1 p-4">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium">{cabinType.name}</h4>
-                                <Badge className="mt-1">{formatCurrency(cabinType.price)}</Badge>
-                                <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                                  <span>Max Occupancy: {cabinType.capacity || 2}</span>
-                                </div>
-                              </div>
-                              <div>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => setEditingCabinType(cabinType)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  onClick={() => {
-                                    if (confirm(`Are you sure you want to delete the ${cabinType.name} cabin type?`)) {
-                                      deleteCabinTypeMutation.mutate(cabinType.id);
-                                    }
-                                  }}
-                                >
-                                  <Trash className="h-4 w-4" />
-                                </Button>
-                              </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <FormField
+                                control={addCabinTypeForm.control}
+                                name="capacity"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Max Occupancy</FormLabel>
+                                    <FormControl>
+                                      <Input type="number" min="1" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={addCabinTypeForm.control}
+                                name="availability"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Available Cabins</FormLabel>
+                                    <FormControl>
+                                      <Input type="number" min="0" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
                             </div>
-                            <p className="mt-2 text-sm">{cabinType.description}</p>
-                            {cabinType.features && (
-                              <div className="mt-2">
-                                <h5 className="text-xs font-medium mb-1">Features:</h5>
-                                <div className="flex flex-wrap gap-1">
-                                  {JSON.parse(cabinType.features || '[]').map((feature: string, index: number) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">{feature}</Badge>
-                                  ))}
-                                </div>
+                            
+                            <FormField
+                              control={addCabinTypeForm.control}
+                              name="description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Description</FormLabel>
+                                  <FormControl>
+                                    <Textarea rows={3} placeholder="Describe the cabin amenities and features" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={addCabinTypeForm.control}
+                              name="features"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Features (JSON array)</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder='["Private Balcony", "King Bed", "Mini-fridge", "Satellite TV"]' 
+                                      rows={2} 
+                                      {...field} 
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={addCabinTypeForm.control}
+                              name="image"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cabin Image</FormLabel>
+                                  <FormControl>
+                                    <ImageUpload 
+                                      value={field.value || ''}
+                                      onChange={field.onChange}
+                                      folder="travelease/cruises/cabins"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <div className="flex justify-between pt-2">
+                              <div className="flex gap-2">
+                                <FormField
+                                  control={addCabinTypeForm.control}
+                                  name="featured"
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                      <FormControl>
+                                        <Checkbox 
+                                          checked={field.value} 
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">Featured</FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={addCabinTypeForm.control}
+                                  name="active"
+                                  render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                      <FormControl>
+                                        <Checkbox 
+                                          checked={field.value} 
+                                          onCheckedChange={field.onChange}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">Active</FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              
+                              <Button type="submit" disabled={addCabinTypeMutation.isPending}>
+                                {addCabinTypeMutation.isPending ? "Adding..." : "Add Cabin Type"}
+                              </Button>
+                            </div>
+                          </form>
+                        </Form>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="text-center py-4 border border-dashed rounded-md bg-muted/10">
+                      <p className="text-sm text-muted-foreground">Save the cruise first to add cabin types</p>
+                    </div>
+                  )
+                ) : (
+                  <Card className="shadow-sm border-dashed">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Edit Cabin Type</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...editCabinTypeForm}>
+                        <form onSubmit={editCabinTypeForm.handleSubmit(onEditCabinTypeSubmit)} className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={editCabinTypeForm.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Cabin Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Interior Stateroom" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={editCabinTypeForm.control}
+                              name="price"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Price per Person</FormLabel>
+                                  <FormControl>
+                                    <div className="flex items-center">
+                                      <span className="bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">$</span>
+                                      <Input type="number" className="rounded-l-none" {...field} />
+                                    </div>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={editCabinTypeForm.control}
+                              name="capacity"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Max Occupancy</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="1" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={editCabinTypeForm.control}
+                              name="availability"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Available Cabins</FormLabel>
+                                  <FormControl>
+                                    <Input type="number" min="0" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <FormField
+                            control={editCabinTypeForm.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea rows={3} placeholder="Describe the cabin amenities and features" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={editCabinTypeForm.control}
+                            name="features"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Features (JSON array)</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder='["Private Balcony", "King Bed", "Mini-fridge", "Satellite TV"]' 
+                                    rows={2} 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={editCabinTypeForm.control}
+                            name="image"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Cabin Image</FormLabel>
+                                <FormControl>
+                                  <ImageUpload 
+                                    value={field.value || ''}
+                                    onChange={field.onChange}
+                                    folder="travelease/cruises/cabins"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="flex justify-between pt-2">
+                            <div className="flex gap-2">
+                              <FormField
+                                control={editCabinTypeForm.control}
+                                name="featured"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <Checkbox 
+                                        checked={field.value} 
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="text-sm font-normal">Featured</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={editCabinTypeForm.control}
+                                name="active"
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <Checkbox 
+                                        checked={field.value} 
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="text-sm font-normal">Active</FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button type="button" variant="outline" onClick={() => setEditingCabinType(null)}>
+                                Cancel
+                              </Button>
+                              <Button type="submit" disabled={updateCabinTypeMutation.isPending}>
+                                {updateCabinTypeMutation.isPending ? "Updating..." : "Save Changes"}
+                              </Button>
+                            </div>
+                          </div>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* List of Existing Cabin Types */}
+                <div className="space-y-4">
+                  <h4 className="text-base font-medium">Existing Cabin Types</h4>
+                  {cabinTypes.length === 0 ? (
+                    <div className="text-center py-8 border rounded-md bg-muted/20">
+                      <Bed className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">No cabin types defined for this cruise</p>
+                      <p className="text-xs text-muted-foreground mt-1">Add cabin types to display pricing and availability options</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {cabinTypes.map((cabinType) => (
+                        <Card key={cabinType.id} className="overflow-hidden">
+                          <div className="flex flex-col md:flex-row">
+                            {cabinType.image && (
+                              <div className="h-32 md:h-auto md:w-32 lg:w-48 overflow-hidden">
+                                <img 
+                                  src={cabinType.image} 
+                                  alt={cabinType.name} 
+                                  className="h-full w-full object-cover"
+                                />
                               </div>
                             )}
+                            <div className="flex-1 p-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="font-medium">{cabinType.name}</h4>
+                                  <Badge className="mt-1">{formatCurrency(cabinType.price)}</Badge>
+                                  <div className="flex items-center mt-1 text-sm text-muted-foreground">
+                                    <span>Max Occupancy: {cabinType.capacity || 2}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => setEditingCabinType(cabinType)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => {
+                                      if (confirm(`Are you sure you want to delete the ${cabinType.name} cabin type?`)) {
+                                        deleteCabinTypeMutation.mutate(cabinType.id);
+                                      }
+                                    }}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              <p className="mt-2 text-sm">{cabinType.description}</p>
+                              {cabinType.features && (
+                                <div className="mt-2">
+                                  <h5 className="text-xs font-medium mb-1">Features:</h5>
+                                  <div className="flex flex-wrap gap-1">
+                                    {(() => {
+                                      try {
+                                        const features = JSON.parse(cabinType.features);
+                                        if (Array.isArray(features)) {
+                                          return features.map((feature, i) => (
+                                            <Badge key={i} variant="secondary" className="text-xs">{feature}</Badge>
+                                          ));
+                                        }
+                                        return null;
+                                      } catch (e) {
+                                        return null;
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium">Display Settings</h3>
-                <FormField
-                  control={editForm.control}
-                  name="featured"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                      <FormControl>
-                        <input
-                          type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
-                          className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>Featured Cruise</FormLabel>
-                        <p className="text-sm text-muted-foreground">
-                          Display this cruise in featured sections
-                        </p>
-                      </div>
-                    </FormItem>
+                        </Card>
+                      ))}
+                    </div>
                   )}
-                />
+                </div>
               </div>
               
               <div className="flex justify-end gap-2 pt-4">
@@ -1758,333 +1598,21 @@ export default function AdminCruises() {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedCruise?.name}"? This action cannot be undone.
+              Are you sure you want to delete {selectedCruise?.name}? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2 sm:justify-end">
-            <Button type="button" variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={onDelete}
+            <Button 
+              variant="destructive" 
+              onClick={onDelete} 
               disabled={deleteCruiseMutation.isPending}
             >
               {deleteCruiseMutation.isPending ? "Deleting..." : "Delete Cruise"}
             </Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Cabin Type Dialog */}
-      <Dialog open={isAddCabinTypeOpen} onOpenChange={setIsAddCabinTypeOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Cabin Type</DialogTitle>
-            <DialogDescription>
-              Create a new cabin type for {selectedCruise?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...addCabinTypeForm}>
-            <form onSubmit={addCabinTypeForm.handleSubmit(onAddCabinTypeSubmit)} className="space-y-6">
-              <FormField
-                control={addCabinTypeForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cabin Type Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Suite, Balcony, Interior, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={addCabinTypeForm.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price (USD)</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addCabinTypeForm.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Max Occupancy</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="1" step="1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={addCabinTypeForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea rows={3} placeholder="Describe cabin amenities and features" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={addCabinTypeForm.control}
-                name="features"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Features (comma-separated)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Balcony, Mini-bar, Ocean view, etc."
-                        value={field.value === '[]' ? '' : JSON.parse(field.value).join(', ')}
-                        onChange={(e) => {
-                          const featuresArray = e.target.value
-                            ? e.target.value.split(',').map(feature => feature.trim())
-                            : [];
-                          field.onChange(JSON.stringify(featuresArray));
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter features separated by commas
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={addCabinTypeForm.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cabin Image</FormLabel>
-                    <FormControl>
-                      <ImageUpload 
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsAddCabinTypeOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="secondary"
-                  onClick={() => {
-                    if (selectedCruise) {
-                      const values = addCabinTypeForm.getValues();
-                      addCabinTypeMutation.mutate({
-                        cruiseId: selectedCruise.id,
-                        name: values.name,
-                        description: values.description,
-                        price: values.price,
-                        capacity: values.capacity ?? 2,
-                        features: values.features,
-                        image: values.image,
-                        featured: values.featured ?? false,
-                        availability: values.availability ?? 10,
-                        active: values.active ?? true
-                      });
-                    }
-                  }}
-                  disabled={addCabinTypeMutation.isPending}
-                >
-                  {addCabinTypeMutation.isPending ? "Saving..." : "Save (Manual)"}
-                </Button>
-                <Button type="submit" disabled={addCabinTypeMutation.isPending}>
-                  {addCabinTypeMutation.isPending ? "Adding..." : "Add Cabin Type"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Edit Cabin Type Dialog */}
-      <Dialog open={!!editingCabinType} onOpenChange={(open) => !open && setEditingCabinType(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Cabin Type</DialogTitle>
-            <DialogDescription>
-              Update cabin type details for {selectedCruise?.name}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...editCabinTypeForm}>
-            <form onSubmit={editCabinTypeForm.handleSubmit(onEditCabinTypeSubmit)} className="space-y-6">
-              <FormField
-                control={editCabinTypeForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cabin Type Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Suite, Balcony, Interior, etc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={editCabinTypeForm.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price (USD)</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" step="0.01" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editCabinTypeForm.control}
-                  name="capacity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Max Occupancy</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="1" step="1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={editCabinTypeForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea rows={3} placeholder="Describe cabin amenities and features" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={editCabinTypeForm.control}
-                name="features"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Features (comma-separated)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Balcony, Mini-bar, Ocean view, etc."
-                        value={field.value === '[]' ? '' : JSON.parse(field.value).join(', ')}
-                        onChange={(e) => {
-                          const featuresArray = e.target.value
-                            ? e.target.value.split(',').map(feature => feature.trim())
-                            : [];
-                          field.onChange(JSON.stringify(featuresArray));
-                        }}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Enter features separated by commas
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={editCabinTypeForm.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cabin Image</FormLabel>
-                    <FormControl>
-                      <ImageUpload 
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={() => setEditingCabinType(null)}>
-                  Cancel
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="secondary"
-                  onClick={() => {
-                    if (!selectedCruise?.id) {
-                      console.error("No cruise selected");
-                      toast({
-                        title: "Error",
-                        description: "No cruise selected. Please try again.",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    
-                    if (editingCabinType) {
-                      const values = editCabinTypeForm.getValues();
-                      updateCabinTypeMutation.mutate({
-                        id: editingCabinType.id,
-                        cruiseId: selectedCruise.id,
-                        name: values.name,
-                        description: values.description,
-                        price: values.price,
-                        capacity: values.capacity ?? 2,
-                        features: values.features,
-                        image: values.image,
-                        featured: values.featured ?? false,
-                        availability: values.availability ?? 10,
-                        active: values.active ?? true
-                      });
-                    }
-                  }}
-                  disabled={updateCabinTypeMutation.isPending}
-                >
-                  {updateCabinTypeMutation.isPending ? "Saving..." : "Save (Manual)"}
-                </Button>
-                <Button type="submit" disabled={updateCabinTypeMutation.isPending}>
-                  {updateCabinTypeMutation.isPending ? "Updating..." : "Update Cabin Type"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
         </DialogContent>
       </Dialog>
     </AdminLayout>
