@@ -214,8 +214,21 @@ export default function AdminCruises() {
   };
 
   const onEditCabinTypeSubmit = async (data: CabinTypeFormValues & { id: number }) => {
+    if (!selectedCruise?.id) {
+      console.error("No cruise selected");
+      toast({
+        title: "Error",
+        description: "No cruise selected. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
-      await updateCabinTypeMutation.mutateAsync(data);
+      await updateCabinTypeMutation.mutateAsync({
+        ...data,
+        cruiseId: selectedCruise.id
+      });
     } catch (error) {
       console.error("Error updating cabin type:", error);
     }
@@ -1642,10 +1655,10 @@ export default function AdminCruises() {
                     {cabinTypes.map((cabinType) => (
                       <Card key={cabinType.id} className="overflow-hidden">
                         <div className="flex flex-col md:flex-row">
-                          {cabinType.imageUrl && (
+                          {cabinType.image && (
                             <div className="h-32 md:h-auto md:w-32 lg:w-48 overflow-hidden">
                               <img 
-                                src={cabinType.imageUrl} 
+                                src={cabinType.image} 
                                 alt={cabinType.name} 
                                 className="h-full w-full object-cover"
                               />
@@ -1657,7 +1670,7 @@ export default function AdminCruises() {
                                 <h4 className="font-medium">{cabinType.name}</h4>
                                 <Badge className="mt-1">{formatCurrency(cabinType.price)}</Badge>
                                 <div className="flex items-center mt-1 text-sm text-muted-foreground">
-                                  <span>Max Occupancy: {cabinType.maxOccupancy}</span>
+                                  <span>Max Occupancy: {cabinType.capacity || 2}</span>
                                 </div>
                               </div>
                               <div>
@@ -2035,7 +2048,17 @@ export default function AdminCruises() {
                   type="button" 
                   variant="secondary"
                   onClick={() => {
-                    if (editingCabinType && selectedCruise) {
+                    if (!selectedCruise?.id) {
+                      console.error("No cruise selected");
+                      toast({
+                        title: "Error",
+                        description: "No cruise selected. Please try again.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    if (editingCabinType) {
                       const values = editCabinTypeForm.getValues();
                       updateCabinTypeMutation.mutate({
                         id: editingCabinType.id,
