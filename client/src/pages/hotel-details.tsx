@@ -510,7 +510,7 @@ export default function HotelDetails() {
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <div className="flex mr-4">
               {[...Array(hotel.rating)].map((_, i) => (
-                <Star key={i} className="text-secondary w-5 h-5 fill-current" />
+                <Star key={i} className="text-yellow-400 w-5 h-5 fill-current" />
               ))}
             </div>
             {hotel.userRating && (
