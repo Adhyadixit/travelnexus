@@ -396,9 +396,13 @@ export default function HotelDetails() {
   let parsedGalleryImages: string[] = [];
   if (hotel.imageGallery) {
     try {
+      console.log("Hotel gallery raw:", hotel.imageGallery);
       const parsed = JSON.parse(hotel.imageGallery);
-      // Only add unique images to avoid duplicates
-      parsedGalleryImages = Array.isArray(parsed) ? parsed.filter(img => img !== mainImage) : [];
+      console.log("Parsed gallery images:", parsed);
+      
+      // Include all gallery images without filtering
+      parsedGalleryImages = Array.isArray(parsed) ? parsed : [];
+      console.log("Gallery images after parsing:", parsedGalleryImages);
     } catch (e) {
       console.error("Error parsing hotel gallery images:", e);
     }
@@ -408,6 +412,8 @@ export default function HotelDetails() {
   const galleryImages = parsedGalleryImages.length > 0 
     ? [mainImage, ...parsedGalleryImages] 
     : [mainImage];
+  
+  console.log("Final gallery images:", galleryImages);
 
   // Get current image
   const currentImage = galleryImages[activeImageIndex];
