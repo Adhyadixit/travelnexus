@@ -144,21 +144,30 @@ export default function CabDetails() {
               />
             </div>
             
-            <div className="flex items-center mb-6">
-              <Avatar className="h-16 w-16 mr-4">
-                <AvatarImage src={driver.profileImageUrl} alt={driver.name} />
-                <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h1 className="text-2xl font-heading font-bold">{driver.name}</h1>
-                <div className="flex items-center">
-                  <Star className="text-secondary w-4 h-4 fill-current mr-1" />
-                  <span className="font-medium">{driver.rating?.toFixed(1) || "New"}</span>
-                  {driver.reviewCount > 0 && (
-                    <span className="text-neutral-500 text-sm ml-2">({driver.reviewCount} reviews)</span>
-                  )}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <div className="flex items-center">
+                <Avatar className="h-16 w-16 mr-4">
+                  <AvatarImage src={driver.profileImageUrl} alt={driver.name} />
+                  <AvatarFallback>{driver.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl font-heading font-bold">{driver.name}</h1>
+                  <div className="flex items-center">
+                    <Star className="text-secondary w-4 h-4 fill-current mr-1" />
+                    <span className="font-medium">{driver.rating?.toFixed(1) || "New"}</span>
+                    {driver.reviewCount !== null && driver.reviewCount !== undefined && driver.reviewCount > 0 && (
+                      <span className="text-neutral-500 text-sm ml-2">({driver.reviewCount} reviews)</span>
+                    )}
+                  </div>
                 </div>
               </div>
+              <Button
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-white"
+                onClick={handleBookNow}
+              >
+                Book Now
+              </Button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -247,7 +256,7 @@ export default function CabDetails() {
           
           {/* Booking sidebar */}
           <div>
-            <Card>
+            <Card ref={bookingFormRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book This Driver</h2>
                 
@@ -257,7 +266,7 @@ export default function CabDetails() {
                     <div className="text-sm text-neutral-500">per day</div>
                   </div>
                   
-                  <div>
+                  <div className="date-picker-container">
                     <label className="block text-sm font-medium mb-2">Start Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
