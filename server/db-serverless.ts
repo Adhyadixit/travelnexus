@@ -1,23 +1,35 @@
 import { neon, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from '@shared/schema';
+import { sql } from 'drizzle-orm';
 
 // Set warm-up for Neon serverless driver
 neonConfig.fetchConnectionCache = true;
+
+// Enable debug logging in development
+if (process.env.NODE_ENV !== 'production') {
+  neonConfig.debug = true;
+}
 
 let db: ReturnType<typeof makeDb>;
 
 function makeDb() {
   // Check for required environment variable
   if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL is not defined. Please set the environment variable.');
     throw new Error('DATABASE_URL is not defined. Please set the environment variable.');
   }
 
-  // Create connection pool
-  const sql = neon(process.env.DATABASE_URL);
-
-  // Return drizzle instance
-  return drizzle(sql, { schema });
+  try {
+    // Create connection pool
+    const sql = neon(process.env.DATABASE_URL);
+    
+    // Return drizzle instance
+    return drizzle(sql, { schema });
+  } catch (error) {
+    console.error('Error creating database connection:', error);
+    throw error;
+  }
 }
 
 // Create and export db with connection pooling appropriate for serverless
@@ -28,8 +40,25 @@ export function getDb() {
   return db;
 }
 
+// Test database connection
+export async function testConnection() {
+  try {
+    const result = await db.execute(sql`SELECT 1 as test`);
+    return { success: true, result };
+  } catch (error) {
+    console.error('Database connection test failed:', error);
+    return { success: false, error };
+  }
+}
+
 // For compatibility with existing code
-export { db as dbDirect };
+export { db };
 
 // Initialize db on import
-db = makeDb();
+try {
+  db = makeDb();
+  console.log('Database connection initialized');
+} catch (error) {
+  console.error('Failed to initialize database connection:', error);
+  // Don't throw here, let the application handle the error when it tries to use the database
+}
