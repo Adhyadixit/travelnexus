@@ -28,6 +28,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Plus, X } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { ItineraryManager } from "@/components/itinerary/itinerary-manager";
+import { type CheckedState } from "@radix-ui/react-checkbox";
 
 // Extend the insert schema for form validation
 const packageFormSchema = insertPackageSchema.extend({
@@ -47,6 +48,11 @@ const packageFormSchema = insertPackageSchema.extend({
 type PackageFormValues = z.infer<typeof packageFormSchema>;
 
 // Helper functions for converting between form and DB formats
+
+// Helper function to safely convert field value to CheckedState
+const asCheckedState = (value: boolean | null | undefined): CheckedState => {
+  return value === true ? true : false;
+};
 const stringToArray = (str: string): string[] => {
   try {
     return str.split('\n').filter(line => line.trim() !== '');
@@ -294,7 +300,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value ?? false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -572,9 +578,9 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormControl>
                         <div className="border rounded-md p-4 bg-background">
                           <ItineraryManager 
-                            value={field.value}
+                            value={field.value || '{}'}
                             onChange={field.onChange}
-                            duration={parseInt(form.getValues().duration.toString()) || 1}
+                            duration={parseInt(form.getValues().duration?.toString() || '1')}
                           />
                         </div>
                       </FormControl>
