@@ -81,6 +81,12 @@ export interface IStorage {
   updateCruise(id: number, data: Partial<InsertCruise>): Promise<Cruise | undefined>;
   deleteCruise(id: number): Promise<void>;
   getCruiseCount(): Promise<number>;
+  
+  // Cruise Cabin Type operations
+  createCruiseCabinType(cabinTypeData: Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>): Promise<CruiseCabinType>;
+  getCruiseCabinTypes(cruiseId: number): Promise<CruiseCabinType[]>;
+  updateCruiseCabinType(id: number, data: Partial<Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>>): Promise<CruiseCabinType | undefined>;
+  deleteCruiseCabinType(id: number): Promise<void>;
 
   // Event operations
   getAllEvents(): Promise<Event[]>;
@@ -360,16 +366,16 @@ export class DatabaseStorage implements IStorage {
     return cruise;
   }
   
-  async createCruiseCabinType(cabinTypeData: Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>): Promise<typeof cruiseCabinTypes.$inferSelect> {
+  async createCruiseCabinType(cabinTypeData: Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>): Promise<CruiseCabinType> {
     const [cabinType] = await db.insert(cruiseCabinTypes).values(cabinTypeData).returning();
     return cabinType;
   }
   
-  async getCruiseCabinTypes(cruiseId: number): Promise<typeof cruiseCabinTypes.$inferSelect[]> {
+  async getCruiseCabinTypes(cruiseId: number): Promise<CruiseCabinType[]> {
     return await db.select().from(cruiseCabinTypes).where(eq(cruiseCabinTypes.cruiseId, cruiseId));
   }
   
-  async updateCruiseCabinType(id: number, data: Partial<Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>>): Promise<typeof cruiseCabinTypes.$inferSelect | undefined> {
+  async updateCruiseCabinType(id: number, data: Partial<Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>>): Promise<CruiseCabinType | undefined> {
     const [cabinType] = await db.update(cruiseCabinTypes)
       .set(data)
       .where(eq(cruiseCabinTypes.id, id))
