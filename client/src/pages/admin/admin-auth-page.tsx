@@ -67,17 +67,17 @@ export default function AdminAuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-100">
       <Helmet>
-        <title>Admin Login | Travel Ease by Expedia</title>
-        <meta name="description" content="Administrator login page for Travel Ease by Expedia travel management system." />
-        <meta property="og:title" content="Admin Login | Travel Ease by Expedia" />
-        <meta property="og:description" content="Secure login for Travel Ease by Expedia administrators." />
+        <title>Admin Login | TravelEase</title>
+        <meta name="description" content="Administrator login page for TravelEase travel management system." />
+        <meta property="og:title" content="Admin Login | TravelEase" />
+        <meta property="og:description" content="Secure login for TravelEase administrators." />
       </Helmet>
       
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center mb-6">
             <h1 className="text-3xl font-bold text-primary">
-              Travel Ease by Expedia<span className="text-secondary">.</span>
+              TravelEase<span className="text-secondary">.</span>
             </h1>
           </div>
           <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
