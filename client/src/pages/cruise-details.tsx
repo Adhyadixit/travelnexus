@@ -44,15 +44,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-// Define cabin types
-interface CabinType {
-  name: string;
-  image: string;
-  description: string;
-  features: string[];
-  price: number;
-  availability: number;
-}
+// Legacy cabin type interface (for fallback - no longer needed)
+// All cabin types now come from the CruiseCabinType schema type
 
 export default function CruiseDetails() {
   const { id } = useParams<{ id: string }>();
@@ -170,12 +163,23 @@ export default function CruiseDetails() {
 
   // Fetch cabin types from API
   const { 
-    data: cabinTypes = [],
+    data: cabinTypesData = [],
     isLoading: isLoadingCabinTypes
   } = useQuery<CruiseCabinType[]>({
     queryKey: [`/api/cruises/${id}/cabin-types`],
     enabled: !!id,
   });
+  
+  // Helper function to safely parse JSON
+  const safelyParseJSON = (jsonString: string | null | undefined): any[] => {
+    if (!jsonString) return [];
+    try {
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return [];
+    }
+  };
   
   // Fallback cabin types if none are found in the database
   const fallbackCabinTypes = [
@@ -803,7 +807,7 @@ export default function CruiseDetails() {
                           <p className="text-neutral-600 mb-4">{cabin.description}</p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                            {cabin.features.map((feature, i) => (
+                            {JSON.parse(cabin.features).map((feature: string, i: number) => (
                               <div key={i} className="flex items-center">
                                 <div className="rounded-full bg-primary/10 p-1 mr-2">
                                   <CheckCheck className="w-3 h-3 text-primary" />
