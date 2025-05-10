@@ -294,7 +294,7 @@ export default function CabDetails() {
                     </Popover>
                   </div>
                   
-                  <div>
+                  <div className="days-picker-container">
                     <label className="block text-sm font-medium mb-2">Number of Days</label>
                     <Select 
                       value={days.toString()} 
