@@ -153,7 +153,7 @@ export default function AdminCruises() {
   });
   
   const updateCabinTypeMutation = useMutation({
-    mutationFn: async (cabinType: CruiseCabinType) => {
+    mutationFn: async (cabinType: Partial<CruiseCabinType>) => {
       if (!selectedCruise?.id) throw new Error("No cruise selected");
       
       const res = await apiRequest("PATCH", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinType.id}`, cabinType);
