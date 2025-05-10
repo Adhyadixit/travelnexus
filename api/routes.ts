@@ -24,7 +24,7 @@ import {
   guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
   hotelRoomTypes, hotelRoomImages, insertDestinationSchema,
   type Conversation, type Message, type InsertMessage
-} from "@shared/schema";
+} from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create the HTTP server
@@ -134,13 +134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("[API] Returning destinations data");
       return res.json(destinationsData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[API] Error in destinations route:", error);
       // Return details of the error for debugging
       return res.status(500).json({ 
         error: "Failed to fetch destinations", 
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details: error instanceof Error ? error.message : String(error),
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
       });
     }
   });
@@ -152,7 +152,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Destination not found" });
       }
       res.json(destination);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch destination" });
     }
   });
@@ -169,7 +171,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         packagesData = await storage.getAllPackages();
       }
       res.json(packagesData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch packages" });
     }
   });
@@ -181,7 +185,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Package not found" });
       }
       res.json(packageData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch package" });
     }
   });
@@ -198,7 +204,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hotelsData = await storage.getAllHotels();
       }
       res.json(hotelsData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch hotels" });
     }
   });
@@ -210,7 +218,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Hotel not found" });
       }
       res.json(hotel);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch hotel" });
     }
   });
@@ -232,7 +242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Remove sensitive data before sending
       const { password, ...userData } = user;
       res.json(userData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Failed to fetch user data" });
     }
@@ -254,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const conversations = await storage.getConversationsByGuestUser(guestUser.id);
       res.json(conversations);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching guest conversations:", error);
       res.status(500).json({ error: "Failed to fetch guest conversations" });
     }
@@ -270,7 +280,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         driversData = await storage.getAllDrivers();
       }
       res.json(driversData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch drivers" });
     }
   });
@@ -282,7 +294,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Driver not found" });
       }
       res.json(driver);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch driver" });
     }
   });
@@ -297,7 +311,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cruisesData = await storage.getAllCruises();
       }
       res.json(cruisesData);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch cruises" });
     }
   });
@@ -309,7 +325,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Cruise not found" });
       }
       res.json(cruise);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(`Error: ${errorMessage}`);
       res.status(500).json({ error: "Failed to fetch cruise" });
     }
   });
@@ -328,3 +346,4 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(directDatabaseRoutes);
   
   return httpServer;
+}

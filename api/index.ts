@@ -1,8 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { registerRoutes } from './routes.ts';
+import { registerRoutes } from './routes.js';
 
 // Import serverless database connection
-import '../server/db-serverless';
+import '../server/db-serverless.js';
 
 // Create Express app
 const app = express();
