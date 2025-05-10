@@ -172,11 +172,11 @@ export default function HotelDetails() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [, setLocation] = useLocation();
   const { user } = useAuth();
-
+  
   // State for inquiry-related chat
   const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
   const [autoOpenChat, setAutoOpenChat] = useState(false);
-
+  
   // Create the Layout component with chat props
   const Layout = isMobile 
     ? (props: any) => (
@@ -228,7 +228,7 @@ export default function HotelDetails() {
 
   // Reference to the booking form section for scrolling
   const bookingFormRef = useRef<HTMLDivElement>(null);
-
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
@@ -239,7 +239,7 @@ export default function HotelDetails() {
     // Scroll to the booking form section
     if (bookingFormRef.current) {
       bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
-
+      
       if (!selectedRoom) {
         // First scroll to room selection if no room is selected
         document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' });
@@ -289,7 +289,7 @@ export default function HotelDetails() {
   const handlePrevImage = () => {
     // If there's only one image, do nothing
     if (galleryImages.length <= 1) return;
-
+    
     setActiveImageIndex((prevIndex) => 
       prevIndex === 0 ? galleryImages.length - 1 : prevIndex - 1
     );
@@ -298,7 +298,7 @@ export default function HotelDetails() {
   const handleNextImage = () => {
     // If there's only one image, do nothing
     if (galleryImages.length <= 1) return;
-
+    
     setActiveImageIndex((prevIndex) => 
       prevIndex === galleryImages.length - 1 ? 0 : prevIndex + 1
     );
@@ -391,13 +391,13 @@ export default function HotelDetails() {
 
   // Build a gallery from hotel image and any additional images
   const mainImage = hotel.imageUrl;
-
+  
   // Parse gallery images safely
   let parsedGalleryImages: string[] = [];
   if (hotel.imageGallery) {
     try {
       const parsed = JSON.parse(hotel.imageGallery);
-
+      
       // Handle different possible formats
       if (Array.isArray(parsed)) {
         parsedGalleryImages = parsed.filter((img: any) => 
@@ -422,7 +422,7 @@ export default function HotelDetails() {
       }
     }
   }
-
+  
   // Create final gallery array - if no additional images, just use main image
   // Make sure we don't duplicate the main image
   const uniqueGalleryImages = parsedGalleryImages.filter(img => img !== mainImage);
@@ -475,139 +475,6 @@ export default function HotelDetails() {
         extraBeds: 'Extra beds available for $50 per night'
       };
 
-    // Booking form content
-    const bookingFormContent = (
-      <>
-        <div className="room-selector-container">
-          <label className="block text-sm font-medium mb-2">Room Type</label>
-          <Select 
-            value={selectedRoom?.toString() || ""} 
-            onValueChange={(value) => setSelectedRoom(parseInt(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select room type" />
-            </SelectTrigger>
-            <SelectContent className="text-neutral-800">
-              {roomTypes.map((room: any) => (
-                <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
-                  {room.name} - {formatCurrency(room.price)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="date-picker-container">
-          <label className="block text-sm font-medium mb-2">Check-in Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className="w-full justify-start text-left font-normal"
-              >
-                {startDate ? (
-                  format(startDate, "PPP")
-                ) : (
-                  <span>Select date</span>
-                )}
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
-              <Calendar
-                mode="single"
-                selected={startDate}
-                onSelect={setStartDate}
-                disabled={(date) => date < new Date()}
-                initialFocus
-                className="text-neutral-800"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Check-out Date</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className="w-full justify-start text-left font-normal"
-              >
-                {endDate ? (
-                  format(endDate, "PPP")
-                ) : (
-                  <span>Select date</span>
-                )}
-                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
-              <Calendar
-                mode="single"
-                selected={endDate}
-                onSelect={setEndDate}
-                disabled={(date) => 
-                  date < (startDate || new Date())
-                }
-                initialFocus
-                className="text-neutral-800"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">Guests</label>
-          <Select value={guests} onValueChange={setGuests}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select number of guests" />
-            </SelectTrigger>
-            <SelectContent className="text-neutral-800">
-              <SelectItem value="1" className="text-neutral-800">1 Guest</SelectItem>
-              <SelectItem value="2" className="text-neutral-800">2 Guests</SelectItem>
-              <SelectItem value="3" className="text-neutral-800">3 Guests</SelectItem>
-              <SelectItem value="4" className="text-neutral-800">4 Guests</SelectItem>
-              <SelectItem value="5" className="text-neutral-800">5 Guests</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {nights > 0 && selectedRoom && (
-          <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
-            <div className="flex justify-between">
-              <span>Room </span>
-              <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
-              <span>{formatCurrency(totalPrice)}</span>
-            </div>
-            <Separator className="my-2" />
-            <div className="flex justify-between font-bold">
-              <span>Total</span>
-              <span>{formatCurrency(totalPrice)}</span>
-            </div>
-          </div>
-        )}
-
-        <Button 
-          className="w-full mt-4" 
-          size="lg"
-          onClick={handleBookNow}
-          disabled={!startDate || !endDate || !selectedRoom}
-        >
-          Book Now
-        </Button>
-
-        {hotel.freeCancellation && (
-          <div className="text-sm text-green-600 flex items-center justify-center mt-2">
-            <Check className="w-4 h-4 mr-1" />
-            <span>Free cancellation available</span>
-          </div>
-        )}
-      </>
-    );
 
 
   return (
@@ -692,7 +559,7 @@ export default function HotelDetails() {
                 onClick={() => setIsLightboxOpen(true)}
               />
             </div>
-
+            
             <button 
               className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-md text-neutral-700 hover:text-primary transition-colors z-10"
               onClick={() => setIsLightboxOpen(true)}
@@ -748,7 +615,7 @@ export default function HotelDetails() {
               {activeImageIndex + 1} / {galleryImages.length}
             </div>
           )}
-
+          
           {/* Mobile dot indicators - only show when multiple images */}
           {isMobile && galleryImages.length > 1 && (
             <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
@@ -802,313 +669,6 @@ export default function HotelDetails() {
               Free cancellation
             </Badge>
           )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main content */}
-          <div className="lg:col-span-2">
-            {/* Detailed Description Section */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-4">About This Property</h2>
-              <div className="prose max-w-none text-neutral-700">
-                <p className="whitespace-pre-line">{hotel.description}</p>
-
-                {/* Check-in/Check-out times<div className="flex flex-col md:flex-row gap-6 my-6">
-                  <div className="flex items-start">
-                    <Clock className="w-5 h-5 text-primary mr-2 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-neutral-900">Check-in Time</h4>
-                      <p className="text-neutral-600">{checkInTime}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start">
-                    <Clock className="w-5 h-5 text-primary mr-2 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-neutral-900">Check-out Time</h4>
-                      <p className="text-neutral-600">{checkOutTime}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Hotel Policies */}
-                <div className="mb-6">
-                  <h3 className="text-xl font-heading font-bold mb-3">Hotel Policies</h3>
-                  <ul className="space-y-2">
-                    {Object.entries(policies).map(([key, value]) => (
-                      <li key={key} className="flex items-start">
-                        <Info className="w-4 h-4 text-neutral-500 mr-2 mt-0.5" />
-                        <span><span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}:</span> {String(value)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Languages Spoken */}
-                <div>
-                  <h3 className="text-xl font-heading font-bold mb-3">Languages Spoken</h3>
-                  <div className="flex items-center mb-6">
-                    <Languages className="w-5 h-5 text-primary mr-2" />
-                    <div className="flex flex-wrap gap-2">
-                      {languages.map((language: string) => (
-                        <Badge key={language} variant="outline" className="bg-neutral-50">
-                          {language}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nearby Attractions */}
-                {nearbyAttractions.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-heading font-bold mb-3">Nearby Places of Interest</h3>
-                    <ul className="space-y-2">
-                      {nearbyAttractions.map((attraction: {name: string, distance: string}, index: number) => (
-                        <li key={index} className="flex items-start">
-                          <MapPin className="w-4 h-4 text-primary mr-2 mt-0.5" />
-                          <span>{attraction.name} - {attraction.distance}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </section>
-
-            {/* Room Types & Booking Options Section */}
-            <section id="booking-section" className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
-
-              <div className="space-y-6">
-                {roomTypes.map((room: any) => (
-                  <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-4">
-                      <div className="md:col-span-1">
-                        <img 
-                          src={room.images[0] || hotel.imageUrl} 
-                          alt={room.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-4 md:col-span-3">
-                        <div className="flex justify-between">
-                          <h3 className="text-xl font-heading font-bold">{room.name}</h3>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
-                            <div className="text-sm text-neutral-500">per night</div>
-                          </div>
-                        </div>
-
-                        <p className="text-neutral-600 my-2">{room.description}</p>
-
-                        <div className="flex items-center text-neutral-600 mb-2">
-                          <User className="w-4 h-4 mr-1" />
-                          <span>Up to {room.capacity} guests</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 my-3">
-                          {room.amenities.map((amenity: string, index: number) => (
-                            <div key={index} className="flex items-center text-sm">
-                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
-                              <span className="ml-1">{amenity}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        {room.cancellation && (
-                          <div className="text-sm text-green-600 flex items-center mb-4">
-                            <Check className="w-4 h-4 mr-1" />
-                            <span>{room.cancellation}</span>
-                          </div>
-                        )}
-
-                        <div className="mt-4 flex justify-end">
-                          <Button 
-                            variant={selectedRoom === room.id ? "default" : "outline"}
-                            onClick={() => {
-                              setSelectedRoom(room.id);
-                              // If room is selected, scroll to the booking form for date selection
-                              if (bookingFormRef.current) {
-                                setTimeout(() => {
-                                  const formRef = bookingFormRef.current;
-                                  formRef?.scrollIntoView({ behavior: 'smooth' });
-
-                                  // Highlight date picker to guide user to next step
-                                  if (!startDate && formRef) {
-                                    const datePickerContainer = formRef.querySelector('.date-picker-container');
-                                    if (datePickerContainer) {
-                                      datePickerContainer.classList.add('highlight-pulse');
-                                      setTimeout(() => {
-                                        datePickerContainer.classList.remove('highlight-pulse');
-                                      }, 2000);
-                                    }
-                                  }
-                                }, 100);
-                              }
-                            }}
-                          >
-                            {selectedRoom === room.id ? "Selected" : "Select Room"}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
-            {/* Amenities Section */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Amenities</h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-y-8">
-                <div>
-                  <h3 className="text-lg font-bold mb-3">General</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => !a.includes('Wi-Fi') && !a.includes('Dining') && !a.includes('Pool') && !a.includes('Fitness')).slice(0, 6).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Safe') || a.includes('Mini')).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking')).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            {/* Guest Reviews Section */}
-            <section className="mb-10">
-              <ReviewsSection itemType="hotel" itemId={parseInt(id)} />
-            </section>
-
-
-
-            {/* FAQ Section */}
-            <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Frequently Asked Questions</h2>
-
-              <div className="space-y-4">
-                {HOTEL_FAQS.map((faq, index) => (
-                  <Card key={index} className="p-4">
-                    <div className="flex items-start">
-                      <HelpCircle className="w-5 h-5 text-primary mr-3 mt-0.5" />
-                      <div>
-                        <h4 className="font-bold mb-1">{faq.question}</h4>
-                        <p className="text-neutral-600">{faq.answer}</p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
-            {/* Similar Hotels in the Same Destination */}
-            <section>
-              <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
-
-              {hotel.destinationId && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {isLoadingSimilarHotels ? (
-                    // Loading skeletons
-                    [...Array(3)].map((_, i) => (
-                      <Card key={i} className="overflow-hidden">
-                        <div className="aspect-[4/3] bg-neutral-200 animate-pulse"></div>
-                        <CardContent className="p-4">
-                          <div className="h-6 bg-neutral-200 animate-pulse rounded mb-2"></div>
-                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-1/2 mb-2"></div>
-                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-3/4"></div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  ) : (
-                    // Actual similar hotels
-                    similarHotels?.filter(h => h.id !== parseInt(id)).slice(0, 3).map((similarHotel) => (
-                      <Card key={similarHotel.id} className="overflow-hidden">
-                        <Link to={`/hotels/${similarHotel.id}`}>
-                          <div className="aspect-[4/3] overflow-hidden">
-                            <img 
-                              src={similarHotel.imageUrl}
-                              alt={similarHotel.name}
-                              className="w-full h-full object-cover transition-transform hover:scale-105"
-                            />
-                          </div>
-                        </Link>
-                        <CardContent className="p-4">
-                          <Link to={`/hotels/${similarHotel.id}`}>
-                            <h3 className="font-bold text-lg mb-1 hover:text-primary transition-colors">{similarHotel.name}</h3>
-                          </Link>
-                          <div className="flex mb-2">
-                            {[...Array(5)].map((_, i) => (
-                              <Star 
-                                key={i} 
-                                className={`w-4 h-4 ${
-                                  i < similarHotel.rating ? "text-yellow-400 fill-current" : "text-neutral-300"
-                                }`} 
-                              />
-                            ))}
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div className="text-neutral-600">{destination?.name}</div>
-                            <div className="font-bold">{formatCurrency(similarHotel.price)}</div>
-                          </div>
-                        </CardContent>
-                        <CardFooter className="p-4 pt-0">
-                          <Link to={`/hotels/${similarHotel.id}`} className="w-full">
-                            <Button variant="outline" size="sm" className="w-full">
-                              View Details
-                            </Button>
-                          </Link>
-                        </CardFooter>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {similarHotels?.length === 0 && (
-                <div className="text-center p-8 bg-neutral-50 rounded-lg">
-                  <p className="text-neutral-600">No similar hotels found in this destination.</p>
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* Booking Section */}
-          <div className="col-span-12 lg:col-span-4">
-            <Card className="sticky top-4">
-              <CardContent className="p-6">
-                <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
-                <div className="space-y-4">
-                  {/* Existing booking form content */}
-                  {bookingFormContent}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -1240,7 +800,7 @@ export default function HotelDetails() {
                                 setTimeout(() => {
                                   const formRef = bookingFormRef.current;
                                   formRef?.scrollIntoView({ behavior: 'smooth' });
-
+                                  
                                   // Highlight date picker to guide user to next step
                                   if (!startDate && formRef) {
                                     const datePickerContainer = formRef.querySelector('.date-picker-container');
