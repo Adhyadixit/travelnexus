@@ -729,7 +729,7 @@ export default function HotelDetails() {
                     <div className="grid grid-cols-1 md:grid-cols-4">
                       <div className="md:col-span-1">
                         <img 
-                          src={room.imageUrl || hotel?.imageUrl} 
+                          src={hotel?.imageUrl} 
                           alt={room.name}
                           className="w-full h-full object-cover"
                         />
@@ -958,7 +958,7 @@ export default function HotelDetails() {
                         <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
                       <SelectContent className="text-neutral-800">
-                        {roomTypes.map((room: any) => (
+                        {roomTypes.map((room: HotelRoomType) => (
                           <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
                             {room.name} - {formatCurrency(room.price)}
                           </SelectItem>
