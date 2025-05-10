@@ -1763,7 +1763,7 @@ export default function AdminCruises() {
 
       {/* Add Cabin Type Dialog */}
       <Dialog open={isAddCabinTypeOpen} onOpenChange={setIsAddCabinTypeOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Cabin Type</DialogTitle>
             <DialogDescription>
@@ -1859,7 +1859,7 @@ export default function AdminCruises() {
               
               <FormField
                 control={addCabinTypeForm.control}
-                name="imageUrl"
+                name="image"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cabin Image</FormLabel>
@@ -1867,7 +1867,6 @@ export default function AdminCruises() {
                       <ImageUpload 
                         value={field.value || ''}
                         onChange={field.onChange}
-                        onRemove={() => field.onChange('')}
                       />
                     </FormControl>
                     <FormMessage />
@@ -1890,7 +1889,7 @@ export default function AdminCruises() {
       
       {/* Edit Cabin Type Dialog */}
       <Dialog open={!!editingCabinType} onOpenChange={(open) => !open && setEditingCabinType(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Cabin Type</DialogTitle>
             <DialogDescription>
@@ -1986,7 +1985,7 @@ export default function AdminCruises() {
               
               <FormField
                 control={editCabinTypeForm.control}
-                name="imageUrl"
+                name="image"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Cabin Image</FormLabel>
@@ -1994,7 +1993,6 @@ export default function AdminCruises() {
                       <ImageUpload 
                         value={field.value || ''}
                         onChange={field.onChange}
-                        onRemove={() => field.onChange('')}
                       />
                     </FormControl>
                     <FormMessage />
