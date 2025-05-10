@@ -851,12 +851,22 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
               console.log("Current form values:", data);
               
               try {
+                // Process text fields into arrays for database storage
+                const amenitiesArray = stringToArray(data.amenitiesList || "");
+                const languagesArray = stringToArray(data.languagesList || "");
+                const attractionsArray = stringToArray(data.attractionsList || "");
+                
+                console.log("Manual submit - amenities:", amenitiesArray);
+                console.log("Manual submit - languages:", languagesArray);
+                console.log("Manual submit - attractions:", attractionsArray);
+                
                 const formattedData = {
                   ...data,
                   destinationId: parseInt(data.destinationId),
-                  amenities: stringToArray(data.amenitiesList || ""),
-                  languagesSpoken: stringToArray(data.languagesList || ""),
-                  nearbyAttractions: stringToArray(data.attractionsList || ""),
+                  // Format special fields for database
+                  amenities: amenitiesArray,
+                  languagesSpoken: languagesArray,
+                  nearbyAttractions: attractionsArray,
                   policies: data.policiesList,
                   imageGallery: JSON.stringify(data.imageGalleryUrls || []),
                 };
