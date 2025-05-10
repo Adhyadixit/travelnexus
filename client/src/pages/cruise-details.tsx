@@ -3,7 +3,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Cruise } from "@shared/schema";
+import { Cruise, CruiseCabinType } from "@shared/schema";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { DesktopLayout } from "@/components/layout/desktop-layout";
 import { Button } from "@/components/ui/button";
@@ -168,39 +168,58 @@ export default function CruiseDetails() {
 
   const itinerary = getItinerary();
 
-  // Cabin types
-  const cabinTypes: CabinType[] = [
+  // Fetch cabin types from API
+  const { 
+    data: cabinTypes = [],
+    isLoading: isLoadingCabinTypes
+  } = useQuery<CruiseCabinType[]>({
+    queryKey: [`/api/cruises/${id}/cabin-types`],
+    enabled: !!id,
+  });
+  
+  // Fallback cabin types if none are found in the database
+  const fallbackCabinTypes = [
     {
+      id: 0,
+      cruiseId: parseInt(id || "0"),
       name: "Interior Cabin",
       image: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1470&auto=format&fit=crop",
       description: "Affordable and comfortable interior cabins with no window, perfect for budget-conscious travelers.",
-      features: ["Queen-size bed or two twin beds", "Private bathroom", "TV", "Mini refrigerator"],
+      features: '["Queen-size bed or twin beds", "Private bathroom", "TV", "Mini refrigerator"]',
       price: cruise?.price || 0,
-      availability: 8
+      availability: 8,
+      capacity: 2,
+      featured: false,
+      active: true,
+      createdAt: new Date(),
     },
     {
+      id: 0,
+      cruiseId: parseInt(id || "0"),
       name: "Ocean View Cabin",
       image: "https://images.unsplash.com/photo-1616394158624-the29065ff11c?q=80&w=1470&auto=format&fit=crop",
       description: "Comfortable cabins with a window or porthole offering beautiful ocean views.",
-      features: ["Ocean view window", "Queen-size bed", "Private bathroom", "TV", "Mini refrigerator"],
+      features: '["Ocean view window", "Queen-size bed", "Private bathroom", "TV", "Mini refrigerator"]',
       price: cruise ? Math.round(cruise.price * 1.3) : 0,
-      availability: 5
+      availability: 5,
+      capacity: 2,
+      featured: false,
+      active: true,
+      createdAt: new Date(),
     },
     {
+      id: 0,
+      cruiseId: parseInt(id || "0"),
       name: "Balcony Cabin",
       image: "https://images.unsplash.com/photo-1616394158732-95cfc48fc350?q=80&w=1470&auto=format&fit=crop",
       description: "Spacious cabins featuring a private balcony for you to enjoy the ocean breeze and views.",
-      features: ["Private balcony", "Queen-size bed", "Sitting area", "Private bathroom", "TV", "Mini bar"],
+      features: '["Private balcony", "Queen-size bed", "Sitting area", "Private bathroom", "TV", "Mini bar"]',
       price: cruise ? Math.round(cruise.price * 1.6) : 0,
-      availability: 3
-    },
-    {
-      name: "Suite",
-      image: "https://images.unsplash.com/photo-1590074072786-a66914c028b0?q=80&w=1374&auto=format&fit=crop",
-      description: "Luxurious suites with separate living area, premium amenities, and dedicated concierge service.",
-      features: ["Large private balcony", "King-size bed", "Separate living area", "Whirlpool bath", "Priority boarding", "Concierge service"],
-      price: cruise ? Math.round(cruise.price * 2.2) : 0,
-      availability: 1
+      availability: 3,
+      capacity: 2,
+      featured: true,
+      active: true,
+      createdAt: new Date(),
     }
   ];
 
