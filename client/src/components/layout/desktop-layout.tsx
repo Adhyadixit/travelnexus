@@ -80,7 +80,7 @@ export function DesktopLayout({
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
             <Link href="/" className="text-2xl font-heading font-bold text-primary">
-              TravelEase<span className="text-secondary">.</span>
+              Travel Ease by Expedia<span className="text-secondary">.</span>
             </Link>
             
             <nav className="hidden md:flex items-center space-x-6 ml-10">
@@ -262,7 +262,7 @@ export function DesktopLayout({
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-heading font-semibold mb-4 text-neutral-800">
-                TravelEase<span className="text-secondary">.</span>
+                Travel Ease by Expedia<span className="text-secondary">.</span>
               </h3>
               <p className="text-neutral-600 mb-4">
                 Your trusted partner for international travel experiences. We make your travel dreams a reality.
@@ -320,11 +320,11 @@ export function DesktopLayout({
             </div>
           </div>
           <div className="border-t border-neutral-300 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-neutral-600 text-sm mb-4 md:mb-0">&copy; 2023 TravelEase. All rights reserved.</p>
+            <p className="text-neutral-600 text-sm mb-4 md:mb-0">&copy; 2025 Travel Ease by Expedia. All rights reserved.</p>
             <div className="flex space-x-6">
-              <a href="#" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Privacy Policy</a>
-              <a href="#" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Terms of Service</a>
-              <a href="#" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Cookie Policy</a>
+              <Link href="/privacy-policy" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Terms of Service</Link>
+              <Link href="/cookie-policy" className="text-neutral-600 text-sm hover:text-secondary transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
