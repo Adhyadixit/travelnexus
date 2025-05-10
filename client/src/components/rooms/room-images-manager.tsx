@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { type HotelRoomType, type HotelRoomImage } from "@shared/schema";
 
 interface RoomImagesManagerProps {
@@ -497,13 +498,12 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                       <CardContent>
                         <form onSubmit={handleAddImage} className="space-y-4">
                           <div className="space-y-2">
-                            <Label htmlFor="imageUrl">Image URL</Label>
-                            <Input 
-                              id="imageUrl"
-                              placeholder="https://example.com/image.jpg"
+                            <Label htmlFor="imageUpload">Room Image</Label>
+                            <ImageUpload
                               value={newImage.imageUrl}
-                              onChange={(e) => setNewImage({...newImage, imageUrl: e.target.value})}
-                              required
+                              onChange={(url) => setNewImage({...newImage, imageUrl: url})}
+                              onUpload={(data) => setNewImage({...newImage, imageUrl: data.url})}
+                              folder="travelease/room-images"
                             />
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
