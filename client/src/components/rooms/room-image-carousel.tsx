@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { safeJsonParse } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface RoomImageCarouselProps {
   roomId: number;
@@ -18,14 +20,41 @@ export function RoomImageCarousel({
 }: RoomImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   
-  // Parse images if they're in JSON format
-  const parsedImages = typeof images === 'string' 
-    ? safeJsonParse(images, [])
-    : Array.isArray(images) ? images : [];
+  // Fetch room images from the API
+  const { data: roomImages } = useQuery({
+    queryKey: [`/api/hotel-room-types/${roomId}/images`],
+    queryFn: async () => {
+      try {
+        const res = await apiRequest("GET", `/api/hotel-room-types/${roomId}/images`);
+        return await res.json();
+      } catch (error) {
+        console.error("Error fetching room images:", error);
+        return [];
+      }
+    },
+    enabled: !!roomId,
+  });
   
-  // Use fallback if no images are available
-  const allImages = parsedImages.length > 0 
-    ? parsedImages 
+  // First try to use images from the API
+  let imageUrls: string[] = [];
+  
+  if (roomImages && roomImages.length > 0) {
+    // Extract image URLs from the API response
+    imageUrls = roomImages.map((img: any) => img.imageUrl);
+  } else {
+    // Fallback to passed images prop
+    const parsedImages = typeof images === 'string' 
+      ? safeJsonParse(images, [])
+      : Array.isArray(images) ? images : [];
+    
+    imageUrls = parsedImages;
+  }
+  
+  console.log('Room images:', { roomId, roomName, apiImages: roomImages, passedImages: images, finalImageUrls: imageUrls });
+  
+  // Use fallback if no images are available from any source
+  const allImages = imageUrls.length > 0 
+    ? imageUrls 
     : fallbackImage ? [fallbackImage] : [];
   
   if (allImages.length === 0) {
