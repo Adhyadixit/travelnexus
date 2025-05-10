@@ -29,8 +29,13 @@ export default function MainHeader() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/">
-            <a className="text-2xl font-heading font-bold text-primary">
-              Travel Ease by Expedia<span className="text-secondary">.</span>
+            <a className="flex items-center gap-2">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white font-bold text-xl">
+                TE
+              </div>
+              <span className="text-2xl font-heading font-bold text-primary">
+                Travel Ease by Expedia<span className="text-secondary">.</span>
+              </span>
             </a>
           </Link>
         </div>

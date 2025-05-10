@@ -38,11 +38,16 @@ export default function Header() {
     <header className="hidden md:block bg-white shadow-sm sticky top-0 z-30">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            Travel Ease by Expedia<span className="text-secondary">.</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white font-bold text-xl">
+              TE
+            </div>
+            <span className="text-2xl font-bold text-primary">
+              Travel Ease by Expedia<span className="text-secondary">.</span>
+            </span>
           </Link>
         </div>
-        
+
         <nav className="hidden md:flex items-center space-x-6">
           <Link href="/" className={`font-medium ${location === '/' ? 'text-primary' : 'text-neutral-700 hover:text-primary'} transition-colors`}>
             Home
@@ -63,7 +68,7 @@ export default function Header() {
             Cabs
           </Link>
         </nav>
-        
+
         <div className="flex items-center space-x-4">
           <button className="text-neutral-700 hover:text-primary">
             <Search size={20} />
@@ -71,7 +76,7 @@ export default function Header() {
           <button className="text-neutral-700 hover:text-primary">
             <Heart size={20} />
           </button>
-          
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -124,8 +129,13 @@ export default function Header() {
       {/* Mobile Menu */}
       <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 flex justify-between items-center border-b">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            Travel Ease by Expedia<span className="text-secondary">.</span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary text-white font-bold text-xl">
+              TE
+            </div>
+            <span className="text-2xl font-bold text-primary">
+              Travel Ease by Expedia<span className="text-secondary">.</span>
+            </span>
           </Link>
           <button onClick={toggleMobileMenu} className="p-2">
             <X size={24} />
