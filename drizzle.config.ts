@@ -11,4 +11,7 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
+  // Always accept data loss during migrations (for Vercel deployment)
+  strict: false,
+  verbose: true,
 });
