@@ -3,7 +3,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Hotel, Destination, HotelRoomType } from "@shared/schema";
+import { Hotel, Destination } from "@shared/schema";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { DesktopLayout } from "@/components/layout/desktop-layout";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,6 @@ import {
   Heart, 
   HomeIcon, 
   Info, 
-  Loader2,
   MapIcon, 
   MapPin, 
   MapPinIcon, 
@@ -51,7 +50,39 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-// No more hardcoded room types - all will be fetched from the API
+// Define room types
+const ROOM_TYPES = [
+  {
+    id: 1,
+    name: 'Deluxe Room',
+    description: 'Spacious room with city view, king-size bed, and private bathroom',
+    price: 250,
+    capacity: 2,
+    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar'],
+    cancellation: 'Free cancellation up to 24 hours before check-in',
+    images: ['/placeholder-room.jpg']
+  },
+  {
+    id: 2,
+    name: 'Superior Suite',
+    description: 'Luxurious suite with separate living area, king-size bed, and spa bathroom',
+    price: 400,
+    capacity: 3,
+    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar', 'Balcony', 'Bathtub'],
+    cancellation: 'Free cancellation up to 24 hours before check-in',
+    images: ['/placeholder-room.jpg']
+  },
+  {
+    id: 3,
+    name: 'Family Room',
+    description: 'Comfortable room with two queen beds, ideal for families',
+    price: 320,
+    capacity: 4,
+    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar'],
+    cancellation: 'Free cancellation up to 24 hours before check-in',
+    images: ['/placeholder-room.jpg']
+  }
+];
 
 // Define review data
 const HOTEL_REVIEWS = [
@@ -194,19 +225,6 @@ export default function HotelDetails() {
     select: (data) => data.filter(h => h.destinationId === hotel?.destinationId && h.id !== parseInt(id as string)),
     enabled: !!hotel?.destinationId,
   });
-  
-  // Fetch room types from the API
-  const {
-    data: roomTypes = [],
-    isLoading: isRoomTypesLoading
-  } = useQuery<HotelRoomType[]>({
-    queryKey: [`/api/hotels/${id}/room-types`],
-    queryFn: async () => {
-      const res = await fetch(`/api/hotels/${id}/room-types`);
-      return res.json();
-    },
-    enabled: !!id,
-  });
 
   // Reference to the booking form section for scrolling
   const bookingFormRef = useRef<HTMLDivElement>(null);
@@ -260,7 +278,7 @@ export default function HotelDetails() {
 
   const calculateTotalPrice = () => {
     const nights = calculateNights();
-    const roomPrice = selectedRoom ? roomTypes.find((r: HotelRoomType) => r.id === selectedRoom)?.price || 0 : 0;
+    const roomPrice = selectedRoom ? ROOM_TYPES.find(r => r.id === selectedRoom)?.price || 0 : 0;
     return nights * roomPrice;
   };
 
@@ -363,7 +381,7 @@ export default function HotelDetails() {
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-heading font-bold mb-4">Hotel Not Found</h1>
           <p className="mb-8">The hotel you're looking for doesn't exist or has been removed.</p>
-          <Link to="/hotels">
+          <Link href="/hotels">
             <Button>Browse All Hotels</Button>
           </Link>
         </div>
@@ -422,6 +440,11 @@ export default function HotelDetails() {
   const checkInTime = hotel.checkIn || '3:00 PM';
   const checkOutTime = hotel.checkOut || '12:00 PM';
 
+  // Parse room types from hotel data or use default
+  const roomTypes = hotel.roomTypes 
+    ? JSON.parse(hotel.roomTypes) 
+    : ROOM_TYPES;
+
   // Parse nearby attractions or use empty array
   const nearbyAttractions = hotel.nearbyAttractions 
     ? JSON.parse(hotel.nearbyAttractions) 
@@ -460,223 +483,263 @@ export default function HotelDetails() {
 
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-neutral-600 mb-4">
-          <Link to="/">
-            <div className="flex items-center hover:text-primary">
+          <Link href="/">
+            <a className="flex items-center hover:text-primary">
               <HomeIcon className="w-4 h-4 mr-1" />
               <span>Home</span>
-            </div>
+            </a>
           </Link>
           <ChevronRight className="w-4 h-4 mx-2" />
-          <Link to="/hotels">
-            <div className="hover:text-primary">Hotels</div>
+          <Link href="/hotels">
+            <a className="hover:text-primary">Hotels</a>
           </Link>
           {destination && (
             <>
               <ChevronRight className="w-4 h-4 mx-2" />
-              <Link to={`/destinations/${destination.id}`}>
-                <div className="hover:text-primary">{destination.name}</div>
+              <Link href={`/destinations/${destination.id}`}>
+                <a className="hover:text-primary">{destination.name}</a>
               </Link>
             </>
           )}
           <ChevronRight className="w-4 h-4 mx-2" />
-          <span className="text-neutral-800 font-medium">{hotel.name}</span>
+          <span className="font-medium text-neutral-900">{hotel.name}</span>
         </div>
 
-        {/* Hotel Name and Rating */}
+        {/* Header Section */}
         <div className="mb-6">
-          <div className="flex items-start justify-between">
-            <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{hotel.name}</h1>
-            <button 
-              className="text-neutral-400 hover:text-red-500 transition-colors p-2"
-              onClick={() => setIsFavorite(!isFavorite)}
-              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
+            <h1 className="text-3xl md:text-4xl font-heading font-bold">{hotel.name}</h1>
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-white"
+              onClick={handleBookNow}
             >
-              <Heart className={`w-6 h-6 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
-            </button>
+              Book Now
+            </Button>
           </div>
-          
-          <div className="flex items-center mb-2">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`w-5 h-5 ${i < Math.round(averageRating / 2) ? 'text-yellow-400 fill-yellow-400' : 'text-neutral-300'}`} />
-            ))}
-            <span className="ml-2 text-sm font-medium">{averageRating.toFixed(1)}/10</span>
-            <span className="ml-1 text-sm text-neutral-500">({HOTEL_REVIEWS.length} reviews)</span>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div className="flex mr-4">
+              {[...Array(hotel.rating)].map((_, i) => (
+                <Star key={i} className="text-secondary w-5 h-5 fill-current" />
+              ))}
+            </div>
+            {hotel.userRating && (
+              <div className="bg-primary text-white px-2 py-1 rounded-md font-medium flex items-center mr-4">
+                <span>{hotel.userRating.toFixed(1)}</span>
+                <span className="text-xs ml-1">/10</span>
+              </div>
+            )}
+            {typeof hotel.reviewCount === 'number' && hotel.reviewCount > 0 && (
+                <div className="text-neutral-600">
+                  {hotel.reviewCount} reviews
+                </div>
+              )}
           </div>
-          
           <div className="flex items-center text-neutral-600">
-            <MapPinIcon className="w-4 h-4 mr-1" />
-            <span>{hotel.address || `${destination?.name}, ${destination?.country}`}</span>
+            <MapPinIcon className="w-5 h-5 mr-1" />
+            <span>{hotel.address}</span>
           </div>
         </div>
 
-        {/* Image Gallery */}
-        <div className="relative mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
-            {/* Main large image */}
-            <div className="md:col-span-8 relative rounded-lg overflow-hidden group">
+        {/* Image Gallery Section */}
+        <div className="grid grid-cols-12 gap-2 mb-6 relative">
+          {/* Main large image with enhanced mobile support */}
+          <div className="col-span-12 md:col-span-8 relative overflow-hidden rounded-xl mobile-gallery">
+            <div 
+              className="w-full mobile-slider touch-pan-x" 
+              style={{ 
+                overflowX: isMobile ? 'auto' : 'hidden',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
               <img 
                 src={currentImage} 
-                alt={hotel.name}
-                className="w-full object-cover h-[300px] md:h-[500px]"
+                alt={`${hotel.name} - Image ${activeImageIndex + 1}`} 
+                className="w-full h-96 object-cover cursor-pointer"
+                onClick={() => setIsLightboxOpen(true)}
               />
-              <div 
-                className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
-              >
-                <button 
-                  className="bg-white p-2 rounded-full"
-                  onClick={() => setIsLightboxOpen(true)}
-                  aria-label="View full-size image"
-                >
-                  <Maximize className="w-5 h-5" />
-                </button>
-              </div>
-              
-              {/* Navigation arrows (only show if there are multiple images) */}
-              {galleryImages.length > 1 && (
-                <>
-                  <button 
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 transition-all"
-                    onClick={handlePrevImage}
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button 
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 transition-all"
-                    onClick={handleNextImage}
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
             </div>
             
-            {/* Thumbnail grid - show 2 or 3 more images in a column */}
+            <button 
+              className="absolute top-2 right-2 bg-white/80 hover:bg-white p-2 rounded-md text-neutral-700 hover:text-primary transition-colors z-10"
+              onClick={() => setIsLightboxOpen(true)}
+            >
+              <Maximize className="w-5 h-5" />
+            </button>
+
+            {/* Image navigation arrows - larger on mobile - only show when multiple images */}
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md carousel-arrow"
+                  onClick={handlePrevImage}
+                  aria-label="Previous image"
+                  style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
+                >
+                  <ChevronLeft className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
+                </button>
+                <button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md carousel-arrow"
+                  onClick={handleNextImage}
+                  aria-label="Next image"
+                  style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
+                >
+                  <ChevronRight className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Smaller thumbnail images - shown only on desktop when multiple images exist */}
+          {galleryImages.length > 1 && (
             <div className="hidden md:grid md:col-span-4 grid-rows-2 gap-2">
-              {galleryImages.slice(1, 3).map((image, index) => (
-                <div key={index} className="relative rounded-lg overflow-hidden group cursor-pointer" onClick={() => setActiveImageIndex(index + 1)}>
+              {galleryImages.slice(1, Math.min(3, galleryImages.length)).map((img, idx) => (
+                <div key={idx} className="overflow-hidden rounded-xl">
                   <img 
-                    src={image} 
-                    alt={`${hotel.name} - image ${index + 2}`}
-                    className="w-full h-full object-cover"
+                    src={img} 
+                    alt={`${hotel.name} - Thumbnail ${idx + 1}`} 
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => {
+                      setActiveImageIndex(idx + 1);
+                      setIsLightboxOpen(true);
+                    }}
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all" />
                 </div>
               ))}
-              
-              {/* If there are more than 3 images, show a "+X more" overlay on the last thumbnail */}
-              {galleryImages.length > 3 && (
-                <div className="absolute bottom-0 right-0 bg-black bg-opacity-70 text-white px-2 py-1 text-sm rounded-tl">
-                  +{galleryImages.length - 3} more
-                </div>
-              )}
             </div>
-          </div>
+          )}
+
+          {/* Image counter indicator - only show when multiple images */}
+          {galleryImages.length > 1 && (
+            <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full z-10 backdrop-blur-sm">
+              {activeImageIndex + 1} / {galleryImages.length}
+            </div>
+          )}
+          
+          {/* Mobile dot indicators - only show when multiple images */}
+          {isMobile && galleryImages.length > 1 && (
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
+              <div className="mobile-gallery-dots">
+                {galleryImages.map((_, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`mobile-gallery-dot ${idx === activeImageIndex ? 'active' : ''}`}
+                    onClick={() => setActiveImageIndex(idx)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Image lightbox */}
-        <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
-          <DialogContent className="max-w-4xl p-1 bg-neutral-900">
-            <div className="relative">
-              <img 
-                src={currentImage} 
-                alt={hotel.name}
-                className="w-full h-auto max-h-[80vh] object-contain"
-              />
-              
-              {galleryImages.length > 1 && (
-                <>
-                  <button 
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 transition-all"
-                    onClick={handlePrevImage}
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button 
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 hover:bg-opacity-100 rounded-full p-1 transition-all"
-                    onClick={handleNextImage}
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Quick Info Bar */}
+        <div className="flex flex-wrap justify-between items-center p-4 bg-neutral-50 rounded-lg mb-8">
+          <div>
+            <div className="text-lg font-medium">From {formatCurrency(hotel.price)}</div>
+            <div className="text-sm text-neutral-600">per night</div>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              size="lg" 
+              onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Book Now
+            </Button>
+            <InquiryForm
+              productName={hotel.name}
+              defaultSubject={`Inquiry about ${hotel.name}`}
+              triggerButtonText="Inquire Now"
+              onInquirySubmitted={(conversationId) => {
+                setCurrentConversationId(conversationId);
+                setAutoOpenChat(true);
+              }}
+            />
+          </div>
+          <button
+            className={`p-2 rounded-full border ${isFavorite ? 'bg-red-50 border-red-200 text-red-500' : 'bg-white border-neutral-200 text-neutral-400'}`}
+            onClick={() => setIsFavorite(!isFavorite)}
+            aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+          >
+            <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500' : ''}`} />
+          </button>
 
-        {/* Main Content Grid */}
+          {/* Free cancellation badge if applicable */}
+          {hotel.freeCancellation && (
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 ml-4">
+              Free cancellation
+            </Badge>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Left Column - Main Content */}
+          {/* Main content */}
           <div className="lg:col-span-2">
-            
-            {/* Quick Info Bar */}
-            <div className="flex flex-wrap justify-between items-center p-4 bg-neutral-50 rounded-lg mb-8">
-              <div className="flex items-center mr-6 mb-2 md:mb-0">
-                <Clock className="w-5 h-5 text-primary mr-2" />
-                <div>
-                  <div className="text-sm text-neutral-500">Check-in</div>
-                  <div className="font-medium">{checkInTime}</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center mr-6 mb-2 md:mb-0">
-                <Clock className="w-5 h-5 text-primary mr-2" />
-                <div>
-                  <div className="text-sm text-neutral-500">Check-out</div>
-                  <div className="font-medium">{checkOutTime}</div>
-                </div>
-              </div>
-
-              <Button 
-                onClick={handleBookNow}
-                className="mb-2 md:mb-0"
-              >
-                Book Now
-              </Button>
-              
-              <InquiryForm 
-                item={{
-                  id: parseInt(id),
-                  type: "hotel",
-                  name: hotel.name
-                }}
-                onSubmitSuccess={(conversationId: number) => {
-                  setCurrentConversationId(conversationId);
-                  setAutoOpenChat(true);
-
-                  toast({
-                    title: "Inquiry Sent!",
-                    description: "We've received your inquiry and will get back to you shortly.",
-                  });
-                }}
-                trigger={
-                  <Button variant="outline" className="flex gap-2 items-center">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Inquire</span>
-                  </Button>
-                }
-              />
-            </div>
-            
-            {/* Description */}
+            {/* Detailed Description Section */}
             <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-4">Overview</h2>
-              <div className="text-neutral-600 space-y-4 mb-6">
-                <p>{hotel.description || 'Experience the ultimate in luxury at this world-class hotel, where exceptional service meets elegant design. Perfectly located for both business and leisure travelers, our hotel offers breathtaking views, spacious rooms, and a wide range of amenities to ensure your stay is comfortable and memorable.'}</p>
-              </div>
+              <h2 className="text-2xl font-heading font-bold mb-4">About This Property</h2>
+              <div className="prose max-w-none text-neutral-700">
+                <p className="whitespace-pre-line">{hotel.description}</p>
 
-              {/* Property highlights */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {amenitiesList.slice(0, 6).map((amenity: string, index: number) => (
-                  <div key={index} className="flex items-center">
-                    {AMENITY_ICONS[amenity] || <Check className="w-5 h-5 text-primary mr-2" />}
-                    <span>{amenity}</span>
+                {/* Check-in/Check-out times */}
+                <div className="flex flex-col md:flex-row gap-6 my-6">
+                  <div className="flex items-start">
+                    <Clock className="w-5 h-5 text-primary mr-2 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-neutral-900">Check-in Time</h4>
+                      <p className="text-neutral-600">{checkInTime}</p>
+                    </div>
                   </div>
-                ))}
+                  <div className="flex items-start">
+                    <Clock className="w-5 h-5 text-primary mr-2 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-neutral-900">Check-out Time</h4>
+                      <p className="text-neutral-600">{checkOutTime}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hotel Policies */}
+                <div className="mb-6">
+                  <h3 className="text-xl font-heading font-bold mb-3">Hotel Policies</h3>
+                  <ul className="space-y-2">
+                    {Object.entries(policies).map(([key, value]) => (
+                      <li key={key} className="flex items-start">
+                        <Info className="w-4 h-4 text-neutral-500 mr-2 mt-0.5" />
+                        <span><span className="font-medium">{key.charAt(0).toUpperCase() + key.slice(1)}:</span> {String(value)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Languages Spoken */}
+                <div>
+                  <h3 className="text-xl font-heading font-bold mb-3">Languages Spoken</h3>
+                  <div className="flex items-center mb-6">
+                    <Languages className="w-5 h-5 text-primary mr-2" />
+                    <div className="flex flex-wrap gap-2">
+                      {languages.map((language: string) => (
+                        <Badge key={language} variant="outline" className="bg-neutral-50">
+                          {language}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nearby Attractions */}
+                {nearbyAttractions.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-heading font-bold mb-3">Nearby Places of Interest</h3>
+                    <ul className="space-y-2">
+                      {nearbyAttractions.map((attraction: {name: string, distance: string}, index: number) => (
+                        <li key={index} className="flex items-start">
+                          <MapPin className="w-4 h-4 text-primary mr-2 mt-0.5" />
+                          <span>{attraction.name} - {attraction.distance}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -684,92 +747,82 @@ export default function HotelDetails() {
             <section id="booking-section" className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
 
-              {isRoomTypesLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : roomTypes.length === 0 ? (
-                <div className="p-8 text-center border border-dashed rounded-lg">
-                  <p className="text-neutral-600">No room types are currently available for this hotel. Please check back later or contact customer service for assistance.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {roomTypes.map((room: HotelRoomType) => (
-                    <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
-                      <div className="grid grid-cols-1 md:grid-cols-4">
-                        <div className="md:col-span-1">
-                          <img 
-                            src={hotel?.imageUrl} 
-                            alt={room.name}
-                            className="w-full h-full object-cover"
-                          />
+              <div className="space-y-6">
+                {roomTypes.map((room: any) => (
+                  <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-4">
+                      <div className="md:col-span-1">
+                        <img 
+                          src={room.images[0] || hotel.imageUrl} 
+                          alt={room.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4 md:col-span-3">
+                        <div className="flex justify-between">
+                          <h3 className="text-xl font-heading font-bold">{room.name}</h3>
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
+                            <div className="text-sm text-neutral-500">per night</div>
+                          </div>
                         </div>
-                        <div className="p-4 md:col-span-3">
-                          <div className="flex justify-between">
-                            <h3 className="text-xl font-heading font-bold">{room.name}</h3>
-                            <div className="text-right">
-                              <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
-                              <div className="text-sm text-neutral-500">per night</div>
+
+                        <p className="text-neutral-600 my-2">{room.description}</p>
+
+                        <div className="flex items-center text-neutral-600 mb-2">
+                          <User className="w-4 h-4 mr-1" />
+                          <span>Up to {room.capacity} guests</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 my-3">
+                          {room.amenities.map((amenity: string, index: number) => (
+                            <div key={index} className="flex items-center text-sm">
+                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
+                              <span className="ml-1">{amenity}</span>
                             </div>
+                          ))}
+                        </div>
+
+                        {room.cancellation && (
+                          <div className="text-sm text-green-600 flex items-center mb-4">
+                            <Check className="w-4 h-4 mr-1" />
+                            <span>{room.cancellation}</span>
                           </div>
+                        )}
 
-                          <p className="text-neutral-600 my-2">{room.description}</p>
-
-                          <div className="flex items-center text-neutral-600 mb-2">
-                            <User className="w-4 h-4 mr-1" />
-                            <span>Up to {room.capacity} guests</span>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2 my-3">
-                            {room.amenities && parseAmenities(room.amenities).map((amenity: string, index: number) => (
-                              <div key={index} className="flex items-center text-sm">
-                                {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
-                                <span className="ml-1">{amenity}</span>
-                              </div>
-                            ))}
-                          </div>
-
-                          {room.cancellationPolicy && (
-                            <div className="text-sm text-green-600 flex items-center mb-4">
-                              <Check className="w-4 h-4 mr-1" />
-                              <span>{room.cancellationPolicy}</span>
-                            </div>
-                          )}
-
-                          <div className="mt-4 flex justify-end">
-                            <Button 
-                              variant={selectedRoom === room.id ? "default" : "outline"}
-                              onClick={() => {
-                                setSelectedRoom(room.id);
-                                // If room is selected, scroll to the booking form for date selection
-                                if (bookingFormRef.current) {
-                                  setTimeout(() => {
-                                    const formRef = bookingFormRef.current;
-                                    formRef?.scrollIntoView({ behavior: 'smooth' });
-                                    
-                                    // Highlight date picker to guide user to next step
-                                    if (!startDate && formRef) {
-                                      const datePickerContainer = formRef.querySelector('.date-picker-container');
-                                      if (datePickerContainer) {
-                                        datePickerContainer.classList.add('highlight-pulse');
-                                        setTimeout(() => {
-                                          datePickerContainer.classList.remove('highlight-pulse');
-                                        }, 2000);
-                                      }
+                        <div className="mt-4 flex justify-end">
+                          <Button 
+                            variant={selectedRoom === room.id ? "default" : "outline"}
+                            onClick={() => {
+                              setSelectedRoom(room.id);
+                              // If room is selected, scroll to the booking form for date selection
+                              if (bookingFormRef.current) {
+                                setTimeout(() => {
+                                  const formRef = bookingFormRef.current;
+                                  formRef?.scrollIntoView({ behavior: 'smooth' });
+                                  
+                                  // Highlight date picker to guide user to next step
+                                  if (!startDate && formRef) {
+                                    const datePickerContainer = formRef.querySelector('.date-picker-container');
+                                    if (datePickerContainer) {
+                                      datePickerContainer.classList.add('highlight-pulse');
+                                      setTimeout(() => {
+                                        datePickerContainer.classList.remove('highlight-pulse');
+                                      }, 2000);
                                     }
-                                  }, 100);
-                                }
-                              }}
-                            >
-                              {selectedRoom === room.id ? "Selected" : "Select Room"}
-                            </Button>
-                          </div>
+                                  }
+                                }, 100);
+                              }
+                            }}
+                          >
+                            {selectedRoom === room.id ? "Selected" : "Select Room"}
+                          </Button>
                         </div>
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
             </section>
 
             {/* Amenities Section */}
@@ -780,266 +833,261 @@ export default function HotelDetails() {
                 <div>
                   <h3 className="text-lg font-bold mb-3">General</h3>
                   <ul className="space-y-2">
-                    {amenitiesList.filter(a => !a.includes('Pool') && !a.includes('Fitness') && !a.includes('Spa')).slice(0, 6).map((amenity, i) => (
-                      <li key={i} className="flex items-center">
-                        <Check className="w-4 h-4 text-primary mr-2" />
+                    {amenitiesList.filter(a => !a.includes('Wi-Fi') && !a.includes('Dining') && !a.includes('Pool') && !a.includes('Fitness')).slice(0, 6).map((amenity: string, idx: number) => (
+                      <li key={idx} className="flex items-center">
+                        <Check className="text-primary w-5 h-5 mr-2" />
                         <span>{amenity}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-bold mb-3">Activities</h3>
+                  <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
                   <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('Pool') || a.includes('Fitness') || a.includes('Spa')).map((amenity, i) => (
-                      <li key={i} className="flex items-center">
-                        <Check className="w-4 h-4 text-primary mr-2" />
+                    {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Safe') || a.includes('Mini')).map((amenity: string, idx: number) => (
+                      <li key={idx} className="flex items-center">
+                        <Check className="text-primary w-5 h-5 mr-2" />
                         <span>{amenity}</span>
                       </li>
                     ))}
-                    {amenitiesList.filter(a => a.includes('Pool') || a.includes('Fitness') || a.includes('Spa')).length === 0 && (
-                      <li className="text-neutral-500">No specific activities listed</li>
-                    )}
                   </ul>
                 </div>
-                
+
                 <div>
-                  <h3 className="text-lg font-bold mb-3">Services</h3>
+                  <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center">
-                      <Languages className="w-4 h-4 text-primary mr-2" />
-                      <span>Staff speaks: {languages.join(', ')}</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="w-4 h-4 text-primary mr-2" />
-                      <span>24-hour front desk</span>
-                    </li>
-                    <li className="flex items-center">
-                      <Check className="w-4 h-4 text-primary mr-2" />
-                      <span>Room service</span>
-                    </li>
+                    {amenitiesList.filter(a => a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking')).map((amenity: string, idx: number) => (
+                      <li key={idx} className="flex items-center">
+                        <Check className="text-primary w-5 h-5 mr-2" />
+                        <span>{amenity}</span>
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
             </section>
 
-            {/* Policies Section */}
+            {/* Guest Reviews Section */}
             <section className="mb-10">
-              <h2 className="text-2xl font-heading font-bold mb-6">Hotel Policies</h2>
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(policies).map(([key, value]) => (
-                    <div key={key} className="flex">
-                      <Info className="w-5 h-5 text-neutral-500 mr-2 flex-shrink-0" />
-                      <div>
-                        <div className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                        <div className="text-neutral-600">{value}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ReviewsSection itemType="hotel" itemId={parseInt(id)} />
             </section>
 
-            {/* Nearby Attractions */}
-            {nearbyAttractions.length > 0 && (
-              <section className="mb-10">
-                <h2 className="text-2xl font-heading font-bold mb-6">Nearby Attractions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {nearbyAttractions.map((attraction: any, index: number) => (
-                    <div key={index} className="flex items-start">
-                      <MapPin className="w-5 h-5 text-primary mr-3 flex-shrink-0 mt-1" />
-                      <div>
-                        <h3 className="font-bold text-lg">{attraction.name}</h3>
-                        <p className="text-neutral-600">{attraction.distance}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
 
-            {/* Reviews Section */}
-            <ReviewsSection 
-              reviewsData={HOTEL_REVIEWS}
-              averageRating={averageRating}
-            />
 
-            {/* FAQs */}
+            {/* FAQ Section */}
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Frequently Asked Questions</h2>
-              
+
               <div className="space-y-4">
                 {HOTEL_FAQS.map((faq, index) => (
-                  <div key={index} className="border border-neutral-200 rounded-lg overflow-hidden">
-                    <div className="p-4">
-                      <div className="flex items-start">
-                        <HelpCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0 mt-1" />
-                        <div>
-                          <h3 className="font-bold mb-2">{faq.question}</h3>
-                          <p className="text-neutral-600">{faq.answer}</p>
-                        </div>
+                  <Card key={index} className="p-4">
+                    <div className="flex items-start">
+                      <HelpCircle className="w-5 h-5 text-primary mr-3 mt-0.5" />
+                      <div>
+                        <h4 className="font-bold mb-1">{faq.question}</h4>
+                        <p className="text-neutral-600">{faq.answer}</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </div>
             </section>
-            
-            {/* Similar Hotels Section */}
-            {similarHotels && similarHotels.length > 0 && (
-              <section className="mb-10">
-                <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {similarHotels.slice(0, 4).map((similarHotel) => (
-                    <Card key={similarHotel.id} className="overflow-hidden h-full">
-                      <div className="relative h-48">
-                        <img 
-                          src={similarHotel.imageUrl} 
-                          alt={similarHotel.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <Badge className="bg-white text-neutral-800">
-                            From {formatCurrency(similarHotel.price || 0)}
-                          </Badge>
-                        </div>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="text-lg font-bold mb-1">{similarHotel.name}</h3>
-                        <div className="flex items-center mb-2">
-                          <MapPin className="w-4 h-4 text-neutral-500 mr-1" />
-                          <span className="text-sm text-neutral-500">{destination?.name}</span>
-                        </div>
-                        <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{similarHotel.description}</p>
-                        <div className="mt-auto">
-                          <Link to={`/hotels/${similarHotel.id}`}>
-                            <Button variant="outline" className="w-full">View Details</Button>
-                          </Link>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-          
-          {/* Right Column - Booking Card */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4 overflow-hidden shadow-md">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold mb-6">Book Your Stay</h3>
-                
-                <div ref={bookingFormRef} className="space-y-6">
-                  {/* Date Picker */}
-                  <div className="date-picker-container space-y-2">
-                    <Label>Check-in / Check-out Dates</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="justify-start text-left font-normal h-10 w-full"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {startDate ? (
-                              format(startDate, "PPP")
-                            ) : (
-                              <span className="text-neutral-400">Check-in</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={startDate}
-                            onSelect={setStartDate}
-                            initialFocus
-                            disabled={(date) => 
-                              date < new Date(new Date().setHours(0, 0, 0, 0)) || 
-                              (endDate ? date >= endDate : false)
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="justify-start text-left font-normal h-10 w-full"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {endDate ? (
-                              format(endDate, "PPP")
-                            ) : (
-                              <span className="text-neutral-400">Check-out</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={endDate}
-                            onSelect={setEndDate}
-                            initialFocus
-                            disabled={(date) => 
-                              date < new Date(new Date().setHours(0, 0, 0, 0)) || 
-                              (startDate ? date <= startDate : false)
-                            }
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
 
-                  {/* Guest Count */}
-                  <div className="space-y-2">
-                    <Label htmlFor="guests">Guests</Label>
-                    <Select value={guests} onValueChange={setGuests}>
-                      <SelectTrigger id="guests">
-                        <SelectValue placeholder="Select number of guests" />
+            {/* Similar Hotels in the Same Destination */}
+            <section>
+              <h2 className="text-2xl font-heading font-bold mb-6">You May Also Like</h2>
+
+              {hotel.destinationId && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {isLoadingSimilarHotels ? (
+                    // Loading skeletons
+                    [...Array(3)].map((_, i) => (
+                      <Card key={i} className="overflow-hidden">
+                        <div className="aspect-[4/3] bg-neutral-200 animate-pulse"></div>
+                        <CardContent className="p-4">
+                          <div className="h-6 bg-neutral-200 animate-pulse rounded mb-2"></div>
+                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-1/2 mb-2"></div>
+                          <div className="h-4 bg-neutral-200 animate-pulse rounded w-3/4"></div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    // Actual similar hotels
+                    similarHotels?.filter(h => h.id !== parseInt(id)).slice(0, 3).map((similarHotel) => (
+                      <Card key={similarHotel.id} className="overflow-hidden">
+                        <Link to={`/hotels/${similarHotel.id}`}>
+                          <div className="aspect-[4/3] overflow-hidden">
+                            <img 
+                              src={similarHotel.imageUrl}
+                              alt={similarHotel.name}
+                              className="w-full h-full object-cover transition-transform hover:scale-105"
+                            />
+                          </div>
+                        </Link>
+                        <CardContent className="p-4">
+                          <Link to={`/hotels/${similarHotel.id}`}>
+                            <h3 className="font-bold text-lg mb-1 hover:text-primary transition-colors">{similarHotel.name}</h3>
+                          </Link>
+                          <div className="flex mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-4 h-4 ${
+                                  i < similarHotel.rating ? "text-yellow-400 fill-current" : "text-neutral-300"
+                                }`} 
+                              />
+                            ))}
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <div className="text-neutral-600">{destination?.name}</div>
+                            <div className="font-bold">{formatCurrency(similarHotel.price)}</div>
+                          </div>
+                        </CardContent>
+                        <CardFooter className="p-4 pt-0">
+                          <Link to={`/hotels/${similarHotel.id}`} className="w-full">
+                            <Button variant="outline" size="sm" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                        </CardFooter>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {similarHotels?.length === 0 && (
+                <div className="text-center p-8 bg-neutral-50 rounded-lg">
+                  <p className="text-neutral-600">No similar hotels found in this destination.</p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* Booking Sidebar */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4" ref={bookingFormRef}>
+              <CardContent className="p-6">
+                <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
+
+                <div className="space-y-4">
+                  <div className="room-selector-container">
+                    <label className="block text-sm font-medium mb-2">Room Type</label>
+                    <Select 
+                      value={selectedRoom?.toString() || ""} 
+                      onValueChange={(value) => setSelectedRoom(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">1 Guest</SelectItem>
-                        <SelectItem value="2">2 Guests</SelectItem>
-                        <SelectItem value="3">3 Guests</SelectItem>
-                        <SelectItem value="4">4 Guests</SelectItem>
-                        <SelectItem value="5">5 Guests</SelectItem>
-                        <SelectItem value="6">6 Guests</SelectItem>
+                      <SelectContent className="text-neutral-800">
+                        {roomTypes.map((room: any) => (
+                          <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
+                            {room.name} - {formatCurrency(room.price)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  {/* Room Type Summary */}
-                  {selectedRoom && (
-                    <div className="p-4 bg-neutral-50 rounded-lg">
-                      <h4 className="font-bold mb-4">Selected Room:</h4>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span>Room Type:</span>
-                          <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Price:</span>
-                          <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between font-bold">
-                          <span>Total:</span>
-                          <span>{formatCurrency(totalPrice)}</span>
-                        </div>
+                  <div className="date-picker-container">
+                    <label className="block text-sm font-medium mb-2">Check-in Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          {startDate ? (
+                            format(startDate, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={startDate}
+                          onSelect={setStartDate}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className="text-neutral-800"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Check-out Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          {endDate ? (
+                            format(endDate, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={endDate}
+                          onSelect={setEndDate}
+                          disabled={(date) => 
+                            date < (startDate || new Date())
+                          }
+                          initialFocus
+                          className="text-neutral-800"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Guests</label>
+                    <Select value={guests} onValueChange={setGuests}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select number of guests" />
+                      </SelectTrigger>
+                      <SelectContent className="text-neutral-800">
+                        <SelectItem value="1" className="text-neutral-800">1 Guest</SelectItem>
+                        <SelectItem value="2" className="text-neutral-800">2 Guests</SelectItem>
+                        <SelectItem value="3" className="text-neutral-800">3 Guests</SelectItem>
+                        <SelectItem value="4" className="text-neutral-800">4 Guests</SelectItem>
+                        <SelectItem value="5" className="text-neutral-800">5 Guests</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {nights > 0 && selectedRoom && (
+                    <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
+                      <div className="flex justify-between">
+                        <span>Room </span>
+                        <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
+                        <span>{formatCurrency(totalPrice)}</span>
+                      </div>
+                      <Separator className="my-2" />
+                      <div className="flex justify-between font-bold">
+                        <span>Total</span>
+                        <span>{formatCurrency(totalPrice)}</span>
                       </div>
                     </div>
                   )}
 
-                  {/* Book Button */}
                   <Button 
-                    className="w-full" 
+                    className="w-full mt-4" 
+                    size="lg"
                     onClick={handleBookNow}
                     disabled={!startDate || !endDate || !selectedRoom}
                   >
