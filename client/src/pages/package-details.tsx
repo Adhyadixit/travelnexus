@@ -130,8 +130,8 @@ export default function PackageDetails() {
     setLocation(`/checkout/package/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}`);
   };
   
-  // Parse included items
-  const includedItems = packageData ? parseIncludedItems(packageData.included) : [];
+  // Parse included items - using our updated parser that handles different formats
+  const includedItems = packageData?.included ? parseIncludedItems(packageData.included) : [];
   
   const isLoading = isLoadingPackage || (packageData?.destinationId && isLoadingDestination);
 
@@ -194,7 +194,7 @@ export default function PackageDetails() {
   };
   
   const citiesCovered = safeJsonParse(packageData.citiesCovered, []);
-  const excludedItems = safeJsonParse(packageData.excluded, []);
+  const excludedItems = packageData?.excluded ? parseIncludedItems(packageData.excluded) : [];
   const hotelInfo = safeJsonParse(packageData.hotels, []);
   const itineraryData = safeJsonParse(packageData.itinerary, {});
   const highlights = safeJsonParse(packageData.highlights, []);

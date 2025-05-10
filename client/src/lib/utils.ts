@@ -40,59 +40,101 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
-// Parse included items from JSON string
-export function parseIncludedItems(includedJson: string | null | undefined): string[] {
-  if (!includedJson) return [];
-  
-  try {
-    const parsed = JSON.parse(includedJson);
-    
-    // Handle case when it's an object but should be an array
-    if (!Array.isArray(parsed)) {
-      if (typeof parsed === 'object' && parsed !== null) {
-        // If it's an empty object, return empty array
-        if (Object.keys(parsed).length === 0) {
-          return [];
-        }
-        // Otherwise try to convert object values to array
-        return Object.values(parsed);
-      }
-      // If it's not an object or array, return empty array
-      return [];
-    }
-    
-    return parsed;
-  } catch (e) {
-    console.error("Error parsing included items:", e);
+// Parse included items from string (could be JSON string or plain array)
+export function parseIncludedItems(includedData: string | null | undefined): string[] {
+  if (!includedData) {
+    console.log("parseIncludedItems: No data provided");
     return [];
+  }
+  
+  console.log("parseIncludedItems: Parsing data:", includedData);
+  
+  // First check if it looks like a JSON string
+  if (includedData.startsWith('[') && includedData.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(includedData);
+      console.log("parseIncludedItems: Successfully parsed JSON:", parsed);
+      
+      // Handle case when it's an object but should be an array
+      if (!Array.isArray(parsed)) {
+        if (typeof parsed === 'object' && parsed !== null) {
+          // If it's an empty object, return empty array
+          if (Object.keys(parsed).length === 0) {
+            console.log("parseIncludedItems: Empty object, returning empty array");
+            return [];
+          }
+          // Otherwise try to convert object values to array
+          const result = Object.values(parsed);
+          console.log("parseIncludedItems: Converted object to array:", result);
+          return result;
+        }
+        // If it's not an object or array, return empty array
+        console.log("parseIncludedItems: Not an object or array, returning empty array");
+        return [];
+      }
+      
+      console.log("parseIncludedItems: Returning parsed array:", parsed);
+      return parsed;
+    } catch (e) {
+      console.error("Error parsing included items as JSON:", e);
+      // If JSON parsing fails, try treating as a comma-separated list
+      const result = includedData.split(',').map(item => item.trim()).filter(Boolean);
+      console.log("parseIncludedItems: Parsed as comma-separated:", result);
+      return result;
+    }
+  } else {
+    console.log("parseIncludedItems: Not a JSON string, trying other formats");
+    // If it doesn't look like JSON, it might be a comma-separated or newline-separated list
+    // First try newlines
+    if (includedData.includes('\n')) {
+      const result = includedData.split('\n').map(item => item.trim()).filter(Boolean);
+      console.log("parseIncludedItems: Parsed as newline-separated:", result);
+      return result;
+    }
+    // Otherwise try commas
+    const result = includedData.split(',').map(item => item.trim()).filter(Boolean);
+    console.log("parseIncludedItems: Parsed as comma-separated:", result);
+    return result;
   }
 }
 
-// Parse amenities from JSON string
-export function parseAmenities(amenitiesJson: string | null | undefined): string[] {
-  if (!amenitiesJson) return [];
+// Parse amenities from string (using same logic as parseIncludedItems)
+export function parseAmenities(amenitiesData: string | null | undefined): string[] {
+  if (!amenitiesData) return [];
   
-  try {
-    const parsed = JSON.parse(amenitiesJson);
-    
-    // Handle case when it's an object but should be an array
-    if (!Array.isArray(parsed)) {
-      if (typeof parsed === 'object' && parsed !== null) {
-        // If it's an empty object, return empty array
-        if (Object.keys(parsed).length === 0) {
-          return [];
+  // First check if it looks like a JSON string
+  if (amenitiesData.startsWith('[') && amenitiesData.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(amenitiesData);
+      
+      // Handle case when it's an object but should be an array
+      if (!Array.isArray(parsed)) {
+        if (typeof parsed === 'object' && parsed !== null) {
+          // If it's an empty object, return empty array
+          if (Object.keys(parsed).length === 0) {
+            return [];
+          }
+          // Otherwise try to convert object values to array
+          return Object.values(parsed);
         }
-        // Otherwise try to convert object values to array
-        return Object.values(parsed);
+        // If it's not an object or array, return empty array
+        return [];
       }
-      // If it's not an object or array, return empty array
-      return [];
+      
+      return parsed;
+    } catch (e) {
+      console.error("Error parsing amenities:", e);
+      // If JSON parsing fails, try treating as a comma-separated list
+      return amenitiesData.split(',').map(item => item.trim()).filter(Boolean);
     }
-    
-    return parsed;
-  } catch (e) {
-    console.error("Error parsing amenities:", e);
-    return [];
+  } else {
+    // If it doesn't look like JSON, it might be a comma-separated or newline-separated list
+    // First try newlines
+    if (amenitiesData.includes('\n')) {
+      return amenitiesData.split('\n').map(item => item.trim()).filter(Boolean);
+    }
+    // Otherwise try commas
+    return amenitiesData.split(',').map(item => item.trim()).filter(Boolean);
   }
 }
 
