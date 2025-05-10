@@ -60,12 +60,13 @@ const Carousel = React.forwardRef<
     const isMobile = useMediaQuery("(max-width: 768px)");
     
     // Enhanced options for mobile devices
-    const mobileOptions: EmblaOptionsType = {
+    const mobileOptions = {
       dragFree: true,
-      containScroll: "trimSnaps",
       loop: true,
       draggable: true,
       speed: 10,
+      inViewThreshold: 0.5,
+      align: "center",
       ...opts,
     };
     
@@ -167,14 +168,22 @@ const CarouselContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
-    <div ref={carouselRef} className="overflow-hidden">
+    <div 
+      ref={carouselRef} 
+      className={cn(
+        "overflow-hidden",
+        isMobile && "mobile-slider touch-pan-y" // Enable native touch handling
+      )}
+    >
       <div
         ref={ref}
         className={cn(
           "flex",
           orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          isMobile && "touch-pan-x mobile-slider", // Enable horizontal touch handling
           className
         )}
         {...props}
@@ -189,15 +198,18 @@ const CarouselItem = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { orientation } = useCarousel()
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <div
       ref={ref}
       role="group"
       aria-roledescription="slide"
+      data-mobile-slide={isMobile ? "true" : undefined}
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
         orientation === "horizontal" ? "pl-4" : "pt-4",
+        isMobile && "touch-action-pan-y p-1 select-none", // Enhanced mobile touch handling
         className
       )}
       {...props}
@@ -211,6 +223,7 @@ const CarouselPrevious = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <Button
@@ -218,8 +231,11 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute  h-8 w-8 rounded-full",
-        orientation === "horizontal"
+        "absolute rounded-full z-10",
+        isMobile 
+          ? "h-10 w-10 left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md" 
+          : "h-8 w-8",
+        !isMobile && orientation === "horizontal"
           ? "-left-12 top-1/2 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
         className
@@ -228,7 +244,7 @@ const CarouselPrevious = React.forwardRef<
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -240,6 +256,7 @@ const CarouselNext = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   return (
     <Button
@@ -247,8 +264,11 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
-        orientation === "horizontal"
+        "absolute rounded-full z-10",
+        isMobile 
+          ? "h-10 w-10 right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md" 
+          : "h-8 w-8",
+        !isMobile && orientation === "horizontal"
           ? "-right-12 top-1/2 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
         className
@@ -257,7 +277,7 @@ const CarouselNext = React.forwardRef<
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight className="h-4 w-4" />
+      <ArrowRight className={cn("h-4 w-4", isMobile && "h-5 w-5")} />
       <span className="sr-only">Next slide</span>
     </Button>
   )

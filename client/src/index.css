@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  
+  .touch-action-pan-y {
+    touch-action: pan-y;
+  }
+  
+  /* Enhanced slider styles for mobile */
+  .mobile-slider {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  
+  .mobile-slider::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 :root {
       --background: 0 0% 100%;
 --foreground: 0 0% 0%;
