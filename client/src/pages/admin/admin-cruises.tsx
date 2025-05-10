@@ -31,10 +31,16 @@ const cruiseFormSchema = insertCruiseSchema.extend({
 });
 
 // Schema for the cabin type form
-const cabinTypeFormSchema = insertCruiseCabinTypeSchema.extend({
+const cabinTypeFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
   price: z.coerce.number().min(1, "Price must be greater than 0"),
-  maxOccupancy: z.coerce.number().min(1, "Max occupancy must be at least 1"),
   features: z.string().optional().default("[]"),
+  image: z.string().min(1, "Image is required"),
+  capacity: z.coerce.number().min(1, "Capacity must be at least 1"),
+  availability: z.coerce.number().optional(),
+  featured: z.boolean().optional(),
+  active: z.boolean().optional(),
 });
 
 type CruiseFormValues = z.infer<typeof cruiseFormSchema>;
@@ -74,6 +80,143 @@ export default function AdminCruises() {
       setCabinTypes([]);
     }
   }, [selectedCruise?.id]);
+  
+  // Add Cabin Type Form
+  const addCabinTypeForm = useForm<CabinTypeFormValues>({
+    resolver: zodResolver(cabinTypeFormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: 0,
+      maxOccupancy: 1,
+      imageUrl: "",
+      features: "[]"
+    }
+  });
+
+  // Edit Cabin Type Form
+  const editCabinTypeForm = useForm<CabinTypeFormValues & { id: number }>({
+    resolver: zodResolver(cabinTypeFormSchema.extend({ id: z.number() })),
+    defaultValues: {
+      id: 0,
+      name: "",
+      description: "",
+      price: 0,
+      maxOccupancy: 1,
+      imageUrl: "",
+      features: "[]"
+    }
+  });
+
+  // Update editCabinTypeForm when a cabin type is selected for editing
+  useEffect(() => {
+    if (editingCabinType) {
+      editCabinTypeForm.reset({
+        id: editingCabinType.id,
+        name: editingCabinType.name,
+        description: editingCabinType.description || "",
+        price: editingCabinType.price,
+        maxOccupancy: editingCabinType.maxOccupancy || 2,
+        imageUrl: editingCabinType.imageUrl || "",
+        features: editingCabinType.features || "[]"
+      });
+    }
+  }, [editingCabinType]);
+
+  // Cabin Type Mutations
+  const addCabinTypeMutation = useMutation({
+    mutationFn: async (cabinType: Partial<CruiseCabinType>) => {
+      if (!selectedCruise?.id) throw new Error("No cruise selected");
+      
+      const res = await apiRequest("POST", `/api/cruises/${selectedCruise.id}/cabin-types`, cabinType);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
+      toast({
+        title: "Success",
+        description: "Cabin type added successfully",
+      });
+      setIsAddCabinTypeOpen(false);
+      addCabinTypeForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add cabin type",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const updateCabinTypeMutation = useMutation({
+    mutationFn: async (cabinType: CruiseCabinType) => {
+      if (!selectedCruise?.id) throw new Error("No cruise selected");
+      
+      const res = await apiRequest("PATCH", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinType.id}`, cabinType);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
+      toast({
+        title: "Success",
+        description: "Cabin type updated successfully",
+      });
+      setEditingCabinType(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update cabin type",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const deleteCabinTypeMutation = useMutation({
+    mutationFn: async (cabinTypeId: number) => {
+      if (!selectedCruise?.id) throw new Error("No cruise selected");
+      
+      const res = await apiRequest("DELETE", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinTypeId}`);
+      return await res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
+      toast({
+        title: "Success",
+        description: "Cabin type deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete cabin type",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Submit handlers for cabin type forms
+  const onAddCabinTypeSubmit = async (data: CabinTypeFormValues) => {
+    if (!selectedCruise?.id) return;
+    
+    try {
+      await addCabinTypeMutation.mutateAsync({
+        ...data,
+        cruiseId: selectedCruise.id
+      });
+    } catch (error) {
+      console.error("Error adding cabin type:", error);
+    }
+  };
+
+  const onEditCabinTypeSubmit = async (data: CabinTypeFormValues & { id: number }) => {
+    try {
+      await updateCabinTypeMutation.mutateAsync(data);
+    } catch (error) {
+      console.error("Error updating cabin type:", error);
+    }
+  };
   
   // Fetch all cruises using direct database access
   const { 
