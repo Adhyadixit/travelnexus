@@ -665,7 +665,9 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                         <Textarea 
                           placeholder="Free WiFi&#10;Swimming Pool&#10;Fitness Center&#10;24/7 Room Service&#10;Spa&#10;Restaurant&#10;Bar&#10;Business Center&#10;Airport Shuttle&#10;Parking" 
                           className="min-h-[200px]" 
-                          {...field} 
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          disabled={false}
                         />
                       </FormControl>
                       <FormDescription>
@@ -686,7 +688,9 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                         <Textarea 
                           placeholder="English&#10;Arabic&#10;French&#10;Spanish" 
                           className="min-h-[100px]" 
-                          {...field} 
+                          value={field.value || ''}
+                          onChange={field.onChange} 
+                          disabled={false}
                         />
                       </FormControl>
                       <FormDescription>
