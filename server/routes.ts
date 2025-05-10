@@ -940,12 +940,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      const hotel = await storage.updateHotel(parseInt(req.params.id), req.body);
+      // Log the incoming data for debugging
+      console.log("Updating hotel with ID:", req.params.id);
+      console.log("Received data:", req.body);
+      
+      // Process the data to ensure proper format for text fields
+      const data = { ...req.body };
+      
+      // Process special fields that might need string conversion
+      if (data.nearbyAttractions && Array.isArray(data.nearbyAttractions)) {
+        data.nearbyAttractions = data.nearbyAttractions.join('\n');
+      }
+      
+      if (data.amenities && Array.isArray(data.amenities)) {
+        data.amenities = data.amenities.join('\n');
+      }
+      
+      if (data.languagesSpoken && Array.isArray(data.languagesSpoken)) {
+        data.languagesSpoken = data.languagesSpoken.join('\n');
+      }
+      
+      console.log("Processed data for DB:", data);
+      
+      const hotel = await storage.updateHotel(parseInt(req.params.id), data);
       if (!hotel) {
         return res.status(404).json({ error: "Hotel not found" });
       }
       res.json(hotel);
     } catch (error) {
+      console.error("Error updating hotel:", error);
       res.status(500).json({ error: "Failed to update hotel" });
     }
   });

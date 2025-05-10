@@ -126,6 +126,35 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
   });
 
   // Parse initial data for form
+  console.log("Hotel form - Initial data:", initialData);
+  
+  // Extract amenities, languages and attractions for debugging
+  const rawAmenities = initialData?.amenities || null;
+  const rawLanguages = initialData?.languagesSpoken || null;
+  const rawAttractions = initialData?.nearbyAttractions || null;
+  
+  console.log("Raw amenities:", rawAmenities);
+  console.log("Raw languages:", rawLanguages);
+  console.log("Raw attractions:", rawAttractions);
+  
+  // Process these values
+  const parsedAmenities = parseJsonOrDefault(rawAmenities, []);
+  const parsedLanguages = parseJsonOrDefault(rawLanguages, []);
+  const parsedAttractions = parseJsonOrDefault(rawAttractions, []);
+  
+  console.log("Parsed amenities:", parsedAmenities);
+  console.log("Parsed languages:", parsedLanguages);
+  console.log("Parsed attractions:", parsedAttractions);
+  
+  // Convert to strings for form
+  const amenitiesString = arrayToString(parsedAmenities);
+  const languagesString = arrayToString(parsedLanguages);
+  const attractionsString = arrayToString(parsedAttractions);
+  
+  console.log("Amenities string for form:", amenitiesString);
+  console.log("Languages string for form:", languagesString);
+  console.log("Attractions string for form:", attractionsString);
+  
   const defaultValues: Partial<HotelFormValues> = {
     name: initialData?.name || "",
     destinationId: initialData?.destinationId ? initialData.destinationId.toString() : "",
@@ -139,14 +168,14 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
     checkIn: initialData?.checkIn || "14:00",
     checkOut: initialData?.checkOut || "12:00",
     hotelType: initialData?.hotelType || "hotel",
-    amenitiesList: arrayToString(parseJsonOrDefault(initialData?.amenities || null, [])),
+    amenitiesList: amenitiesString,
     policiesList: stringifyJsonSafely(parseJsonOrDefault(initialData?.policies || null, {
       cancellation: "Free cancellation up to 24 hours before check-in",
       payment: "Pay at property",
       pets: "Pets not allowed"
     })),
-    languagesList: arrayToString(parseJsonOrDefault(initialData?.languagesSpoken || null, [])),
-    attractionsList: arrayToString(parseJsonOrDefault(initialData?.nearbyAttractions || null, [])),
+    languagesList: languagesString,
+    attractionsList: attractionsString,
     featured: initialData?.featured ?? false,
     freeCancellation: initialData?.freeCancellation ?? false,
   };
