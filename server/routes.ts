@@ -134,13 +134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("[API] Returning destinations data");
       return res.json(destinationsData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("[API] Error in destinations route:", error);
       // Return details of the error for debugging
       return res.status(500).json({ 
         error: "Failed to fetch destinations", 
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details: error instanceof Error ? error.message : String(error),
+        stack: process.env.NODE_ENV === 'development' && error instanceof Error ? error.stack : undefined
       });
     }
   });

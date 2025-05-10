@@ -1,20 +1,20 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { storage } from "../server/storage";
-import { setupAuth, isAuthenticated, isAdmin } from "../server/auth";
-import { db } from "../server/db";
-import { seed } from "../server/seed";
-import { uploadImage } from "../server/cloudinary";
-import imageUploadRoutes from "../server/routes/image-upload";
-import adminDestinationsRoutes from "../server/routes/admin-destinations";
-import adminCruisesRoutes from "../server/routes/admin-cruises";
-import adminDriversRoutes from "../server/routes/admin-drivers";
-import adminEventsRoutes from "../server/routes/admin-events";
-import adminHotelsRoutes from "../server/routes/admin-hotels";
-import adminPackagesRoutes from "../server/routes/admin-packages";
-import directDatabaseRoutes from "../server/routes/direct-database";
-import paymentDetailsRoutes from "../server/routes/payment-details";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated, isAdmin } from "./auth";
+import { db } from "./db";
+import { seed } from "./seed";
+import { uploadImage } from "./cloudinary";
+import imageUploadRoutes from "./routes/image-upload";
+import adminDestinationsRoutes from "./routes/admin-destinations";
+import adminCruisesRoutes from "./routes/admin-cruises";
+import adminDriversRoutes from "./routes/admin-drivers";
+import adminEventsRoutes from "./routes/admin-events";
+import adminHotelsRoutes from "./routes/admin-hotels";
+import adminPackagesRoutes from "./routes/admin-packages";
+import directDatabaseRoutes from "./routes/direct-database";
+import paymentDetailsRoutes from "./routes/payment-details";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
@@ -24,7 +24,7 @@ import {
   guestUsers, conversations, messages, conversationStatusEnum, messageTypeEnum,
   hotelRoomTypes, hotelRoomImages, insertDestinationSchema,
   type Conversation, type Message, type InsertMessage
-} from "../shared/schema";
+} from "./schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create the HTTP server
