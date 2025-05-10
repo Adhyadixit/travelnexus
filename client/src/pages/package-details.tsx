@@ -314,19 +314,23 @@ export default function PackageDetails() {
                 alt={packageData.name} 
                 className="w-full h-[400px] object-cover"
               />
-              {/* Gallery controls - would be connected to actual gallery in production */}
-              <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-              {/* Image count indicator */}
-              <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                1/4
-              </div>
+              {/* Gallery controls - Only shown if there are gallery images */}
+              {packageData.imageGallery && (
+                <>
+                  <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {/* Image count indicator - Only shown if gallery exists */}
+                  <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                    1/{safeJsonParse(packageData.imageGallery, []).length + 1}
+                  </div>
+                </>
+              )}
               {/* Tags */}
               <div className="absolute top-4 left-4 flex gap-2">
                 {packageData.flightIncluded && (

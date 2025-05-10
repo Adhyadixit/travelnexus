@@ -139,6 +139,25 @@ export default function CruiseDetails() {
     }
   };
 
+  // Safely parse JSON strings with fallbacks
+  const safeJsonParse = (jsonString: string | null, defaultValue: any = null) => {
+    if (!jsonString) return defaultValue;
+    
+    try {
+      const parsed = JSON.parse(jsonString);
+      
+      // Check if the result is valid for objects (should be an object and not empty array)
+      if (!Array.isArray(defaultValue) && (typeof parsed !== 'object' || parsed === null)) {
+        return defaultValue;
+      }
+      
+      return parsed;
+    } catch (error) {
+      console.error(`Error parsing JSON: ${error}`);
+      return defaultValue;
+    }
+  };
+
   const itinerary = getItinerary();
 
   // Cabin types
@@ -397,12 +416,30 @@ export default function CruiseDetails() {
       {/* Hero Image Carousel */}
       <div className="bg-white">
         <div className="container mx-auto px-4 py-8">
-          <div className="relative overflow-hidden rounded-xl h-[300px] md:h-[500px]">
+          <div className="relative overflow-hidden rounded-xl h-[300px] md:h-[500px] group">
             <img 
               src={cruise.imageUrl} 
               alt={cruise.name} 
               className="w-full h-full object-cover"
             />
+            
+            {/* Gallery controls - Only shown if gallery exists */}
+            {cruise.imageGallery && (
+              <>
+                <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                {/* Image count indicator - Only shown if gallery exists */}
+                <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                  1/{safeJsonParse(cruise.imageGallery, []).length + 1}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
