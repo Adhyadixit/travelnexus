@@ -3,7 +3,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { Hotel, Destination } from "@shared/schema";
+import { Hotel, Destination, HotelRoomType } from "@shared/schema";
 import { MobileLayout } from "@/components/layout/mobile-layout";
 import { DesktopLayout } from "@/components/layout/desktop-layout";
 import { Button } from "@/components/ui/button";
@@ -50,39 +50,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-// Define room types
-const ROOM_TYPES = [
-  {
-    id: 1,
-    name: 'Deluxe Room',
-    description: 'Spacious room with city view, king-size bed, and private bathroom',
-    price: 250,
-    capacity: 2,
-    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar'],
-    cancellation: 'Free cancellation up to 24 hours before check-in',
-    images: ['/placeholder-room.jpg']
-  },
-  {
-    id: 2,
-    name: 'Superior Suite',
-    description: 'Luxurious suite with separate living area, king-size bed, and spa bathroom',
-    price: 400,
-    capacity: 3,
-    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar', 'Balcony', 'Bathtub'],
-    cancellation: 'Free cancellation up to 24 hours before check-in',
-    images: ['/placeholder-room.jpg']
-  },
-  {
-    id: 3,
-    name: 'Family Room',
-    description: 'Comfortable room with two queen beds, ideal for families',
-    price: 320,
-    capacity: 4,
-    amenities: ['Free WiFi', 'Breakfast Included', 'Air conditioning', 'TV', 'Mini bar'],
-    cancellation: 'Free cancellation up to 24 hours before check-in',
-    images: ['/placeholder-room.jpg']
-  }
-];
+// No more hardcoded room types - all will be fetched from the API
 
 // Define review data
 const HOTEL_REVIEWS = [
@@ -278,7 +246,7 @@ export default function HotelDetails() {
 
   const calculateTotalPrice = () => {
     const nights = calculateNights();
-    const roomPrice = selectedRoom ? ROOM_TYPES.find(r => r.id === selectedRoom)?.price || 0 : 0;
+    const roomPrice = selectedRoom ? roomTypes.find((r: HotelRoomType) => r.id === selectedRoom)?.price || 0 : 0;
     return nights * roomPrice;
   };
 
@@ -440,10 +408,18 @@ export default function HotelDetails() {
   const checkInTime = hotel.checkIn || '3:00 PM';
   const checkOutTime = hotel.checkOut || '12:00 PM';
 
-  // Parse room types from hotel data or use default
-  const roomTypes = hotel.roomTypes 
-    ? JSON.parse(hotel.roomTypes) 
-    : ROOM_TYPES;
+  // Fetch room types from the API
+  const {
+    data: roomTypes = [],
+    isLoading: isRoomTypesLoading
+  } = useQuery<HotelRoomType[]>({
+    queryKey: [`/api/hotels/${id}/room-types`],
+    queryFn: async () => {
+      const res = await fetch(`/api/hotels/${id}/room-types`);
+      return res.json();
+    },
+    enabled: !!id,
+  });
 
   // Parse nearby attractions or use empty array
   const nearbyAttractions = hotel.nearbyAttractions 
@@ -748,12 +724,12 @@ export default function HotelDetails() {
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
 
               <div className="space-y-6">
-                {roomTypes.map((room: any) => (
+                {roomTypes.map((room: HotelRoomType) => (
                   <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
                     <div className="grid grid-cols-1 md:grid-cols-4">
                       <div className="md:col-span-1">
                         <img 
-                          src={room.images[0] || hotel.imageUrl} 
+                          src={room.imageUrl || hotel?.imageUrl} 
                           alt={room.name}
                           className="w-full h-full object-cover"
                         />
