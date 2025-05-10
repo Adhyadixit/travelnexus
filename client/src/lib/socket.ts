@@ -112,9 +112,17 @@ export const subscribeToNewMessages = (
   socketInstance.on("message-received", callback);
 };
 
+// Type for conversation data
+export interface ConversationNotification {
+  id: number;
+  subject?: string;
+  createdAt?: string;
+  [key: string]: any;
+}
+
 // Subscribe to new conversation events
 export const subscribeToNewConversations = (
-  callback: (conversationId: number) => void
+  callback: (conversation: ConversationNotification | number) => void
 ): void => {
   const socketInstance = initializeSocket();
   socketInstance.on("new-conversation", callback);

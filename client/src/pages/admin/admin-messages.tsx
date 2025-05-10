@@ -4,7 +4,8 @@ import {
   initializeSocket, 
   subscribeToNewMessages, 
   subscribeToNewConversations,
-  unsubscribeFromEvent 
+  unsubscribeFromEvent,
+  ConversationNotification
 } from "@/lib/socket";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { Button } from "@/components/ui/button";
@@ -138,7 +139,7 @@ export default function AdminMessages() {
     });
     
     // Subscribe to new conversation events
-    subscribeToNewConversations((conversationData) => {
+    subscribeToNewConversations((conversationData: ConversationNotification | number) => {
       console.log("New conversation created via socket:", conversationData);
       
       // Play notification sound for new conversation
