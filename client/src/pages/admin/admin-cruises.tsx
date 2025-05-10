@@ -2047,7 +2047,7 @@ export default function AdminCruises() {
                     <FormControl>
                       <Input 
                         placeholder="Balcony, Mini-bar, Ocean view, etc."
-                        value={field.value === '[]' ? '' : JSON.parse(field.value).join(', ')}
+                        value={field.value === '[]' ? '' : safelyParseJSON<string[]>(field.value, []).join(', ')}
                         onChange={(e) => {
                           const featuresArray = e.target.value
                             ? e.target.value.split(',').map(feature => feature.trim())
