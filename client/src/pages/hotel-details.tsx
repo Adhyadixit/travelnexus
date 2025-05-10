@@ -363,7 +363,7 @@ export default function HotelDetails() {
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-heading font-bold mb-4">Hotel Not Found</h1>
           <p className="mb-8">The hotel you're looking for doesn't exist or has been removed.</p>
-          <Link href="/hotels">
+          <Link to="/hotels">
             <Button>Browse All Hotels</Button>
           </Link>
         </div>
@@ -460,21 +460,21 @@ export default function HotelDetails() {
 
         {/* Breadcrumbs */}
         <div className="flex items-center text-sm text-neutral-600 mb-4">
-          <Link href="/">
-            <span className="flex items-center hover:text-primary">
+          <Link to="/">
+            <div className="flex items-center hover:text-primary">
               <HomeIcon className="w-4 h-4 mr-1" />
               <span>Home</span>
-            </span>
+            </div>
           </Link>
           <ChevronRight className="w-4 h-4 mx-2" />
-          <Link href="/hotels">
-            <span className="hover:text-primary">Hotels</span>
+          <Link to="/hotels">
+            <div className="hover:text-primary">Hotels</div>
           </Link>
           {destination && (
             <>
               <ChevronRight className="w-4 h-4 mx-2" />
-              <Link href={`/destinations/${destination.id}`}>
-                <span className="hover:text-primary">{destination.name}</span>
+              <Link to={`/destinations/${destination.id}`}>
+                <div className="hover:text-primary">{destination.name}</div>
               </Link>
             </>
           )}
@@ -639,10 +639,12 @@ export default function HotelDetails() {
               </Button>
               
               <InquiryForm 
-                itemId={parseInt(id)}
-                itemType="hotel"
-                itemName={hotel.name}
-                onSubmitSuccess={(conversationId) => {
+                item={{
+                  id: parseInt(id),
+                  type: "hotel",
+                  name: hotel.name
+                }}
+                onSubmitSuccess={(conversationId: number) => {
                   setCurrentConversationId(conversationId);
                   setAutoOpenChat(true);
 
@@ -861,7 +863,7 @@ export default function HotelDetails() {
 
             {/* Reviews Section */}
             <ReviewsSection 
-              reviews={HOTEL_REVIEWS}
+              reviewsData={HOTEL_REVIEWS}
               averageRating={averageRating}
             />
 
@@ -902,7 +904,7 @@ export default function HotelDetails() {
                         />
                         <div className="absolute top-2 right-2">
                           <Badge className="bg-white text-neutral-800">
-                            From {formatCurrency(similarHotel.pricePerNight || 0)}
+                            From {formatCurrency(similarHotel.price || 0)}
                           </Badge>
                         </div>
                       </div>
@@ -914,7 +916,7 @@ export default function HotelDetails() {
                         </div>
                         <p className="text-sm text-neutral-600 line-clamp-2 mb-4">{similarHotel.description}</p>
                         <div className="mt-auto">
-                          <Link href={`/hotels/${similarHotel.id}`}>
+                          <Link to={`/hotels/${similarHotel.id}`}>
                             <Button variant="outline" className="w-full">View Details</Button>
                           </Link>
                         </div>
