@@ -998,14 +998,12 @@ export default function HotelDetails() {
                   </div>
 
                   {/* Room Image Carousel */}
-                  {selectedRoom && (
+                  {selectedRoom && dbRoomTypes && (
                     <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border">
                       <RoomImageCarousel
                         roomId={selectedRoom}
-                        roomName={dbRoomTypes?.find((r: any) => r.id === selectedRoom)?.name || "Room"}
-                        images={dbRoomTypes?.find((r: any) => r.id === selectedRoom)?.images || 
-                          ["https://images.unsplash.com/photo-1611892440504-42a792e24d32", 
-                           "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b"]}
+                        roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
+                        images={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.images || []}
                         fallbackImage={hotel?.imageUrl}
                       />
                     </div>
