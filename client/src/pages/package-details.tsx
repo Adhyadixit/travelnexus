@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useQuery } from "@tanstack/react-query";
@@ -112,6 +112,9 @@ export default function PackageDetails() {
   });
   
   // Handle booking
+  // Reference to the booking form section for scrolling
+  const bookingFormRef = useRef<HTMLDivElement>(null);
+  
   const handleBookNow = () => {
     if (!user) {
       setLocation(`/auth?redirect=/packages/${id}`);
@@ -119,6 +122,19 @@ export default function PackageDetails() {
     }
     
     if (!startDate) {
+      // Scroll to the booking form section when startDate is not selected
+      if (bookingFormRef.current) {
+        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+        
+        // Add a visual indicator to help users see where to select dates
+        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
+        if (datePickerEl) {
+          datePickerEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            datePickerEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+      }
       return;
     }
     
