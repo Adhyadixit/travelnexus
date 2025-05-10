@@ -253,6 +253,7 @@ export function DesktopLayout({
           autoOpen={isChatOpen}
           onClose={() => setIsChatOpen(false)}
           initialConversationId={currentConversationId}
+          currentConversationId={currentConversationId}
         />
       </div>
       

@@ -86,6 +86,7 @@ export function ChatWidget({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   
   // Open chat when autoOpen changes to true
   useEffect(() => {
@@ -612,13 +613,19 @@ export function ChatWidget({
             }
           }
         }}
-        modal={true}
+        // On desktop, we don't need a full modal (darkened background) approach
+        modal={isDesktop ? false : true}
       >
         <SheetContent 
-          side={window.innerWidth >= 768 ? "right" : "bottom"}
-          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-8 md:left-auto md:bottom-8 md:h-[500px] md:w-[380px]"
+          side={isDesktop ? "right" : "bottom"}
+          className={cn(
+            "w-[95%] mx-auto fixed p-0 border rounded-xl shadow-lg",
+            isDesktop ? 
+              "right-8 left-auto bottom-24 h-[500px] w-[380px]" : 
+              "left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 sm:w-[350px]"
+          )}
           style={{
-            transform: 'none', 
+            transform: 'none',
             position: 'fixed',
             animation: 'none',
             transition: 'opacity 0.2s ease',
