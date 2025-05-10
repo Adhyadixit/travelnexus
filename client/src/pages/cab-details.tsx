@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +38,9 @@ export default function CabDetails() {
     queryKey: [`/api/drivers/${id}`],
   });
   
+  // Reference to the booking form section for scrolling
+  const bookingFormRef = useRef<HTMLDivElement>(null);
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
@@ -46,6 +49,27 @@ export default function CabDetails() {
     }
     
     if (!startDate || !endDate) {
+      // Scroll to the booking form section when dates are not selected
+      if (bookingFormRef.current) {
+        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+        
+        // Add a visual indicator to help users see what they need to complete
+        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
+        if (datePickerEl && !startDate) {
+          datePickerEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            datePickerEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+        
+        const daysPickerEl = bookingFormRef.current.querySelector('.days-picker-container');
+        if (daysPickerEl && days < 1) {
+          daysPickerEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            daysPickerEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+      }
       return;
     }
     

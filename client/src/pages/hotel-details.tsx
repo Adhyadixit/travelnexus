@@ -455,7 +455,16 @@ export default function HotelDetails() {
 
         {/* Header Section */}
         <div className="mb-6">
-          <h1 className="text-3xl md:text-4xl font-heading font-bold mb-2">{hotel.name}</h1>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
+            <h1 className="text-3xl md:text-4xl font-heading font-bold">{hotel.name}</h1>
+            <Button
+              size="lg"
+              className="bg-primary hover:bg-primary/90 text-white"
+              onClick={handleBookNow}
+            >
+              Book Now
+            </Button>
+          </div>
           <div className="flex flex-wrap items-center gap-2 mb-3">
             <div className="flex mr-4">
               {[...Array(hotel.rating)].map((_, i) => (
@@ -850,12 +859,12 @@ export default function HotelDetails() {
 
           {/* Booking Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+            <Card className="sticky top-4" ref={bookingFormRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
 
                 <div className="space-y-4">
-                  <div>
+                  <div className="date-picker-container">
                     <label className="block text-sm font-medium mb-2">Check-in Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -931,7 +940,7 @@ export default function HotelDetails() {
                     </Select>
                   </div>
 
-                  <div>
+                  <div className="room-selector-container">
                     <label className="block text-sm font-medium mb-2">Room Type</label>
                     <Select 
                       value={selectedRoom?.toString() || ""} 
