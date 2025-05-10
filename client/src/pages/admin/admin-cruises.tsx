@@ -1634,7 +1634,11 @@ export default function AdminCruises() {
                   <h3 className="text-lg font-medium">Cabin Types</h3>
                   <Button 
                     type="button" 
-                    onClick={() => setIsAddCabinTypeOpen(true)} 
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent form submission
+                      e.stopPropagation(); // Stop event bubbling
+                      setIsAddCabinTypeOpen(true);
+                    }} 
                     variant="outline" 
                     size="sm"
                     disabled={!selectedCruise?.id}
@@ -1677,14 +1681,20 @@ export default function AdminCruises() {
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  onClick={() => setEditingCabinType(cabinType)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setEditingCabinType(cabinType);
+                                  }}
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                     if (confirm(`Are you sure you want to delete the ${cabinType.name} cabin type?`)) {
                                       deleteCabinTypeMutation.mutate(cabinType.id);
                                     }
@@ -1788,7 +1798,11 @@ export default function AdminCruises() {
           </DialogHeader>
           
           <Form {...addCabinTypeForm}>
-            <form onSubmit={addCabinTypeForm.handleSubmit(onAddCabinTypeSubmit)} className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addCabinTypeForm.handleSubmit(onAddCabinTypeSubmit)(e);
+            }} className="space-y-6">
               <FormField
                 control={addCabinTypeForm.control}
                 name="name"
