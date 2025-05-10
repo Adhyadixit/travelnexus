@@ -35,7 +35,7 @@ interface SearchFormProps {
 export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
   const [, setLocation] = useLocation();
   const [destinations, setDestinations] = useState<Destination[]>([]);
-  
+
   // Fetch destinations from API
   useEffect(() => {
     fetch('/api/destinations')
@@ -43,7 +43,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
       .then(data => setDestinations(data))
       .catch(error => console.error('Error fetching destinations:', error));
   }, []);
-  
+
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
     defaultValues: {
@@ -108,7 +108,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="checkIn"
@@ -126,7 +126,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm",
+                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm text-neutral-800",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -153,7 +153,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="checkOut"
@@ -171,7 +171,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                         <Button
                           variant={"outline"}
                           className={cn(
-                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm",
+                            "w-full pl-2 text-left font-normal h-8 md:h-10 text-xs md:text-sm text-neutral-800",
                             !field.value && "text-muted-foreground"
                           )}
                         >
@@ -200,7 +200,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="travelers"
@@ -230,7 +230,7 @@ export function SearchForm({ className, variant = "hero" }: SearchFormProps) {
               )}
             />
           </div>
-          
+
           <Button 
             type="submit" 
             className={cn(
