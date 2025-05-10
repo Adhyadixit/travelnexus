@@ -127,6 +127,7 @@ export interface IStorage {
   // Message operations
   createMessage(message: InsertMessage): Promise<Message>;
   getMessagesByConversation(conversationId: number): Promise<Message[]>;
+  getMessageCountForConversation(conversationId: number): Promise<number>;
   getUnreadMessageCountForAdmin(): Promise<number>;
   getUnreadMessageCountForUser(userId: number): Promise<number>;
   markMessagesAsReadByAdmin(conversationId: number): Promise<void>;
@@ -674,6 +675,14 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .where(eq(messages.conversationId, conversationId))
       .orderBy(asc(messages.createdAt));
+  }
+  
+  async getMessageCountForConversation(conversationId: number): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId));
+    return result[0].count;
   }
   
   async getUnreadMessageCountForAdmin(): Promise<number> {
