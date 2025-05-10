@@ -396,24 +396,36 @@ export default function HotelDetails() {
   let parsedGalleryImages: string[] = [];
   if (hotel.imageGallery) {
     try {
-      console.log("Hotel gallery raw:", hotel.imageGallery);
       const parsed = JSON.parse(hotel.imageGallery);
-      console.log("Parsed gallery images:", parsed);
       
-      // Include all gallery images without filtering
-      parsedGalleryImages = Array.isArray(parsed) ? parsed : [];
-      console.log("Gallery images after parsing:", parsedGalleryImages);
+      // Handle different possible formats
+      if (Array.isArray(parsed)) {
+        parsedGalleryImages = parsed.filter(img => img && img.trim() !== '');
+      } else if (typeof parsed === 'string' && parsed.trim() !== '') {
+        parsedGalleryImages = [parsed];
+      } else if (parsed && typeof parsed === 'object') {
+        // Handle case where it might be an object with URLs
+        parsedGalleryImages = Object.values(parsed)
+          .filter(val => typeof val === 'string' && val.trim() !== '');
+      }
     } catch (e) {
       console.error("Error parsing hotel gallery images:", e);
+      // If parsing fails but we have a string, try to use it directly
+      if (typeof hotel.imageGallery === 'string' && 
+          hotel.imageGallery.trim() !== '' && 
+          !hotel.imageGallery.startsWith('[') && 
+          !hotel.imageGallery.startsWith('{')) {
+        parsedGalleryImages = [hotel.imageGallery];
+      }
     }
   }
   
   // Create final gallery array - if no additional images, just use main image
-  const galleryImages = parsedGalleryImages.length > 0 
-    ? [mainImage, ...parsedGalleryImages] 
+  // Make sure we don't duplicate the main image
+  const uniqueGalleryImages = parsedGalleryImages.filter(img => img !== mainImage);
+  const galleryImages = uniqueGalleryImages.length > 0 
+    ? [mainImage, ...uniqueGalleryImages] 
     : [mainImage];
-  
-  console.log("Final gallery images:", galleryImages);
 
   // Get current image
   const currentImage = galleryImages[activeImageIndex];
@@ -436,9 +448,19 @@ export default function HotelDetails() {
     : [];
 
   // Parse languages spoken by staff
-  const languages = hotel.languagesSpoken 
-    ? JSON.parse(hotel.languagesSpoken) 
-    : ['English', 'Spanish'];
+  let languages: string[] = ['English'];
+  if (hotel.languagesSpoken) {
+    try {
+      const parsed = JSON.parse(hotel.languagesSpoken);
+      languages = Array.isArray(parsed) ? parsed : [parsed.toString()];
+    } catch (e) {
+      console.error("Error parsing languagesSpoken:", e);
+      // If parsing fails, use the string value directly if it exists
+      if (typeof hotel.languagesSpoken === 'string' && hotel.languagesSpoken.trim() !== '') {
+        languages = [hotel.languagesSpoken.trim()];
+      }
+    }
+  }
 
   // Parse hotel policies
   const policies = hotel.policies 
