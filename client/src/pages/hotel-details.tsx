@@ -31,6 +31,7 @@ import {
   Heart, 
   HomeIcon, 
   Info, 
+  Loader2,
   MapIcon, 
   MapPin, 
   MapPinIcon, 
@@ -428,14 +429,14 @@ export default function HotelDetails() {
   const checkInTime = hotel.checkIn || '3:00 PM';
   const checkOutTime = hotel.checkOut || '12:00 PM';
 
-  // Parse room types from hotel data or use default
-  const roomTypes = hotel.roomTypes 
-    ? JSON.parse(hotel.roomTypes) 
-    : ROOM_TYPES;
+  // Parse hotel data fields that contain JSON
+  const hotelRoomTypes = hotel?.roomTypes 
+    ? safeJsonParse(hotel.roomTypes, []) 
+    : [];
 
   // Parse nearby attractions or use empty array
-  const nearbyAttractions = hotel.nearbyAttractions 
-    ? JSON.parse(hotel.nearbyAttractions) 
+  const nearbyAttractions = hotel?.nearbyAttractions 
+    ? safeJsonParse(hotel.nearbyAttractions, []) 
     : [];
 
   // Parse languages spoken by staff
@@ -982,11 +983,15 @@ export default function HotelDetails() {
                         <SelectValue placeholder="Select room type" />
                       </SelectTrigger>
                       <SelectContent className="text-neutral-800">
-                        {roomTypes.map((room: any) => (
-                          <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
-                            {room.name} - {formatCurrency(room.price)}
-                          </SelectItem>
-                        ))}
+                        {dbRoomTypes && dbRoomTypes.length > 0 ? (
+                          dbRoomTypes.map((room: any) => (
+                            <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
+                              {room.name} - {formatCurrency(room.price)}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-rooms" disabled>No rooms available</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1067,14 +1072,14 @@ export default function HotelDetails() {
                     </Select>
                   </div>
 
-                  {nights > 0 && selectedRoom && (
+                  {nights > 0 && selectedRoom && dbRoomTypes && (
                     <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
                       <div className="flex justify-between">
                         <span>Room </span>
-                        <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
+                        <span>{dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
+                        <span>{formatCurrency(dbRoomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
                         <span>{formatCurrency(totalPrice)}</span>
                       </div>
                       <Separator className="my-2" />
