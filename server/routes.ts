@@ -116,18 +116,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Destinations
   app.get("/api/destinations", async (req, res) => {
     try {
+      console.log("[API] Destinations route called with query:", req.query);
       const featured = req.query.featured === "true";
       let destinationsData;
       
       if (req.query.featured) {
+        console.log("[API] Fetching featured destinations");
         destinationsData = await storage.getFeaturedDestinations();
+        console.log("[API] Featured destinations fetched:", 
+          destinationsData ? `Count: ${destinationsData.length}` : "No data");
       } else {
+        console.log("[API] Fetching all destinations");
         destinationsData = await storage.getAllDestinations();
+        console.log("[API] All destinations fetched:", 
+          destinationsData ? `Count: ${destinationsData.length}` : "No data");
       }
       
-      res.json(destinationsData);
+      console.log("[API] Returning destinations data");
+      return res.json(destinationsData);
     } catch (error) {
-      res.status(500).json({ error: "Failed to fetch destinations" });
+      console.error("[API] Error in destinations route:", error);
+      // Return details of the error for debugging
+      return res.status(500).json({ 
+        error: "Failed to fetch destinations", 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
 

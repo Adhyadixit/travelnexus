@@ -13,33 +13,92 @@ if (enableDebugLogs) {
   console.log('db-serverless.ts: Database debug logging enabled.');
 }
 
-let dbInstance: ReturnType<typeof makeDb>;
+let initializingDb = false;
+let dbInitialized = false;
+let connectionErrors = [];
 
 function makeDb() {
   console.log('db-serverless.ts: makeDb() called.');
-  if (!process.env.DATABASE_URL) {
-    console.error('db-serverless.ts: ERROR - DATABASE_URL is not defined.');
-    throw new Error('DATABASE_URL is not defined. Critical configuration missing.');
-  }
-  console.log(`db-serverless.ts: DATABASE_URL found (prefix: ${process.env.DATABASE_URL.substring(0,30)}...).`);
-
   try {
-    const neonConnection = neon(process.env.DATABASE_URL);
-    console.log('db-serverless.ts: Neon connection object created.');
-    const drizzleInstance = drizzle(neonConnection, { schema, logger: enableDebugLogs });
-    console.log('db-serverless.ts: Drizzle instance created.');
-    return drizzleInstance;
+    console.log(' [DB] Initializing database connection...');
+    console.log(` [DB] Environment: ${process.env.NODE_ENV || 'not set'}`);
+    console.log(` [DB] Running on Vercel: ${process.env.VERCEL ? 'yes' : 'no'}`);
+    
+    // Set the flag to indicate we are initializing
+    initializingDb = true;
+
+    // Check if DATABASE_URL is properly set
+    if (!process.env.DATABASE_URL) {
+      console.error(' [DB] DATABASE_URL is not defined!');
+      connectionErrors.push('DATABASE_URL is missing');
+    } else {
+      // Don't log the full URL as it contains credentials
+      const dbUrlParts = process.env.DATABASE_URL.split('@');
+      const maskedUrl = dbUrlParts.length > 1 
+        ? `***:***@${dbUrlParts[dbUrlParts.length - 1]}` 
+        : 'Invalid URL format';
+      console.log(` [DB] Using database: ${maskedUrl}`);
+    }
+
+    // Create a Neon client
+    const sql = neon(process.env.DATABASE_URL!);
+    console.log(' [DB] Neon SQL client created');
+
+    // Setup Drizzle ORM with Neon serverless driver
+    const drizzleInstance = drizzle(sql, { schema });
+    console.log(' [DB] Drizzle ORM initialized');
+
+    // Self-test the connection
+    (async () => {
+      try {
+        console.log(' [DB] Testing database connection...');
+        const dbInfo = await drizzleInstance.select({ now: sql`NOW()` }).execute();
+        console.log(' [DB] Database connection successful', dbInfo);
+        
+        // Check if we can access a few key tables
+        console.log(' [DB] Testing destinations table...');
+        const destinationCount = await drizzleInstance.select({ count: sql`COUNT(*)` }).from(schema.destinations);
+        console.log(` [DB] Destinations table accessible. Count: ${destinationCount[0]?.count || 0}`);
+
+        console.log(' [DB] Testing hotels table...');
+        const hotelCount = await drizzleInstance.select({ count: sql`COUNT(*)` }).from(schema.hotels);
+        console.log(` [DB] Hotels table accessible. Count: ${hotelCount[0]?.count || 0}`);
+        
+        // Mark as initialized
+        dbInitialized = true;
+        initializingDb = false;
+      } catch (error) {
+        console.error(' [DB] Database connection test failed:', error);
+        connectionErrors.push(`Connection test failed: ${error.message}`);
+        initializingDb = false;
+      }
+    })();
   } catch (error) {
-    console.error('db-serverless.ts: ERROR - Failed to create Drizzle instance in makeDb:', error);
-    throw error; // Re-throw to be caught by higher-level initializers if necessary
+    console.error(' [DB] Database initialization failed:', error);
+    connectionErrors.push(`Initialization failed: ${error.message}`);
+    initializingDb = false;
   }
 }
+
+// Export helper functions to check connection status
+export const getDbStatus = () => {
+  return {
+    initialized: dbInitialized,
+    initializing: initializingDb,
+    errors: connectionErrors
+  };
+};
+
+// Store the database instance
+let dbInstance: ReturnType<typeof drizzle>;
 
 // Export a function to get the DB instance. This helps manage the instance lifecycle if needed.
 export function getDb() {
   if (!dbInstance) {
     console.log('db-serverless.ts: Initializing new dbInstance in getDb().');
-    dbInstance = makeDb();
+    dbInstance = drizzle(neon(process.env.DATABASE_URL!), { schema });
+    // Trigger the makeDb function for additional logging and testing
+    makeDb();
   }
   return dbInstance;
 }
