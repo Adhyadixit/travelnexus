@@ -1,36 +1,35 @@
 import type { Request, Response } from 'express';
 import { db } from '../server/db-serverless';
 import { sql } from 'drizzle-orm';
-import { destinations, hotels, packages, users } from '../shared/schema';
-import { count } from 'drizzle-orm';
 
 export default async function handler(req: Request, res: Response) {
   try {
-    // Get counts of various tables to check if database is seeded
-    const destinationCount = await db.select({ count: count() }).from(destinations);
-    const hotelCount = await db.select({ count: count() }).from(hotels);
-    const packageCount = await db.select({ count: count() }).from(packages);
-    const userCount = await db.select({ count: count() }).from(users);
+    // Try a simple database connection test
+    let dbConnected = false;
+    let dbError: string | null = null;
     
-    // Return the status of the database
-    return res.status(200).json({
-      success: true,
-      message: 'Database status check completed',
-      counts: {
-        destinations: Number(destinationCount[0]?.count || 0),
-        hotels: Number(hotelCount[0]?.count || 0),
-        packages: Number(packageCount[0]?.count || 0),
-        users: Number(userCount[0]?.count || 0)
-      },
-      isSeeded: (
-        (Number(destinationCount[0]?.count) > 0) && 
-        (Number(hotelCount[0]?.count) > 0) && 
-        (Number(packageCount[0]?.count) > 0) && 
-        (Number(userCount[0]?.count) > 0)
-      ),
+    try {
+      // Simple query to check if database is accessible
+      const result = await db.execute(sql`SELECT 1 as connected`);
+      dbConnected = !!result;
+    } catch (err) {
+      dbError = err instanceof Error ? err.message : String(err);
+      console.error('Database connection error:', dbError);
+    }
+    
+    // Return the status of the database connection
+    return res.status(dbConnected ? 200 : 500).json({
+      success: dbConnected,
+      message: dbConnected ? 'Database connection successful' : 'Database connection failed',
+      connectionStatus: dbConnected ? 'connected' : 'disconnected',
+      error: dbError,
       database_url: process.env.DATABASE_URL ? 
-        `${process.env.DATABASE_URL.substring(0, 20)}...` : 
-        'Not set'
+        `${process.env.DATABASE_URL.substring(0, 15)}...` : 
+        'not set',
+      environment: {
+        node_env: process.env.NODE_ENV || 'not set',
+        vercel: process.env.VERCEL === '1' ? 'true' : 'false'
+      }
     });
   } catch (error) {
     console.error('Database status check error:', error);
