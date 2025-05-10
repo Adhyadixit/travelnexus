@@ -20,6 +20,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Badge } from "@/components/ui/badge";
 
+// Helper function for safely parsing JSON
+const safelyParseJSON = <T extends unknown>(jsonString: string | null | undefined, defaultValue: T): T => {
+  if (!jsonString) return defaultValue;
+  
+  try {
+    const parsed = JSON.parse(jsonString);
+    return parsed;
+  } catch (error) {
+    console.error("Error parsing JSON:", error);
+    return defaultValue;
+  }
+};
+
 const cruiseFormSchema = insertCruiseSchema.extend({
   price: z.coerce.number().min(1, "Price must be greater than 0"),
   duration: z.coerce.number().min(1, "Duration must be at least 1 day"),
@@ -1709,7 +1722,7 @@ export default function AdminCruises() {
                               <div className="mt-2">
                                 <h5 className="text-xs font-medium mb-1">Features:</h5>
                                 <div className="flex flex-wrap gap-1">
-                                  {JSON.parse(cabinType.features || '[]').map((feature: string, index: number) => (
+                                  {safelyParseJSON<string[]>(cabinType.features, []).map((feature, index) => (
                                     <Badge key={index} variant="secondary" className="text-xs">{feature}</Badge>
                                   ))}
                                 </div>
