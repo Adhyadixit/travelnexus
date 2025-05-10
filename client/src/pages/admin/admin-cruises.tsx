@@ -1905,13 +1905,23 @@ export default function AdminCruises() {
               />
               
               <DialogFooter className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsAddCabinTypeOpen(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsAddCabinTypeOpen(false);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button 
                   type="button" 
                   variant="secondary"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (selectedCruise) {
                       const values = addCabinTypeForm.getValues();
                       addCabinTypeMutation.mutate({
@@ -2059,7 +2069,15 @@ export default function AdminCruises() {
               />
               
               <DialogFooter className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={() => setEditingCabinType(null)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditingCabinType(null);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button 
