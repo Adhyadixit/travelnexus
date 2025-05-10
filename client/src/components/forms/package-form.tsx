@@ -27,6 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus, X } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { ItineraryManager } from "@/components/itinerary/itinerary-manager";
 
 // Extend the insert schema for form validation
 const packageFormSchema = insertPackageSchema.extend({
@@ -567,16 +568,18 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                   name="itineraryText"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Itinerary (JSON format)</FormLabel>
+                      <FormLabel>Day-by-Day Itinerary</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder={'{\n  "day1": "Arrival in Dubai & Hotel Check-in",\n  "day2": "City Tour & Burj Khalifa Visit",\n  "day3": "Desert Safari Adventure"\n}'}
-                          className="min-h-[200px] font-mono text-sm" 
-                          {...field} 
-                        />
+                        <div className="border rounded-md p-4 bg-background">
+                          <ItineraryManager 
+                            value={field.value}
+                            onChange={field.onChange}
+                            duration={parseInt(form.getValues().duration.toString()) || 1}
+                          />
+                        </div>
                       </FormControl>
                       <FormDescription>
-                        Enter the itinerary in JSON format with day numbers as keys and activities as values
+                        Create a detailed itinerary for each day of the package
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

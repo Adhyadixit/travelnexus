@@ -64,7 +64,7 @@ export function parseIncludedItems(includedData: string | null | undefined): str
             return [];
           }
           // Otherwise try to convert object values to array
-          const result = Object.values(parsed);
+          const result = Object.values(parsed).map(item => String(item));
           console.log("parseIncludedItems: Converted object to array:", result);
           return result;
         }
