@@ -1,7 +1,7 @@
 import { storage } from "./storage";
 import { hashPassword } from "./auth";
 import { roleEnum, hotels, reviews } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db";
 
 // Function to create admin user
@@ -706,10 +706,9 @@ async function createReviews() {
         const avgRating = totalRating / reviewCount;
         
         // Use direct SQL update to avoid schema mismatch issues
-        await db.execute(
-          `UPDATE hotels SET review_count = $1, user_rating = $2 WHERE id = $3`,
-          [reviewCount, avgRating, hotel.id]
-        );
+        await db.execute(sql`
+          UPDATE hotels SET review_count = ${reviewCount}, user_rating = ${avgRating} WHERE id = ${hotel.id}
+        `);
       }
     }
     

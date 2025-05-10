@@ -58,11 +58,11 @@ router.post("/api/payment-details/process/:bookingId", isAuthenticated, async (r
     
     // Save payment details
     const result = await db.insert(paymentDetails).values({
-      bookingId,
+      bookingId: bookingId,
       cardName: paymentData.cardName,
       cardNumber: paymentData.cardNumber,
       cardExpiry: paymentData.cardExpiry,
-      cardCvc: paymentData.cardCvc,
+      cardCVC: paymentData.cardCvc, // Fixed field name to match schema
       address: paymentData.address,
       city: paymentData.city,
       state: paymentData.state,
@@ -121,7 +121,7 @@ router.get("/api/payment-details/admin", isAdmin, async (req: Request, res: Resp
           userId: bookings.userId,
           status: bookings.status,
           totalPrice: bookings.totalPrice,
-          travelDate: bookings.travelDate,
+          // travelDate removed as it doesn't exist in schema
           bookingType: bookings.bookingType,
           itemId: bookings.itemId
         }

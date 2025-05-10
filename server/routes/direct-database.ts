@@ -199,7 +199,7 @@ router.get("/api/direct/payment-details", async (req, res) => {
           itemId: bookings.itemId,
           status: bookings.status,
           totalPrice: bookings.totalPrice,
-          travelDate: bookings.travelDate,
+          // travelDate removed as it doesn't exist in schema
           createdAt: bookings.createdAt,
         }
       })
