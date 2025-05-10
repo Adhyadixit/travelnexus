@@ -54,33 +54,24 @@ const stringToArray = (str: string): string[] => {
   }
 };
 
-// Safely convert array-like data to string
-function arrayToString(arr: any): string {
+const arrayToString = (arr: any): string => {
   if (!arr) return '';
   
-  let safeArray;
-  if (Array.isArray(arr)) {
-    safeArray = arr;
-  } else if (typeof arr === 'string') {
-    safeArray = [arr];
-  } else if (typeof arr === 'object') {
-    safeArray = Object.values(arr);
-  } else {
-    safeArray = [String(arr)];
-  }
+  // Make sure we're working with an array
+  const safeArray = Array.isArray(arr) ? arr : 
+                   (typeof arr === 'string' ? [arr] : 
+                   (typeof arr === 'object' ? Object.values(arr) : [String(arr)]));
   
   return safeArray.join('\n');
-}
+};
 
-// Safely parse JSON with fallback to default value
-function parseJsonOrDefault(jsonString: string | null, defaultValue: any): any {
+const parseJsonOrDefault = (jsonString: string | null, defaultValue: any): any => {
   if (!jsonString) return defaultValue;
-  
   try {
     const parsed = JSON.parse(jsonString);
     
+    // Handle different expected types based on defaultValue
     if (Array.isArray(defaultValue)) {
-      // If expecting an array
       if (Array.isArray(parsed)) {
         return parsed;
       } else if (typeof parsed === 'string') {
@@ -91,20 +82,17 @@ function parseJsonOrDefault(jsonString: string | null, defaultValue: any): any {
         return [String(parsed)];
       }
     } else if (defaultValue && typeof defaultValue === 'object') {
-      // If expecting an object
       if (parsed && typeof parsed === 'object') {
         return parsed;
       }
       return defaultValue;
     }
-    
-    // Default case
     return parsed;
   } catch (e) {
     console.error("Error parsing JSON:", e, "Input:", jsonString);
     return defaultValue;
   }
-}
+};
 
 const stringifyJsonSafely = (value: any): string => {
   try {
