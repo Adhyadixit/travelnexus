@@ -242,6 +242,20 @@ async function updateTables() {
         console.log('Created reviews table');
       } else {
         console.log('Reviews table already exists');
+        
+        // Update existing reviews that may be missing required fields
+        try {
+          await db.execute(sql`
+            UPDATE reviews SET 
+            helpful_votes = COALESCE(helpful_votes, 0),
+            verified = COALESCE(verified, false),
+            status = COALESCE(status, 'approved')
+            WHERE helpful_votes IS NULL OR verified IS NULL OR status IS NULL;
+          `);
+          console.log('Updated existing reviews with default values for missing fields');
+        } catch (reviewUpdateError) {
+          console.error('Error updating existing reviews:', reviewUpdateError);
+        }
       }
     } catch (error) {
       console.error('Error creating reviews table:', error);

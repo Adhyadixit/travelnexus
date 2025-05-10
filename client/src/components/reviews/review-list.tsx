@@ -189,17 +189,21 @@ export function ReviewList({ itemType, itemId }: ReviewListProps) {
                 <div className="flex items-start gap-4">
                   <Avatar>
                     <AvatarFallback>
-                      {review.user.role === 'admin' && adminNameMapping[review.id]
+                      {adminNameMapping[review.id]
                         ? `${adminNameMapping[review.id].firstName.charAt(0)}${adminNameMapping[review.id].lastName.charAt(0)}`
-                        : `${review.user.firstName?.charAt(0) || ''}${review.user.lastName?.charAt(0) || ''}`
+                        : (review.user.firstName || review.user.lastName) 
+                          ? `${review.user.firstName?.charAt(0) || ''}${review.user.lastName?.charAt(0) || ''}`
+                          : 'AT'
                       }
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <h4 className="font-medium">
-                      {review.user.role === 'admin' && adminNameMapping[review.id]
+                      {adminNameMapping[review.id]
                         ? `${adminNameMapping[review.id].firstName} ${adminNameMapping[review.id].lastName}`
-                        : `${review.user.firstName || ''} ${review.user.lastName || ''}`
+                        : (review.user.firstName || review.user.lastName) 
+                          ? `${review.user.firstName || ''} ${review.user.lastName || ''}`
+                          : "Anonymous Traveler"
                       }
                     </h4>
                     <p className="text-sm text-neutral-500">

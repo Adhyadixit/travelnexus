@@ -325,19 +325,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) return res.status(401).json({ error: "Unauthorized" });
     
     try {
+      console.log("Processing review submission from user:", req.user?.id);
+      
+      // Create a properly typed review data object
       const reviewData = {
-        ...req.body,
         userId: req.user!.id,
-        status: "approved", // Auto-approve for now
+        itemType: req.body.itemType as string,
+        itemId: parseInt(req.body.itemId),
+        rating: parseInt(req.body.rating),
+        title: req.body.title as string,
+        comment: req.body.comment as string,
+        status: "approved" as const, 
         helpfulVotes: 0,
-        verified: req.body.dateOfStay ? true : false,
+        verified: Boolean(req.body.dateOfStay),
+        dateOfStay: req.body.dateOfStay ? new Date(req.body.dateOfStay) : undefined,
+        images: req.body.images || undefined,
       };
+      
+      console.log("Prepared review data:", reviewData);
       
       // Insert the review into the database
       const [newReview] = await db
         .insert(reviews)
         .values(reviewData)
         .returning();
+      
+      console.log("Successfully inserted review with ID:", newReview.id);
       
       // Also return the user data
       const userData = await db
@@ -358,7 +371,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(reviewWithUser);
     } catch (error) {
       console.error("Error creating review:", error);
-      res.status(500).json({ error: "Failed to create review" });
+      // Provide more detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      res.status(500).json({ error: "Failed to create review", details: errorMessage });
     }
   });
 
