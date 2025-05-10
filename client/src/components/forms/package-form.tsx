@@ -60,6 +60,12 @@ const asString = (value: string | null | undefined): string => {
   if (typeof value === 'string') return value;
   return "";
 };
+
+// Helper function to safely handle number values
+const asNumber = (value: number | null | undefined): number => {
+  if (typeof value === 'number') return value;
+  return 0;
+};
 const stringToArray = (str: string): string[] => {
   try {
     return str.split('\n').filter(line => line.trim() !== '');
@@ -259,7 +265,15 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem>
                         <FormLabel>Duration (days)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="1" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            value={field.value === null || field.value === undefined ? 0 : field.value}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} 
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -273,7 +287,16 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem>
                         <FormLabel>Price ($)</FormLabel>
                         <FormControl>
-                          <Input type="number" min="0" step="0.01" {...field} onChange={(e) => field.onChange(parseFloat(e.target.value))} />
+                          <Input 
+                            type="number" 
+                            min="0" 
+                            step="0.01"
+                            value={field.value === null || field.value === undefined ? 0 : field.value}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} 
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -683,7 +706,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Travel Mode</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={asString(field.value)}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select travel mode" />
@@ -712,7 +735,15 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem>
                         <FormLabel>Minimum Travelers</FormLabel>
                         <FormControl>
-                          <Input type="number" min="1" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            value={field.value === null || field.value === undefined ? 0 : field.value}
+                            onChange={(e) => field.onChange(parseInt(e.target.value) || 0)} 
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
