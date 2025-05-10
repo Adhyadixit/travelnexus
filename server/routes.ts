@@ -1085,6 +1085,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to fetch cabin types" });
     }
   });
+  
+  // Add PATCH endpoint for cabin types that matches client URL pattern
+  app.patch("/api/cruises/:cruiseId/cabin-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cabinTypeId = parseInt(req.params.id);
+      const cruiseId = parseInt(req.params.cruiseId);
+      
+      // Add cruiseId to the data
+      const updateData = {
+        ...req.body,
+        cruiseId
+      };
+      
+      const cabinType = await storage.updateCruiseCabinType(cabinTypeId, updateData);
+      
+      if (!cabinType) {
+        return res.status(404).json({ error: "Cabin type not found" });
+      }
+      
+      res.json(cabinType);
+    } catch (error) {
+      console.error("Error updating cabin type:", error);
+      res.status(500).json({ error: "Failed to update cabin type" });
+    }
+  });
+  
+  // Add POST endpoint for cabin types that matches client URL pattern
+  app.post("/api/cruises/:cruiseId/cabin-types", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cruiseId = parseInt(req.params.cruiseId);
+      const cabinTypeData = {
+        ...req.body,
+        cruiseId,
+      };
+      
+      const cabinType = await storage.createCruiseCabinType(cabinTypeData);
+      res.status(201).json(cabinType);
+    } catch (error) {
+      console.error("Error creating cabin type:", error);
+      res.status(500).json({ error: "Failed to create cabin type" });
+    }
+  });
 
   app.post("/api/admin/cruises/:cruiseId/cabin-types", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {
@@ -1127,6 +1177,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/admin/cruises/cabin-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cabinTypeId = parseInt(req.params.id);
+      await storage.deleteCruiseCabinType(cabinTypeId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting cabin type:", error);
+      res.status(500).json({ error: "Failed to delete cabin type" });
+    }
+  });
+  
+  // Add DELETE endpoint for cabin types that matches client URL pattern
+  app.delete("/api/cruises/:cruiseId/cabin-types/:id", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {
       return res.status(403).json({ error: "Admin access required" });
     }
