@@ -918,7 +918,7 @@ export default function HotelDetails() {
               
               {hotel?.nearbyAttractions && hotel.nearbyAttractions !== "{}" && hotel.nearbyAttractions !== "null" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {parseNearbyAttractions(hotel.nearbyAttractions).map((attraction, index) => (
+                  {parseNearbyAttractions(hotel.nearbyAttractions).map((attraction: string, index: number) => (
                     <div key={index} className="p-4 border rounded-lg">
                       <div className="flex items-start">
                         <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
