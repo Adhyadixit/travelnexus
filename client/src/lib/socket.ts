@@ -112,6 +112,14 @@ export const subscribeToNewMessages = (
   socketInstance.on("message-received", callback);
 };
 
+// Subscribe to new conversation events
+export const subscribeToNewConversations = (
+  callback: (conversationId: number) => void
+): void => {
+  const socketInstance = initializeSocket();
+  socketInstance.on("new-conversation", callback);
+};
+
 // Unsubscribe from events
 export const unsubscribeFromEvent = (event: string): void => {
   if (socket) {

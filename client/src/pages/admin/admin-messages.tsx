@@ -1,5 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { 
+  initializeSocket, 
+  subscribeToNewMessages, 
+  subscribeToNewConversations,
+  unsubscribeFromEvent 
+} from "@/lib/socket";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,6 +107,61 @@ export default function AdminMessages() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Initialize the socket connection for real-time updates
+  useEffect(() => {
+    // Initialize socket connection
+    const socket = initializeSocket();
+    
+    // Subscribe to new message notifications
+    subscribeToNewMessages((newMessage) => {
+      console.log("New message received via socket:", newMessage);
+      
+      // Play a notification sound for new messages
+      const audio = new Audio('/notification.mp3');
+      audio.play().catch(err => console.log('Audio play failed:', err));
+      
+      // Show a toast notification for the new message
+      toast({
+        title: "New Message",
+        description: `You have a new message${selectedConversation ? (newMessage.conversationId === selectedConversation.id ? " in the current conversation" : " in another conversation") : ""}`,
+        variant: "default",
+      });
+      
+      // Refresh the messages if we're viewing the conversation that received a new message
+      if (selectedConversation && newMessage.conversationId === selectedConversation.id) {
+        queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedConversation.id] });
+      }
+      
+      // Always refresh the conversations list to update unread indicators and last message times
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/conversations"] });
+    });
+    
+    // Subscribe to new conversation events
+    subscribeToNewConversations((conversationId) => {
+      console.log("New conversation created via socket:", conversationId);
+      
+      // Play notification sound for new conversation
+      const audio = new Audio('/notification.mp3');
+      audio.play().catch(err => console.log('Audio play failed:', err));
+      
+      // Show a toast notification
+      toast({
+        title: "New Conversation",
+        description: "A new conversation has been started. Refreshing your conversations list.",
+        variant: "default",
+      });
+      
+      // Refresh conversations list
+      queryClient.invalidateQueries({ queryKey: ["/api/direct/conversations"] });
+    });
+    
+    // Cleanup function
+    return () => {
+      unsubscribeFromEvent('message-received');
+      unsubscribeFromEvent('new-conversation');
+    };
+  }, [selectedConversation]);
 
   // Use direct database access to fetch conversations with user data
   const {
