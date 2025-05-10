@@ -1,5 +1,7 @@
+#!/usr/bin/env node
+
 // Custom build script for Vercel deployment
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 console.log('Starting Vercel build process...');
 
@@ -21,6 +23,6 @@ try {
   
   console.log('Build completed successfully!');
 } catch (error) {
-  console.error('Build failed:', error.message);
+  console.error('Build failed:', error);
   process.exit(1);
 }
