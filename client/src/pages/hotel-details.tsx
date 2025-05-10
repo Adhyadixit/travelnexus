@@ -477,9 +477,6 @@ export default function HotelDetails() {
 
 
 
-  // We'll add a special class for desktop layout only
-  const isDesktop = !isMobile;
-
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
@@ -674,10 +671,9 @@ export default function HotelDetails() {
           )}
         </div>
 
-        {/* Main content grid - restructured for desktop */}
-        <div className={`grid grid-cols-1 ${isDesktop ? 'lg:grid-cols-12' : 'lg:grid-cols-3'} gap-8`}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
-          <div className={`${isDesktop ? 'lg:col-span-8' : 'lg:col-span-2'}`}>
+          <div className="lg:col-span-2">
             {/* Detailed Description Section */}
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-4">About This Property</h2>
@@ -747,57 +743,55 @@ export default function HotelDetails() {
               </div>
             </section>
 
-            {/* Room Types & Booking Options Section - Improved for desktop */}
+            {/* Room Types & Booking Options Section */}
             <section id="booking-section" className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
 
               <div className="space-y-6">
                 {roomTypes.map((room: any) => (
-                  <Card key={room.id} className={`overflow-hidden hover:shadow-md transition-shadow ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
-                    <div className={`grid grid-cols-1 ${isDesktop ? 'md:grid-cols-12' : 'md:grid-cols-4'}`}>
-                      <div className={`${isDesktop ? 'md:col-span-3' : 'md:col-span-1'} h-52 md:h-auto`}>
+                  <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
+                    <div className="grid grid-cols-1 md:grid-cols-4">
+                      <div className="md:col-span-1">
                         <img 
                           src={room.images[0] || hotel.imageUrl} 
                           alt={room.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className={`p-5 ${isDesktop ? 'md:col-span-9' : 'md:col-span-3'}`}>
-                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
-                          <div>
-                            <h3 className="text-xl font-heading font-bold text-neutral-800">{room.name}</h3>
-                            <p className="text-neutral-600 my-2">{room.description}</p>
-                          </div>
-                          <div className="text-left md:text-right md:min-w-[120px]">
+                      <div className="p-4 md:col-span-3">
+                        <div className="flex justify-between">
+                          <h3 className="text-xl font-heading font-bold">{room.name}</h3>
+                          <div className="text-right">
                             <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
                             <div className="text-sm text-neutral-500">per night</div>
                           </div>
                         </div>
 
-                        <div className="flex items-center text-neutral-600 mb-3 mt-4">
-                          <User className="w-4 h-4 mr-2" />
+                        <p className="text-neutral-600 my-2">{room.description}</p>
+
+                        <div className="flex items-center text-neutral-600 mb-2">
+                          <User className="w-4 h-4 mr-1" />
                           <span>Up to {room.capacity} guests</span>
                         </div>
 
-                        <div className={`grid ${isDesktop ? 'grid-cols-3' : 'grid-cols-2'} gap-3 my-4`}>
+                        <div className="grid grid-cols-2 gap-2 my-3">
                           {room.amenities.map((amenity: string, index: number) => (
                             <div key={index} className="flex items-center text-sm">
-                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-2" />}
-                              <span>{amenity}</span>
+                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
+                              <span className="ml-1">{amenity}</span>
                             </div>
                           ))}
                         </div>
 
                         {room.cancellation && (
-                          <div className="text-sm text-green-600 flex items-center mb-4 mt-2">
-                            <Check className="w-4 h-4 mr-2" />
+                          <div className="text-sm text-green-600 flex items-center mb-4">
+                            <Check className="w-4 h-4 mr-1" />
                             <span>{room.cancellation}</span>
                           </div>
                         )}
 
-                        <div className="mt-6 flex justify-end">
+                        <div className="mt-4 flex justify-end">
                           <Button 
-                            className="min-w-[140px]"
                             variant={selectedRoom === room.id ? "default" : "outline"}
                             onClick={() => {
                               setSelectedRoom(room.id);
@@ -972,11 +966,10 @@ export default function HotelDetails() {
           </div>
 
           {/* Booking Sidebar */}
-          {/* Booking sidebar - improved for desktop */}
-          <div className={`${isDesktop ? 'lg:col-span-4' : 'lg:col-span-1'}`}>
-            <Card className="sticky top-4 shadow-lg border border-gray-100 rounded-xl" ref={bookingFormRef}>
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4" ref={bookingFormRef}>
               <CardContent className="p-6">
-                <h2 className="text-xl font-heading font-bold mb-5 text-center md:text-left">Book Your Stay</h2>
+                <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
 
                 <div className="space-y-4">
                   <div className="room-selector-container">
@@ -999,21 +992,21 @@ export default function HotelDetails() {
                   </div>
 
                   <div className="date-picker-container">
-                      <label className="block text-sm font-medium mb-2">Check-in Date</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant={"outline"}
-                            className="w-full justify-start text-left font-normal text-neutral-800"
-                          >
-                            {startDate ? (
-                              format(startDate, "PPP")
-                            ) : (
-                              <span className="text-neutral-500">Select date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
+                    <label className="block text-sm font-medium mb-2">Check-in Date</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          {startDate ? (
+                            format(startDate, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                         <Calendar
                           mode="single"
@@ -1075,35 +1068,35 @@ export default function HotelDetails() {
                   </div>
 
                   {nights > 0 && selectedRoom && (
-                    <div className="bg-neutral-50 p-5 rounded-lg space-y-3 mt-6 border border-gray-100">
-                      <div className="flex justify-between text-neutral-700">
-                        <span className="font-medium">Room Type</span>
-                        <span className="font-medium">{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
+                    <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
+                      <div className="flex justify-between">
+                        <span>Room </span>
+                        <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
                       </div>
-                      <div className="flex justify-between text-neutral-700">
-                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} night{nights > 1 ? 's' : ''}</span>
+                      <div className="flex justify-between">
+                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
                         <span>{formatCurrency(totalPrice)}</span>
                       </div>
-                      <Separator className="my-3" />
-                      <div className="flex justify-between font-bold text-neutral-800">
+                      <Separator className="my-2" />
+                      <div className="flex justify-between font-bold">
                         <span>Total</span>
-                        <span className="text-primary text-lg">{formatCurrency(totalPrice)}</span>
+                        <span>{formatCurrency(totalPrice)}</span>
                       </div>
                     </div>
                   )}
 
                   <Button 
-                    className="w-full mt-6 py-6 text-base" 
+                    className="w-full mt-4" 
                     size="lg"
                     onClick={handleBookNow}
                     disabled={!startDate || !endDate || !selectedRoom}
                   >
-                    {selectedRoom && startDate && endDate ? 'Book Now' : 'Select Room & Dates'}
+                    Book Now
                   </Button>
 
                   {hotel.freeCancellation && (
-                    <div className="text-sm text-green-600 flex items-center justify-center mt-3">
-                      <Check className="w-4 h-4 mr-2" />
+                    <div className="text-sm text-green-600 flex items-center justify-center mt-2">
+                      <Check className="w-4 h-4 mr-1" />
                       <span>Free cancellation available</span>
                     </div>
                   )}
