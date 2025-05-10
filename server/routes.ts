@@ -201,6 +201,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User
+  app.get("/api/user", isAuthenticated, async (req, res) => {
+    try {
+      // @ts-ignore - req.user is added by passport
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ error: "User not authenticated" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Remove sensitive data before sending
+      const { password, ...userData } = user;
+      res.json(userData);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ error: "Failed to fetch user data" });
+    }
+  });
+
+  // Guest Conversations
+  app.get("/api/guest-conversations", async (req, res) => {
+    try {
+      const guestUserId = req.query.guestUserId as string;
+      
+      if (!guestUserId) {
+        return res.status(400).json({ error: "Guest user ID is required" });
+      }
+      
+      const guestUser = await storage.getGuestUserBySessionId(guestUserId);
+      if (!guestUser) {
+        return res.json([]);
+      }
+      
+      const conversations = await storage.getConversationsByGuestUser(guestUser.id);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching guest conversations:", error);
+      res.status(500).json({ error: "Failed to fetch guest conversations" });
+    }
+  });
+
   // Drivers (Cabs)
   app.get("/api/drivers", async (req, res) => {
     try {
