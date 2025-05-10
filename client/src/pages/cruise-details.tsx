@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
@@ -94,6 +94,9 @@ export default function CruiseDetails() {
     enabled: !!cruise,
   });
 
+  // Reference to the booking form section for scrolling
+  const bookingFormRef = useRef<HTMLDivElement>(null);
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
@@ -102,6 +105,19 @@ export default function CruiseDetails() {
     }
 
     if (!startDate || !selectedCabinType) {
+      // Scroll to the booking form section when date or cabin is not selected
+      if (bookingFormRef.current) {
+        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+        
+        // Add a visual indicator to help users see where to select dates
+        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
+        if (datePickerEl) {
+          datePickerEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            datePickerEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+      }
       return;
     }
 
@@ -976,8 +992,8 @@ export default function CruiseDetails() {
                 <CardContent className="p-6">
                   <h2 className="text-xl font-heading font-bold mb-4">Book This Cruise</h2>
 
-                  <div className="space-y-4">
-                    <div>
+                  <div className="space-y-4" ref={bookingFormRef}>
+                    <div className="date-picker-container">
                       <label className="block text-sm font-medium mb-2">Departure Date</label>
                       <Popover>
                         <PopoverTrigger asChild>
