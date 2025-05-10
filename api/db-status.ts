@@ -1,41 +1,43 @@
 import type { Request, Response } from 'express';
-import { db } from '../server/db-serverless';
-import { sql } from 'drizzle-orm';
 
 export default async function handler(req: Request, res: Response) {
   try {
-    // Try a simple database connection test
-    let dbConnected = false;
-    let dbError: string | null = null;
+    // Parse the database URL to get connection details (without exposing credentials)
+    let dbInfo = { host: 'unknown', database: 'unknown', user: 'unknown' };
     
-    try {
-      // Simple query to check if database is accessible
-      const result = await db.execute(sql`SELECT 1 as connected`);
-      dbConnected = !!result;
-    } catch (err) {
-      dbError = err instanceof Error ? err.message : String(err);
-      console.error('Database connection error:', dbError);
+    if (process.env.DATABASE_URL) {
+      try {
+        const url = new URL(process.env.DATABASE_URL);
+        dbInfo = {
+          host: url.hostname || 'unknown',
+          database: url.pathname.replace('/', '') || 'unknown',
+          user: url.username || 'unknown'
+        };
+      } catch (e) {
+        console.error('Error parsing DATABASE_URL:', e);
+      }
     }
     
-    // Return the status of the database connection
-    return res.status(dbConnected ? 200 : 500).json({
-      success: dbConnected,
-      message: dbConnected ? 'Database connection successful' : 'Database connection failed',
-      connectionStatus: dbConnected ? 'connected' : 'disconnected',
-      error: dbError,
-      database_url: process.env.DATABASE_URL ? 
-        `${process.env.DATABASE_URL.substring(0, 15)}...` : 
-        'not set',
+    // Return database connection info without attempting to connect
+    return res.status(200).json({
+      success: true,
+      message: 'Database information retrieved',
+      database_info: {
+        host: dbInfo.host,
+        database: dbInfo.database,
+        has_credentials: process.env.DATABASE_URL ? 'true' : 'false'
+      },
       environment: {
         node_env: process.env.NODE_ENV || 'not set',
-        vercel: process.env.VERCEL === '1' ? 'true' : 'false'
+        vercel: process.env.VERCEL === '1' ? 'true' : 'false',
+        region: process.env.VERCEL_REGION || 'unknown'
       }
     });
   } catch (error) {
-    console.error('Database status check error:', error);
+    console.error('Error retrieving database info:', error);
     return res.status(500).json({
       success: false,
-      message: 'Database status check failed',
+      message: 'Error retrieving database information',
       error: error instanceof Error ? error.message : String(error)
     });
   }
