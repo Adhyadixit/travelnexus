@@ -393,7 +393,7 @@ export default function CruiseDetails() {
 
               <div className="flex flex-wrap gap-3">
                 <Button 
-                  className="bg-secondary hover:bg-secondary/90 text-white"
+                  variant="default"
                   onClick={handleBookNow}
                 >
                   Book Now
