@@ -149,7 +149,7 @@ export function RoomTypesManager({ hotelId }: RoomTypesManagerProps) {
             <CardDescription>Create a new room type for this hotel</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleAddRoomType} className="space-y-4">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Room Type Name</Label>
@@ -220,7 +220,8 @@ export function RoomTypesManager({ hotelId }: RoomTypesManagerProps) {
                   Cancel
                 </Button>
                 <Button 
-                  type="submit" 
+                  type="button"
+                  onClick={(e) => handleAddRoomType(e)}
                   disabled={createRoomTypeMutation.isPending}
                 >
                   {createRoomTypeMutation.isPending ? (
@@ -231,7 +232,7 @@ export function RoomTypesManager({ hotelId }: RoomTypesManagerProps) {
                   ) : "Save Room Type"}
                 </Button>
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
       )}
