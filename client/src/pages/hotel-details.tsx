@@ -997,16 +997,34 @@ export default function HotelDetails() {
                     </Select>
                   </div>
 
-                  {/* Room Image Display */}
+                  {/* Debug image and Room Image Display */}
                   {selectedRoom && dbRoomTypes && (
-                    <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border bg-neutral-50">
-                      <h3 className="p-2 text-center text-sm">Room: {dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}</h3>
-                      <SimpleRoomImageDisplay
-                        roomId={selectedRoom}
-                        roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
-                        fallbackImage={hotel?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
-                      />
-                    </div>
+                    <>
+                      <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border bg-neutral-50">
+                        <h3 className="p-2 text-center text-sm">Room: {dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}</h3>
+                        {selectedRoom === 1 ? (
+                          <div className="h-36 w-full">
+                            <img
+                              src="https://res.cloudinary.com/dnnc1s1ve/image/upload/v1746870143/travelease/room-images/bi0ijppmzbzxgcefbjy3.jpg"
+                              alt="Room image direct"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <SimpleRoomImageDisplay
+                            roomId={selectedRoom}
+                            roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
+                            fallbackImage={hotel?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
+                          />
+                        )}
+                      </div>
+                      
+                      {/* Diagnostic info */}
+                      <div className="mt-2 p-2 text-xs text-neutral-500 bg-neutral-100 rounded-md">
+                        Selected Room ID: {selectedRoom} | 
+                        Room Name: {dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Unknown"}
+                      </div>
+                    </>
                   )}
 
                   <div className="date-picker-container">
