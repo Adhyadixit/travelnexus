@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency, parseAmenities } from "@/lib/utils";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { InquiryForm } from "@/components/inquiry-form";
+import { RoomImageCarousel } from "@/components/rooms/room-image-carousel";
 import { 
   CalendarIcon, 
   ChevronLeft, 
@@ -995,6 +996,18 @@ export default function HotelDetails() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Room Image Carousel */}
+                  {selectedRoom && dbRoomTypes && (
+                    <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border">
+                      <RoomImageCarousel
+                        roomId={selectedRoom}
+                        roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
+                        images={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.images || []}
+                        fallbackImage={hotel?.imageUrl}
+                      />
+                    </div>
+                  )}
 
                   <div className="date-picker-container">
                     <label className="block text-sm font-medium mb-2">Check-in Date</label>

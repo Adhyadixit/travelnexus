@@ -40,6 +40,16 @@ export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
+// Safely parse JSON with a fallback value
+export function safeJsonParse<T>(jsonString: string, fallback: T): T {
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch (error) {
+    console.error("Failed to parse JSON:", error);
+    return fallback;
+  }
+}
+
 // Parse included items from string (could be JSON string or plain array)
 export function parseIncludedItems(includedData: string | null | undefined): string[] {
   if (!includedData) {
