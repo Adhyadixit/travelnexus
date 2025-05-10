@@ -747,11 +747,19 @@ export default function HotelDetails() {
                     <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
                       <div className="grid grid-cols-1 md:grid-cols-4">
                         <div className="md:col-span-1">
-                          <img 
-                            src={room.imageUrl || hotel.imageUrl} 
-                            alt={room.name}
-                            className="w-full h-full object-cover"
-                          />
+                          {room.id === 1 ? (
+                            <SimpleRoomImageDisplay
+                              roomId={room.id}
+                              roomName={room.name}
+                              fallbackImage={hotel.imageUrl}
+                            />
+                          ) : (
+                            <img 
+                              src={room.imageUrl || hotel.imageUrl} 
+                              alt={room.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
                         <div className="p-4 md:col-span-3">
                           <div className="flex justify-between">
@@ -1001,10 +1009,9 @@ export default function HotelDetails() {
                   {selectedRoom && dbRoomTypes && (
                     <div className="mt-4 mb-4 h-48 rounded-lg overflow-hidden border bg-neutral-50">
                       <h3 className="p-2 text-center text-sm">Room: {dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}</h3>
-                      <RoomImageCarousel
+                      <SimpleRoomImageDisplay
                         roomId={selectedRoom}
                         roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
-                        images={[]}
                         fallbackImage={hotel?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
                       />
                     </div>
