@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   joinConversation,
   leaveConversation,
@@ -614,14 +615,14 @@ export function ChatWidget({
         modal={true}
       >
         <SheetContent 
-          side="bottom" 
-          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-4 md:left-auto md:bottom-auto"
+          side={window.innerWidth >= 768 ? "right" : "bottom"}
+          className="w-[95%] sm:w-[350px] mx-auto fixed left-[2.5%] right-[2.5%] h-[60vh] top-auto bottom-16 rounded-xl shadow-lg p-0 border md:right-8 md:left-auto md:bottom-8 md:h-[500px] md:w-[380px]"
           style={{
             transform: 'none', 
             position: 'fixed',
             animation: 'none',
             transition: 'opacity 0.2s ease',
-            boxShadow: '0 -4px 10px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
             zIndex: 100
           }}
         >
