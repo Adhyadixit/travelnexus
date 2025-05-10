@@ -54,6 +54,7 @@ export default function AdminCruises() {
       description: "",
       imageUrl: "",
       imageGallery: "[]",
+      cabinTypes: "[]",
       price: 0,
       duration: 1,
       capacity: 100,
@@ -421,13 +422,190 @@ export default function AdminCruises() {
                     </div>
                   </div>
                   
+                  <div className="space-y-2 pt-4 border-t">
+                    <FormField
+                      control={createForm.control}
+                      name="cabinTypes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex justify-between items-center">
+                            <FormLabel>Cabin Types</FormLabel>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const currentValue = field.value || "[]";
+                                try {
+                                  const currentCabins = JSON.parse(currentValue);
+                                  const newCabins = [...currentCabins, {
+                                    type: "New Cabin Type",
+                                    price: 0,
+                                    description: "Description of cabin amenities",
+                                    imageUrl: ""
+                                  }];
+                                  field.onChange(JSON.stringify(newCabins));
+                                } catch (error) {
+                                  // If JSON parsing fails, start a new array
+                                  field.onChange(JSON.stringify([{
+                                    type: "Interior",
+                                    price: 799,
+                                    description: "Cozy interior cabin",
+                                    imageUrl: ""
+                                  }]));
+                                }
+                              }}
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Cabin Type
+                            </Button>
+                          </div>
+                          <FormControl>
+                            <div className="space-y-4 mt-4">
+                              {(() => {
+                                let cabins: Array<{
+                                  type: string;
+                                  price: number;
+                                  description: string;
+                                  imageUrl: string;
+                                }> = [];
+                                
+                                try {
+                                  cabins = field.value ? JSON.parse(field.value) : [];
+                                  // If it's just a simple object, convert it to array format
+                                  if (!Array.isArray(cabins)) {
+                                    const newCabins = [];
+                                    for (const [type, price] of Object.entries(cabins)) {
+                                      newCabins.push({
+                                        type,
+                                        price: parseFloat(String(price).replace(/[^0-9.]/g, '')),
+                                        description: `${type} cabin`,
+                                        imageUrl: ""
+                                      });
+                                    }
+                                    cabins = newCabins;
+                                    field.onChange(JSON.stringify(newCabins)); 
+                                  }
+                                } catch (error) {
+                                  // If parsing fails, use empty array
+                                  cabins = [];
+                                }
+                                
+                                return cabins.map((cabin, index) => (
+                                  <Card key={index} className="relative">
+                                    <CardHeader className="pb-2">
+                                      <div className="absolute top-2 right-2">
+                                        <Button
+                                          type="button"
+                                          variant="destructive"
+                                          size="icon"
+                                          onClick={() => {
+                                            const newCabins = [...cabins];
+                                            newCabins.splice(index, 1);
+                                            field.onChange(JSON.stringify(newCabins));
+                                          }}
+                                        >
+                                          <X className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                      <CardTitle className="text-md">
+                                        <Input 
+                                          value={cabin.type} 
+                                          onChange={(e) => {
+                                            const newCabins = [...cabins];
+                                            newCabins[index] = {
+                                              ...newCabins[index],
+                                              type: e.target.value
+                                            };
+                                            field.onChange(JSON.stringify(newCabins));
+                                          }}
+                                          placeholder="Cabin Type"
+                                          className="font-semibold text-base"
+                                        />
+                                      </CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                      <div>
+                                        <FormLabel className="text-sm">Price (USD)</FormLabel>
+                                        <div className="flex mt-1">
+                                          <span className="inline-flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">
+                                            $
+                                          </span>
+                                          <Input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={cabin.price}
+                                            onChange={(e) => {
+                                              const newCabins = [...cabins];
+                                              newCabins[index] = {
+                                                ...newCabins[index],
+                                                price: parseFloat(e.target.value) || 0
+                                              };
+                                              field.onChange(JSON.stringify(newCabins));
+                                            }}
+                                            className="rounded-l-none"
+                                          />
+                                        </div>
+                                      </div>
+                                      
+                                      <div>
+                                        <FormLabel className="text-sm">Description</FormLabel>
+                                        <Textarea
+                                          value={cabin.description}
+                                          onChange={(e) => {
+                                            const newCabins = [...cabins];
+                                            newCabins[index] = {
+                                              ...newCabins[index],
+                                              description: e.target.value
+                                            };
+                                            field.onChange(JSON.stringify(newCabins));
+                                          }}
+                                          placeholder="Describe cabin amenities and features"
+                                          className="mt-1"
+                                          rows={3}
+                                        />
+                                      </div>
+                                      
+                                      <div>
+                                        <FormLabel className="text-sm">Cabin Image</FormLabel>
+                                        <div className="mt-1">
+                                          <ImageUpload
+                                            value={cabin.imageUrl}
+                                            onChange={(url) => {
+                                              const newCabins = [...cabins];
+                                              newCabins[index] = {
+                                                ...newCabins[index],
+                                                imageUrl: url
+                                              };
+                                              field.onChange(JSON.stringify(newCabins));
+                                            }}
+                                            folder="travelease/cruises/cabins"
+                                          />
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ));
+                              })()}
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            Add different cabin types with prices and details
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                     <FormField
                       control={createForm.control}
                       name="price"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price ($)</FormLabel>
+                          <FormLabel>Base Price ($)</FormLabel>
                           <FormControl>
                             <Input type="number" min="0" step="0.01" {...field} />
                           </FormControl>
