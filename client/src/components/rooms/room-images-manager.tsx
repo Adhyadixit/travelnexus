@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ImageUpload } from "@/components/ui/image-upload";
+import { DirectImageUpload } from "@/components/ui/direct-image-upload";
 import { type HotelRoomType, type HotelRoomImage } from "@shared/schema";
 
 interface RoomImagesManagerProps {
@@ -499,7 +499,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                         <form onSubmit={handleAddImage} className="space-y-4">
                           <div className="space-y-2">
                             <Label htmlFor="imageUpload">Room Image</Label>
-                            <ImageUpload
+                            <DirectImageUpload
                               value={newImage.imageUrl}
                               onChange={(url) => setNewImage({...newImage, imageUrl: url})}
                               onUpload={(data) => setNewImage({...newImage, imageUrl: data.url})}
