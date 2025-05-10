@@ -262,9 +262,34 @@ export const cruises = pgTable('cruises', {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Cruise cabin types table
+export const cruiseCabinTypes = pgTable('cruise_cabin_types', {
+  id: serial("id").primaryKey(),
+  cruiseId: integer("cruise_id").notNull().references(() => cruises.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  price: doublePrecision("price").notNull(),
+  image: text("image").notNull(),
+  features: text("features").notNull(), // JSON string of features
+  availability: integer("availability").default(10),
+  capacity: integer("capacity").default(2),
+  featured: boolean("featured").default(false),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Cruise relations
 export const cruisesRelations = relations(cruises, ({ many }) => ({
   bookings: many(bookings),
+  cabinTypes: many(cruiseCabinTypes)
+}));
+
+// Cruise cabin types relations
+export const cruiseCabinTypesRelations = relations(cruiseCabinTypes, ({ one }) => ({
+  cruise: one(cruises, {
+    fields: [cruiseCabinTypes.cruiseId],
+    references: [cruises.id],
+  })
 }));
 
 // Events table

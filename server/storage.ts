@@ -358,6 +358,27 @@ export class DatabaseStorage implements IStorage {
     const [cruise] = await db.insert(cruises).values(cruiseData).returning();
     return cruise;
   }
+  
+  async createCruiseCabinType(cabinTypeData: Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>): Promise<typeof cruiseCabinTypes.$inferSelect> {
+    const [cabinType] = await db.insert(cruiseCabinTypes).values(cabinTypeData).returning();
+    return cabinType;
+  }
+  
+  async getCruiseCabinTypes(cruiseId: number): Promise<typeof cruiseCabinTypes.$inferSelect[]> {
+    return await db.select().from(cruiseCabinTypes).where(eq(cruiseCabinTypes.cruiseId, cruiseId));
+  }
+  
+  async updateCruiseCabinType(id: number, data: Partial<Omit<typeof cruiseCabinTypes.$inferInsert, 'id' | 'createdAt'>>): Promise<typeof cruiseCabinTypes.$inferSelect | undefined> {
+    const [cabinType] = await db.update(cruiseCabinTypes)
+      .set(data)
+      .where(eq(cruiseCabinTypes.id, id))
+      .returning();
+    return cabinType;
+  }
+  
+  async deleteCruiseCabinType(id: number): Promise<void> {
+    await db.delete(cruiseCabinTypes).where(eq(cruiseCabinTypes.id, id));
+  }
 
   async updateCruise(id: number, data: Partial<InsertCruise>): Promise<Cruise | undefined> {
     const [cruise] = await db.update(cruises)
