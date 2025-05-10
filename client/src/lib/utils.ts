@@ -113,7 +113,8 @@ export function parseAmenities(amenitiesData: string | null | undefined): string
   if (!amenitiesData) return [];
   
   // First check if it looks like a JSON string
-  if (amenitiesData.startsWith('[') && amenitiesData.endsWith(']')) {
+  if (amenitiesData.startsWith('[') && amenitiesData.endsWith(']') || 
+      amenitiesData.startsWith('{') && amenitiesData.endsWith('}')) {
     try {
       const parsed = JSON.parse(amenitiesData);
       
@@ -146,6 +147,12 @@ export function parseAmenities(amenitiesData: string | null | undefined): string
     // Otherwise try commas
     return amenitiesData.split(',').map(item => item.trim()).filter(Boolean);
   }
+}
+
+// Parse nearby attractions from string
+export function parseNearbyAttractions(attractionsData: string | null | undefined): string[] {
+  // Use the same logic as parseAmenities
+  return parseAmenities(attractionsData);
 }
 
 // Type definitions for itinerary data

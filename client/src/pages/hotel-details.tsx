@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency, parseAmenities } from "@/lib/utils";
+import { formatCurrency, parseAmenities, parseNearbyAttractions } from "@/lib/utils";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { InquiryForm } from "@/components/inquiry-form";
 import { SimpleRoomImageDisplay } from "@/components/rooms/simple-room-image-display";
@@ -839,43 +839,103 @@ export default function HotelDetails() {
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Amenities</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-y-8">
-                <div>
-                  <h3 className="text-lg font-bold mb-3">General</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => !a.includes('Wi-Fi') && !a.includes('Dining') && !a.includes('Pool') && !a.includes('Fitness')).slice(0, 6).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              {amenitiesList && amenitiesList.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h3 className="text-lg font-bold mb-3">General</h3>
+                    <ul className="space-y-2">
+                      {amenitiesList
+                        .filter(a => 
+                          !a.includes('WiFi') && 
+                          !a.includes('Wi-Fi') && 
+                          !a.includes('Internet') && 
+                          !a.includes('Parking') && 
+                          !a.includes('TV') && 
+                          !a.includes('Air') && 
+                          !a.includes('Mini')
+                        )
+                        .map((amenity: string, idx: number) => (
+                          <li key={idx} className="flex items-center">
+                            <Check className="text-primary w-5 h-5 mr-2" />
+                            <span>{amenity}</span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
 
-                <div>
-                  <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Safe') || a.includes('Mini')).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  <div>
+                    <h3 className="text-lg font-bold mb-3">Room Amenities</h3>
+                    <ul className="space-y-2">
+                      {amenitiesList
+                        .filter(a => a.includes('TV') || a.includes('Air') || a.includes('Mini'))
+                        .map((amenity: string, idx: number) => (
+                          <li key={idx} className="flex items-center">
+                            <Check className="text-primary w-5 h-5 mr-2" />
+                            <span>{amenity}</span>
+                          </li>
+                        ))}
+                        {/* Add a default item if none match the filter criteria */}
+                        {amenitiesList.filter(a => a.includes('TV') || a.includes('Air') || a.includes('Mini')).length === 0 && (
+                          <li className="flex items-center">
+                            <Check className="text-primary w-5 h-5 mr-2" />
+                            <span>Standard Room Amenities</span>
+                          </li>
+                        )}
+                    </ul>
+                  </div>
 
-                <div>
-                  <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
-                  <ul className="space-y-2">
-                    {amenitiesList.filter(a => a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking')).map((amenity: string, idx: number) => (
-                      <li key={idx} className="flex items-center">
-                        <Check className="text-primary w-5 h-5 mr-2" />
-                        <span>{amenity}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <h3 className="text-lg font-bold mb-3">Internet & Parking</h3>
+                    <ul className="space-y-2">
+                      {amenitiesList
+                        .filter(a => a.includes('WiFi') || a.includes('Wi-Fi') || a.includes('Internet') || a.includes('Parking'))
+                        .map((amenity: string, idx: number) => (
+                          <li key={idx} className="flex items-center">
+                            <Check className="text-primary w-5 h-5 mr-2" />
+                            <span>{amenity}</span>
+                          </li>
+                        ))}
+                        {/* Add Free WiFi if no internet options are present */}
+                        {amenitiesList.filter(a => a.includes('WiFi') || a.includes('Wi-Fi') || a.includes('Internet')).length === 0 && (
+                          <li className="flex items-center">
+                            <Check className="text-primary w-5 h-5 mr-2" />
+                            <span>Free WiFi</span>
+                          </li>
+                        )}
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="p-4 rounded-lg bg-neutral-50">
+                  <p className="text-center text-neutral-600">Amenities information not available</p>
+                </div>
+              )}
+            </section>
+            
+            {/* Nearby Attractions Section */}
+            <section className="mb-10">
+              <h2 className="text-2xl font-heading font-bold mb-6">Nearby Attractions</h2>
+              
+              {hotel?.nearbyAttractions && hotel.nearbyAttractions !== "{}" && hotel.nearbyAttractions !== "null" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {parseNearbyAttractions(hotel.nearbyAttractions).map((attraction, index) => (
+                    <div key={index} className="p-4 border rounded-lg">
+                      <div className="flex items-start">
+                        <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
+                        <div>
+                          <p className="font-medium">{attraction}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-lg bg-neutral-50">
+                  <p className="text-center text-neutral-600">
+                    Information about nearby attractions coming soon
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* Guest Reviews Section */}

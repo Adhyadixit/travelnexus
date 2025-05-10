@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { safeJsonParse } from "@/lib/utils";
 
 interface RoomImageCarouselProps {
   roomId: number;
