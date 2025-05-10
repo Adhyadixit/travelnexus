@@ -61,6 +61,20 @@ const asString = (value: string | null | undefined): string => {
   return "";
 };
 
+// Helper function to provide a default itinerary JSON if value is invalid
+const asItineraryString = (value: string | null | undefined): string => {
+  if (typeof value === 'string' && value.trim() !== '') {
+    try {
+      // Test if it's valid JSON
+      JSON.parse(value);
+      return value;
+    } catch (e) {
+      // Not valid JSON, return empty object
+    }
+  }
+  return '{}';
+};
+
 // Helper function to safely handle number values
 const asNumber = (value: number | null | undefined): number => {
   if (typeof value === 'number') return value;
@@ -150,7 +164,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
         // Convert form text fields to proper JSON strings for DB storage
         included: stringToArray(data.includedItems || ""),
         excluded: stringToArray(data.excludedItems || ""),
-        itinerary: data.itineraryText,
+        itinerary: asItineraryString(data.itineraryText),
         hotels: data.hotelsText,
         citiesCovered: stringToArray(data.citiesCoveredText || ""), 
         meals: data.mealsText,
@@ -608,9 +622,9 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormControl>
                         <div className="border rounded-md p-4 bg-background">
                           <ItineraryManager 
-                            value={field.value || '{}'}
+                            value={asItineraryString(field.value)}
                             onChange={field.onChange}
-                            duration={parseInt(form.getValues().duration?.toString() || '1')}
+                            duration={asNumber(form.getValues().duration)}
                           />
                         </div>
                       </FormControl>
