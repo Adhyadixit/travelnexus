@@ -135,7 +135,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Add a new image to a room type
   const addImageMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", `/api/room-types/${selectedRoomType}/images`, data);
+      const res = await apiRequest("POST", `/api/hotel-room-images`, data);
       return await res.json();
     },
     onSuccess: () => {
