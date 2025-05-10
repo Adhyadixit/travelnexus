@@ -51,7 +51,14 @@ type PackageFormValues = z.infer<typeof packageFormSchema>;
 
 // Helper function to safely convert field value to CheckedState
 const asCheckedState = (value: boolean | null | undefined): CheckedState => {
-  return value === true ? true : false;
+  if (value === true) return true;
+  return false;
+};
+
+// Helper function to safely handle string values
+const asString = (value: string | null | undefined): string => {
+  if (typeof value === 'string') return value;
+  return "";
 };
 const stringToArray = (str: string): string[] => {
   try {
@@ -522,7 +529,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={asCheckedState(field.value)}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -544,7 +551,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                       <FormControl>
                         <Checkbox
-                          checked={field.value}
+                          checked={asCheckedState(field.value)}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
@@ -652,7 +659,7 @@ export default function PackageForm({ initialData, onSubmit, isSubmitting }: Pac
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Tour Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={asString(field.value)}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select tour type" />
