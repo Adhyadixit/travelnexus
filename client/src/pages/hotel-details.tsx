@@ -477,6 +477,9 @@ export default function HotelDetails() {
 
 
 
+  // We'll add a special class for desktop layout only
+  const isDesktop = !isMobile;
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
@@ -671,9 +674,10 @@ export default function HotelDetails() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main content grid - restructured for desktop */}
+        <div className={`grid grid-cols-1 ${isDesktop ? 'lg:grid-cols-12' : 'lg:grid-cols-3'} gap-8`}>
           {/* Main content */}
-          <div className="lg:col-span-2">
+          <div className={`${isDesktop ? 'lg:col-span-8' : 'lg:col-span-2'}`}>
             {/* Detailed Description Section */}
             <section className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-4">About This Property</h2>
@@ -966,8 +970,9 @@ export default function HotelDetails() {
           </div>
 
           {/* Booking Sidebar */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4" ref={bookingFormRef}>
+          {/* Booking sidebar - improved for desktop */}
+          <div className={`${isDesktop ? 'lg:col-span-4' : 'lg:col-span-1'}`}>
+            <Card className="sticky top-4 shadow-md" ref={bookingFormRef}>
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
 
