@@ -287,15 +287,20 @@ export default function HotelDetails() {
 
   // For image gallery navigation
   const handlePrevImage = () => {
+    // If there's only one image, do nothing
+    if (galleryImages.length <= 1) return;
+    
     setActiveImageIndex((prevIndex) => 
-      prevIndex === 0 ? (hotel?.imageGallery ? JSON.parse(hotel.imageGallery).length - 1 : 0) : prevIndex - 1
+      prevIndex === 0 ? galleryImages.length - 1 : prevIndex - 1
     );
   };
 
   const handleNextImage = () => {
-    const galleryLength = hotel?.imageGallery ? JSON.parse(hotel.imageGallery).length : 1;
+    // If there's only one image, do nothing
+    if (galleryImages.length <= 1) return;
+    
     setActiveImageIndex((prevIndex) => 
-      prevIndex === galleryLength - 1 ? 0 : prevIndex + 1
+      prevIndex === galleryImages.length - 1 ? 0 : prevIndex + 1
     );
   };
 
@@ -386,9 +391,23 @@ export default function HotelDetails() {
 
   // Build a gallery from hotel image and any additional images
   const mainImage = hotel.imageUrl;
-  const galleryImages = hotel.imageGallery 
-    ? [mainImage, ...JSON.parse(hotel.imageGallery)] 
-    : [mainImage, mainImage, mainImage, mainImage]; // Fallback
+  
+  // Parse gallery images safely
+  let parsedGalleryImages: string[] = [];
+  if (hotel.imageGallery) {
+    try {
+      const parsed = JSON.parse(hotel.imageGallery);
+      // Only add unique images to avoid duplicates
+      parsedGalleryImages = Array.isArray(parsed) ? parsed.filter(img => img !== mainImage) : [];
+    } catch (e) {
+      console.error("Error parsing hotel gallery images:", e);
+    }
+  }
+  
+  // Create final gallery array - if no additional images, just use main image
+  const galleryImages = parsedGalleryImages.length > 0 
+    ? [mainImage, ...parsedGalleryImages] 
+    : [mainImage];
 
   // Get current image
   const currentImage = galleryImages[activeImageIndex];
@@ -517,49 +536,57 @@ export default function HotelDetails() {
               <Maximize className="w-5 h-5" />
             </button>
 
-            {/* Image navigation arrows - larger on mobile */}
-            <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md"
-              onClick={handlePrevImage}
-              aria-label="Previous image"
-              style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
-            >
-              <ChevronLeft className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
-            </button>
-            <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md"
-              onClick={handleNextImage}
-              aria-label="Next image"
-              style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
-            >
-              <ChevronRight className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
-            </button>
+            {/* Image navigation arrows - larger on mobile - only show when multiple images */}
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md carousel-arrow"
+                  onClick={handlePrevImage}
+                  aria-label="Previous image"
+                  style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
+                >
+                  <ChevronLeft className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
+                </button>
+                <button
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 md:p-2 rounded-full text-neutral-700 hover:text-primary transition-colors z-10 shadow-md carousel-arrow"
+                  onClick={handleNextImage}
+                  aria-label="Next image"
+                  style={{ width: isMobile ? '40px' : '32px', height: isMobile ? '40px' : '32px' }}
+                >
+                  <ChevronRight className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
+                </button>
+              </>
+            )}
           </div>
 
-          {/* Smaller thumbnail images - shown only on desktop */}
-          <div className="hidden md:grid md:col-span-4 grid-rows-2 gap-2">
-            {galleryImages.slice(1, 3).map((img, idx) => (
-              <div key={idx} className="overflow-hidden rounded-xl">
-                <img 
-                  src={img} 
-                  alt={`${hotel.name} - Thumbnail ${idx + 1}`} 
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={() => {
-                    setActiveImageIndex(idx + 1);
-                    setIsLightboxOpen(true);
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+          {/* Smaller thumbnail images - shown only on desktop when multiple images exist */}
+          {galleryImages.length > 1 && (
+            <div className="hidden md:grid md:col-span-4 grid-rows-2 gap-2">
+              {galleryImages.slice(1, Math.min(3, galleryImages.length)).map((img, idx) => (
+                <div key={idx} className="overflow-hidden rounded-xl">
+                  <img 
+                    src={img} 
+                    alt={`${hotel.name} - Thumbnail ${idx + 1}`} 
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => {
+                      setActiveImageIndex(idx + 1);
+                      setIsLightboxOpen(true);
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Image counter indicator - enhanced for mobile */}
-          <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full z-10 backdrop-blur-sm">
-            {activeImageIndex + 1} / {galleryImages.length}
-          </div>
+          {/* Image counter indicator - only show when multiple images */}
+          {galleryImages.length > 1 && (
+            <div className="absolute bottom-3 left-3 bg-black/70 text-white text-sm px-3 py-1 rounded-full z-10 backdrop-blur-sm">
+              {activeImageIndex + 1} / {galleryImages.length}
+            </div>
+          )}
           
-          {/* Mobile dot indicators */}
-          {isMobile && (
+          {/* Mobile dot indicators - only show when multiple images */}
+          {isMobile && galleryImages.length > 1 && (
             <div className="absolute bottom-3 left-0 right-0 flex justify-center z-10">
               <div className="mobile-gallery-dots">
                 {galleryImages.map((_, idx) => (
