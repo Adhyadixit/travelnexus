@@ -225,6 +225,15 @@ export default function HotelDetails() {
     select: (data) => data.filter(h => h.destinationId === hotel?.destinationId && h.id !== parseInt(id as string)),
     enabled: !!hotel?.destinationId,
   });
+  
+  // Fetch room types from database
+  const {
+    data: dbRoomTypes,
+    isLoading: isLoadingRoomTypes
+  } = useQuery<any[]>({
+    queryKey: [`/api/hotels/${id}/room-types`],
+    enabled: !!id
+  });
 
   // Reference to the booking form section for scrolling
   const bookingFormRef = useRef<HTMLDivElement>(null);
