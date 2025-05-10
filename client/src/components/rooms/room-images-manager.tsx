@@ -232,14 +232,12 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   };
 
   // Handle submitting a new room type
-  const handleAddRoomType = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddRoomType = () => {
     createRoomTypeMutation.mutate(newRoomType);
   };
 
   // Handle submitting a new image
-  const handleAddImage = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddImage = () => {
     if (!selectedRoomType) return;
     
     addImageMutation.mutate({
@@ -496,7 +494,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                         <CardDescription>Add an image for this room type</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <form onSubmit={handleAddImage} className="space-y-4">
+                        <div className="space-y-4">
                           <div className="space-y-2">
                             <Label htmlFor="imageUpload">Room Image</Label>
                             <DirectImageUpload
@@ -525,7 +523,6 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                                 placeholder="0"
                                 value={newImage.displayOrder}
                                 onChange={(e) => setNewImage({...newImage, displayOrder: parseInt(e.target.value)})}
-                                required
                               />
                             </div>
                           </div>
@@ -551,8 +548,9 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                               Cancel
                             </Button>
                             <Button 
-                              type="submit" 
-                              disabled={addImageMutation.isPending}
+                              type="button" 
+                              onClick={handleAddImage}
+                              disabled={addImageMutation.isPending || !newImage.imageUrl}
                             >
                               {addImageMutation.isPending ? (
                                 <>
@@ -564,7 +562,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                               )}
                             </Button>
                           </div>
-                        </form>
+                        </div>
                       </CardContent>
                     </Card>
                   )}
