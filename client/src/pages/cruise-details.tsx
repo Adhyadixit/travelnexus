@@ -104,25 +104,28 @@ export default function CruiseDetails() {
   
   // Handle booking
   const handleBookNow = () => {
+    // Always scroll to the booking form section
+    if (bookingFormRef.current) {
+      bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+      
+      // Add a visual indicator to help users see where to select dates
+      const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
+      if (datePickerEl) {
+        datePickerEl.classList.add('highlight-pulse');
+        setTimeout(() => {
+          datePickerEl.classList.remove('highlight-pulse');
+        }, 2000);
+      }
+      return;
+    }
+
+    // The code below will only run if scrolling fails for some reason
     if (!user) {
       setLocation(`/auth?redirect=/cruises/${id}`);
       return;
     }
 
     if (!startDate || !selectedCabinType) {
-      // Scroll to the booking form section when date or cabin is not selected
-      if (bookingFormRef.current) {
-        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
-        
-        // Add a visual indicator to help users see where to select dates
-        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
-        if (datePickerEl) {
-          datePickerEl.classList.add('highlight-pulse');
-          setTimeout(() => {
-            datePickerEl.classList.remove('highlight-pulse');
-          }, 2000);
-        }
-      }
       return;
     }
 
