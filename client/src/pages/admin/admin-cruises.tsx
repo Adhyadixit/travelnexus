@@ -1952,7 +1952,11 @@ export default function AdminCruises() {
           </DialogHeader>
           
           <Form {...editCabinTypeForm}>
-            <form onSubmit={editCabinTypeForm.handleSubmit(onEditCabinTypeSubmit)} className="space-y-6">
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              editCabinTypeForm.handleSubmit(onEditCabinTypeSubmit)(e);
+            }} className="space-y-6">
               <FormField
                 control={editCabinTypeForm.control}
                 name="name"
@@ -2061,7 +2065,9 @@ export default function AdminCruises() {
                 <Button 
                   type="button" 
                   variant="secondary"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     if (!selectedCruise?.id) {
                       console.error("No cruise selected");
                       toast({
