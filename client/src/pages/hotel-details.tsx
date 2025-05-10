@@ -999,21 +999,21 @@ export default function HotelDetails() {
                   </div>
 
                   <div className="date-picker-container">
-                    <label className="block text-sm font-medium mb-2">Check-in Date</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          {startDate ? (
-                            format(startDate, "PPP")
-                          ) : (
-                            <span>Select date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
+                      <label className="block text-sm font-medium mb-2">Check-in Date</label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className="w-full justify-start text-left font-normal text-neutral-800"
+                          >
+                            {startDate ? (
+                              format(startDate, "PPP")
+                            ) : (
+                              <span className="text-neutral-500">Select date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 text-neutral-800" align="start">
                         <Calendar
                           mode="single"
@@ -1075,35 +1075,35 @@ export default function HotelDetails() {
                   </div>
 
                   {nights > 0 && selectedRoom && (
-                    <div className="bg-neutral-50 p-4 rounded-lg space-y-2 mt-6">
-                      <div className="flex justify-between">
-                        <span>Room </span>
-                        <span>{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
+                    <div className="bg-neutral-50 p-5 rounded-lg space-y-3 mt-6 border border-gray-100">
+                      <div className="flex justify-between text-neutral-700">
+                        <span className="font-medium">Room Type</span>
+                        <span className="font-medium">{roomTypes.find((r: any) => r.id === selectedRoom)?.name}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} nights</span>
+                      <div className="flex justify-between text-neutral-700">
+                        <span>{formatCurrency(roomTypes.find((r: any) => r.id === selectedRoom)?.price || 0)} x {nights} night{nights > 1 ? 's' : ''}</span>
                         <span>{formatCurrency(totalPrice)}</span>
                       </div>
-                      <Separator className="my-2" />
-                      <div className="flex justify-between font-bold">
+                      <Separator className="my-3" />
+                      <div className="flex justify-between font-bold text-neutral-800">
                         <span>Total</span>
-                        <span>{formatCurrency(totalPrice)}</span>
+                        <span className="text-primary text-lg">{formatCurrency(totalPrice)}</span>
                       </div>
                     </div>
                   )}
 
                   <Button 
-                    className="w-full mt-4" 
+                    className="w-full mt-6 py-6 text-base" 
                     size="lg"
                     onClick={handleBookNow}
                     disabled={!startDate || !endDate || !selectedRoom}
                   >
-                    Book Now
+                    {selectedRoom && startDate && endDate ? 'Book Now' : 'Select Room & Dates'}
                   </Button>
 
                   {hotel.freeCancellation && (
-                    <div className="text-sm text-green-600 flex items-center justify-center mt-2">
-                      <Check className="w-4 h-4 mr-1" />
+                    <div className="text-sm text-green-600 flex items-center justify-center mt-3">
+                      <Check className="w-4 h-4 mr-2" />
                       <span>Free cancellation available</span>
                     </div>
                   )}
