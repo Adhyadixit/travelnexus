@@ -2091,6 +2091,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
       io.to(`conversation-${conversationId}`).emit('message-received', newMessage);
       console.log(`Socket event 'message-received' emitted to conversation-${conversationId}`);
       
+      // Send an automated AI response after a short delay if the message is from a user or guest
+      // Don't send auto-response to admin messages
+      if (senderType !== 'admin') {
+        setTimeout(async () => {
+          try {
+            console.log(`Generating auto-response for conversation ${conversationId}`);
+            // Generate an automated response based on the user's message
+            let aiResponse = "";
+            
+            // Format the WhatsApp link properly for better visibility
+            const whatsAppLink = "https://wa.me/+918062407920";
+            
+            // Check if this is the first message (need engagement welcome)
+            const messageCount = await storage.getMessageCountForConversation(parseInt(conversationId));
+            console.log(`Message count for conversation ${conversationId}: ${messageCount}`);
+            
+            if (messageCount <= 2) { // First user message + our first auto-response
+              aiResponse = `Thank you for contacting Travel Ease by Expedia! Please hold while we connect you with a travel specialist. One of our agents will be with you shortly.\n\n⚡ For immediate assistance, you can also reach us on WhatsApp: ${whatsAppLink}`;
+            } else {
+              // Choose an appropriate response based on message content
+              const lowercaseMessage = message.toLowerCase();
+              
+              if (lowercaseMessage.includes("book") || lowercaseMessage.includes("reservation") || lowercaseMessage.includes("booking")) {
+                aiResponse = `Thanks for your interest in booking with us! Our agents are currently assisting other customers. Please hold and an agent will help you complete your reservation shortly.\n\n⚡ For immediate booking assistance, please contact us on WhatsApp: ${whatsAppLink}`;
+              } 
+              else if (lowercaseMessage.includes("cancel") || lowercaseMessage.includes("refund")) {
+                aiResponse = `I understand you have a question about cancellations or refunds. Our customer service team will be with you shortly to address your concerns.\n\n⚡ For immediate assistance with your booking, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("price") || lowercaseMessage.includes("cost") || lowercaseMessage.includes("discount")) {
+                aiResponse = `Thank you for your inquiry about pricing. Our travel specialists will be with you shortly to provide you with detailed pricing information and any available discounts.\n\n⚡ For immediate pricing questions, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("package") || lowercaseMessage.includes("tour")) {
+                aiResponse = `Thank you for your interest in our travel packages! Our team will be with you shortly to help you find the perfect tour package for your needs.\n\n⚡ For immediate assistance with packages, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("hotel") || lowercaseMessage.includes("accommodation") || lowercaseMessage.includes("room")) {
+                aiResponse = `Thank you for your interest in our hotel accommodations! Our hotel specialists will be with you shortly to help you find the perfect stay.\n\n⚡ For immediate assistance with accommodations, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("cruise") || lowercaseMessage.includes("ship") || lowercaseMessage.includes("cabin")) {
+                aiResponse = `Thank you for your interest in our cruise offerings! Our cruise specialists will be with you shortly to help you find the perfect voyage.\n\n⚡ For immediate assistance with cruise bookings, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("payment") || lowercaseMessage.includes("pay") || lowercaseMessage.includes("card")) {
+                aiResponse = `Thank you for your inquiry about payment options. Our payment specialists will be with you shortly to assist with your transaction.\n\n⚡ For immediate assistance with payments, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else if (lowercaseMessage.includes("itinerary") || lowercaseMessage.includes("schedule") || lowercaseMessage.includes("plan")) {
+                aiResponse = `Thank you for your inquiry about travel itineraries. Our travel planners will be with you shortly to help you plan your perfect trip.\n\n⚡ For immediate itinerary assistance, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+              else {
+                aiResponse = `Thank you for your message. Our team is reviewing your inquiry and will respond shortly. We appreciate your patience.\n\n⚡ For immediate assistance, please contact us on WhatsApp: ${whatsAppLink}`;
+              }
+            }
+            
+            // Create an automatic response message from the system
+            const aiMessageData = {
+              conversationId: parseInt(conversationId),
+              senderId: 0, // System/AI sender ID
+              senderType: 'admin',
+              content: aiResponse,
+              messageType: 'text' as const,
+              fileUrl: null,
+            };
+            
+            const aiResponseMessage = await storage.createMessage(aiMessageData);
+            
+            // Mark the conversation as needing admin attention
+            await storage.updateConversation(parseInt(conversationId), {
+              status: 'open',
+              readByAdmin: false // This is valid in the schema
+            });
+            
+            // Emit the automated response to the client
+            io.to(`conversation-${conversationId}`).emit('message-received', aiResponseMessage);
+            
+            console.log(`Sent automated response for conversation ${conversationId}`);
+          } catch (error) {
+            console.error("Error sending automated response:", error);
+          }
+        }, 2000); // 2-second delay to make it seem more natural
+      }
+      
       res.status(201).json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
