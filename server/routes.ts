@@ -1237,6 +1237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversation = await storage.createConversation(conversationData);
       
       // Create the first message if provided
+      let message = null;
       if (req.body.message) {
         // Determine the sender ID and type
         let senderId = 0;
@@ -1259,7 +1260,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           fileUrl: null,
         };
         
-        await storage.createMessage(messageData);
+        message = await storage.createMessage(messageData);
+      }
+      
+      // Emit socket event for new conversation - broadcast to all connected clients
+      io.emit('new-conversation', {
+        id: conversation.id,
+        subject: conversation.subject,
+        createdAt: conversation.createdAt
+      });
+      console.log(`Emitted new-conversation event for conversation ${conversation.id}`);
+      
+      // If there's a first message, also emit the new message event
+      if (message) {
+        io.to(`conversation-${conversation.id}`).emit('message-received', message);
       }
       
       res.status(201).json(conversation);

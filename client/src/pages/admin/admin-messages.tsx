@@ -138,17 +138,23 @@ export default function AdminMessages() {
     });
     
     // Subscribe to new conversation events
-    subscribeToNewConversations((conversationId) => {
-      console.log("New conversation created via socket:", conversationId);
+    subscribeToNewConversations((conversationData) => {
+      console.log("New conversation created via socket:", conversationData);
       
       // Play notification sound for new conversation
       const audio = new Audio('/notification.mp3');
       audio.play().catch(err => console.log('Audio play failed:', err));
       
-      // Show a toast notification
+      // Check if the conversation data is an object with id or just an id
+      const conversationId = typeof conversationData === 'object' ? conversationData.id : conversationData;
+      const conversationSubject = typeof conversationData === 'object' && conversationData.subject 
+        ? conversationData.subject 
+        : "New conversation";
+      
+      // Show a detailed toast notification
       toast({
         title: "New Conversation",
-        description: "A new conversation has been started. Refreshing your conversations list.",
+        description: `${conversationSubject} - A new conversation has been started. Refreshing your conversations list.`,
         variant: "default",
       });
       
