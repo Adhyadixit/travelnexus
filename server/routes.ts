@@ -1900,6 +1900,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Emit socket event for real-time updates
       io.to(`conversation-${conversationIdNum}`).emit('message-received', newMessage);
       
+      // Send an automated AI response after a short delay
+      setTimeout(async () => {
+        try {
+          // Generate an automated response based on the user's message
+          let aiResponse = "";
+          
+          // Check if this is the first message (need engagement welcome)
+          const messageCount = await storage.getMessageCountForConversation(conversationIdNum);
+          
+          if (messageCount <= 2) { // First user message + our first auto-response
+            aiResponse = "Thank you for contacting Travel Ease by Expedia! Please hold while we connect you with a travel specialist. One of our agents will be with you shortly.\n\nFor immediate assistance, you can also reach us on WhatsApp at: wa.me/+918062407920";
+          } else {
+            // Choose an appropriate response based on message content
+            const lowercaseMessage = message.toLowerCase();
+            
+            if (lowercaseMessage.includes("book") || lowercaseMessage.includes("reservation") || lowercaseMessage.includes("booking")) {
+              aiResponse = "Thanks for your interest in booking with us! Our agents are currently assisting other customers. Please hold and an agent will help you complete your reservation shortly.\n\nFor immediate booking assistance, please contact us on WhatsApp: wa.me/+918062407920";
+            } 
+            else if (lowercaseMessage.includes("cancel") || lowercaseMessage.includes("refund")) {
+              aiResponse = "I understand you have a question about cancellations or refunds. Our customer service team will be with you shortly to address your concerns.\n\nFor immediate assistance with your booking, please contact us on WhatsApp: wa.me/+918062407920";
+            }
+            else if (lowercaseMessage.includes("price") || lowercaseMessage.includes("cost") || lowercaseMessage.includes("discount")) {
+              aiResponse = "Thank you for your inquiry about pricing. Our travel specialists will be with you shortly to provide you with detailed pricing information and any available discounts.\n\nFor immediate pricing questions, please contact us on WhatsApp: wa.me/+918062407920";
+            }
+            else if (lowercaseMessage.includes("package") || lowercaseMessage.includes("tour")) {
+              aiResponse = "Thank you for your interest in our travel packages! Our team will be with you shortly to help you find the perfect tour package for your needs.\n\nFor immediate assistance with packages, please contact us on WhatsApp: wa.me/+918062407920";
+            }
+            else if (lowercaseMessage.includes("hotel") || lowercaseMessage.includes("accommodation") || lowercaseMessage.includes("room")) {
+              aiResponse = "Thank you for your interest in our hotel accommodations! Our hotel specialists will be with you shortly to help you find the perfect stay.\n\nFor immediate assistance with accommodations, please contact us on WhatsApp: wa.me/+918062407920";
+            }
+            else {
+              aiResponse = "Thank you for your message. Our team is reviewing your inquiry and will respond shortly. We appreciate your patience.\n\nFor immediate assistance, please contact us on WhatsApp: wa.me/+918062407920";
+            }
+          }
+          
+          // Create an automatic response message from the system
+          const aiMessageData = {
+            conversationId: conversationIdNum,
+            senderId: 0, // System/AI sender ID
+            senderType: 'admin',
+            content: aiResponse,
+            messageType: 'text' as const,
+            fileUrl: null,
+          };
+          
+          const aiResponseMessage = await storage.createMessage(aiMessageData);
+          
+          // Mark the conversation as needing admin attention
+          await storage.updateConversation(conversationIdNum, {
+            status: 'open',
+            readByAdmin: false
+          });
+          
+          // Emit the automated response to the client
+          io.to(`conversation-${conversationIdNum}`).emit('message-received', aiResponseMessage);
+          
+          console.log(`Sent automated response for conversation ${conversationIdNum}`);
+        } catch (error) {
+          console.error("Error sending automated response:", error);
+        }
+      }, 2000); // 2-second delay to make it seem more natural
+      
       res.status(201).json(newMessage);
     } catch (error) {
       console.error("Error sending guest message:", error);
