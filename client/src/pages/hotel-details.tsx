@@ -31,6 +31,7 @@ import {
   Heart, 
   HomeIcon, 
   Info, 
+  Loader2,
   MapIcon, 
   MapPin, 
   MapPinIcon, 
@@ -723,82 +724,92 @@ export default function HotelDetails() {
             <section id="booking-section" className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
 
-              <div className="space-y-6">
-                {roomTypes.map((room: HotelRoomType) => (
-                  <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-4">
-                      <div className="md:col-span-1">
-                        <img 
-                          src={hotel?.imageUrl} 
-                          alt={room.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-4 md:col-span-3">
-                        <div className="flex justify-between">
-                          <h3 className="text-xl font-heading font-bold">{room.name}</h3>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
-                            <div className="text-sm text-neutral-500">per night</div>
-                          </div>
+              {isRoomTypesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : roomTypes.length === 0 ? (
+                <div className="p-8 text-center border border-dashed rounded-lg">
+                  <p className="text-neutral-600">No room types are currently available for this hotel. Please check back later or contact customer service for assistance.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {roomTypes.map((room: HotelRoomType) => (
+                    <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
+                      <div className="grid grid-cols-1 md:grid-cols-4">
+                        <div className="md:col-span-1">
+                          <img 
+                            src={hotel?.imageUrl} 
+                            alt={room.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-
-                        <p className="text-neutral-600 my-2">{room.description}</p>
-
-                        <div className="flex items-center text-neutral-600 mb-2">
-                          <User className="w-4 h-4 mr-1" />
-                          <span>Up to {room.capacity} guests</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 my-3">
-                          {room.amenities.map((amenity: string, index: number) => (
-                            <div key={index} className="flex items-center text-sm">
-                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
-                              <span className="ml-1">{amenity}</span>
+                        <div className="p-4 md:col-span-3">
+                          <div className="flex justify-between">
+                            <h3 className="text-xl font-heading font-bold">{room.name}</h3>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
+                              <div className="text-sm text-neutral-500">per night</div>
                             </div>
-                          ))}
-                        </div>
-
-                        {room.cancellation && (
-                          <div className="text-sm text-green-600 flex items-center mb-4">
-                            <Check className="w-4 h-4 mr-1" />
-                            <span>{room.cancellation}</span>
                           </div>
-                        )}
 
-                        <div className="mt-4 flex justify-end">
-                          <Button 
-                            variant={selectedRoom === room.id ? "default" : "outline"}
-                            onClick={() => {
-                              setSelectedRoom(room.id);
-                              // If room is selected, scroll to the booking form for date selection
-                              if (bookingFormRef.current) {
-                                setTimeout(() => {
-                                  const formRef = bookingFormRef.current;
-                                  formRef?.scrollIntoView({ behavior: 'smooth' });
-                                  
-                                  // Highlight date picker to guide user to next step
-                                  if (!startDate && formRef) {
-                                    const datePickerContainer = formRef.querySelector('.date-picker-container');
-                                    if (datePickerContainer) {
-                                      datePickerContainer.classList.add('highlight-pulse');
-                                      setTimeout(() => {
-                                        datePickerContainer.classList.remove('highlight-pulse');
-                                      }, 2000);
+                          <p className="text-neutral-600 my-2">{room.description}</p>
+
+                          <div className="flex items-center text-neutral-600 mb-2">
+                            <User className="w-4 h-4 mr-1" />
+                            <span>Up to {room.capacity} guests</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 my-3">
+                            {room.amenities && parseAmenities(room.amenities).map((amenity: string, index: number) => (
+                              <div key={index} className="flex items-center text-sm">
+                                {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
+                                <span className="ml-1">{amenity}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {room.cancellationPolicy && (
+                            <div className="text-sm text-green-600 flex items-center mb-4">
+                              <Check className="w-4 h-4 mr-1" />
+                              <span>{room.cancellationPolicy}</span>
+                            </div>
+                          )}
+
+                          <div className="mt-4 flex justify-end">
+                            <Button 
+                              variant={selectedRoom === room.id ? "default" : "outline"}
+                              onClick={() => {
+                                setSelectedRoom(room.id);
+                                // If room is selected, scroll to the booking form for date selection
+                                if (bookingFormRef.current) {
+                                  setTimeout(() => {
+                                    const formRef = bookingFormRef.current;
+                                    formRef?.scrollIntoView({ behavior: 'smooth' });
+                                    
+                                    // Highlight date picker to guide user to next step
+                                    if (!startDate && formRef) {
+                                      const datePickerContainer = formRef.querySelector('.date-picker-container');
+                                      if (datePickerContainer) {
+                                        datePickerContainer.classList.add('highlight-pulse');
+                                        setTimeout(() => {
+                                          datePickerContainer.classList.remove('highlight-pulse');
+                                        }, 2000);
+                                      }
                                     }
-                                  }
-                                }, 100);
-                              }
-                            }}
-                          >
-                            {selectedRoom === room.id ? "Selected" : "Select Room"}
-                          </Button>
+                                  }, 100);
+                                }
+                              }}
+                            >
+                              {selectedRoom === room.id ? "Selected" : "Select Room"}
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </section>
 
             {/* Amenities Section */}
