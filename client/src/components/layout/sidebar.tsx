@@ -72,7 +72,7 @@ export default function Sidebar({ className }: SidebarProps) {
             collapsed ? "opacity-0 w-0" : "opacity-100"
           )}
         >
-          TravelEase<span className="text-secondary">.</span>
+          Travel Ease by Expedia<span className="text-secondary">.</span>
         </h1>
         <Button
           variant="ghost"

@@ -85,7 +85,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow z-10 md:hidden">
           <div className="px-4 py-3 flex justify-between items-center">
-            <h1 className="text-lg font-bold text-primary">TravelEase Admin</h1>
+            <h1 className="text-lg font-bold text-primary">Travel Ease by Expedia Admin</h1>
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="h-5 w-5" />
             </Button>

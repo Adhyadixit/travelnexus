@@ -39,7 +39,7 @@ export default function Header() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
           <Link href="/" className="text-2xl font-bold text-primary">
-            TravelEase<span className="text-secondary">.</span>
+            Travel Ease by Expedia<span className="text-secondary">.</span>
           </Link>
         </div>
         
@@ -125,7 +125,7 @@ export default function Header() {
       <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-4 flex justify-between items-center border-b">
           <Link href="/" className="text-2xl font-bold text-primary">
-            TravelEase<span className="text-secondary">.</span>
+            Travel Ease by Expedia<span className="text-secondary">.</span>
           </Link>
           <button onClick={toggleMobileMenu} className="p-2">
             <X size={24} />

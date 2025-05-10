@@ -78,9 +78,9 @@ export default function AdminSidebar() {
       <div className="p-6 border-b">
         <Link href="/admin/dashboard" className="flex items-center gap-2">
           <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-primary">
-            <span className="text-lg font-bold text-white">T</span>
+            <span className="text-lg font-bold text-white">TE</span>
           </div>
-          <span className="font-heading font-bold text-xl">TravelEase</span>
+          <span className="font-heading font-bold text-xl">Travel Ease by Expedia</span>
         </Link>
       </div>
       <ScrollArea className="flex-1 py-4">
