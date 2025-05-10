@@ -1064,8 +1064,8 @@ export default function PackageDetails() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-heading font-bold mb-4">Book This Package</h2>
                 
-                <div className="space-y-4">
-                  <div>
+                <div className="space-y-4" ref={bookingFormRef}>
+                  <div className="date-picker-container">
                     <label className="block text-sm font-medium mb-2">Start Date</label>
                     <Popover>
                       <PopoverTrigger asChild>
