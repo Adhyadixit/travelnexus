@@ -97,7 +97,18 @@ export default function CruiseDetails() {
   
   // Handle booking
   const handleBookNow = () => {
-    // Always scroll to the booking form section
+    // First check if we have all the required data to proceed to checkout
+    if (startDate && selectedCabinType) {
+      // Calculate end date based on cruise duration
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + (cruise?.duration || 0));
+      
+      // Redirect to checkout page
+      setLocation(`/checkout/cruise/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&cabinType=${selectedCabinType}`);
+      return;
+    }
+    
+    // If we're missing data, scroll to the booking form
     if (bookingFormRef.current) {
       bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
       
@@ -112,21 +123,11 @@ export default function CruiseDetails() {
       return;
     }
 
-    // The code below will only run if scrolling fails for some reason
+    // If user is not logged in, redirect to auth
     if (!user) {
       setLocation(`/auth?redirect=/cruises/${id}`);
       return;
     }
-
-    if (!startDate || !selectedCabinType) {
-      return;
-    }
-
-    // Calculate end date based on cruise duration
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + (cruise?.duration || 0));
-
-    setLocation(`/checkout/cruise/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&cabinType=${selectedCabinType}`);
   };
 
   // Parse itinerary
