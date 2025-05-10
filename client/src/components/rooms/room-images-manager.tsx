@@ -61,7 +61,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
     isLoading: roomImagesLoading,
     error: roomImagesError,
   } = useQuery<HotelRoomImage[]>({
-    queryKey: [`/api/room-types/${selectedRoomType}/images`],
+    queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`],
     enabled: !!selectedRoomType,
   });
 
@@ -113,7 +113,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
   // Delete a room type
   const deleteRoomTypeMutation = useMutation({
     mutationFn: async (roomTypeId: number) => {
-      await apiRequest("DELETE", `/api/room-types/${roomTypeId}`);
+      await apiRequest("DELETE", `/api/hotel-room-types/${roomTypeId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/hotels/${hotelId}/room-types`] });
@@ -139,7 +139,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
       setIsAddingImage(false);
       setNewImage({
         imageUrl: "",
@@ -167,7 +167,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       await apiRequest("DELETE", `/api/room-images/${imageId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
       toast({
         title: "Image deleted",
         description: "The image has been deleted successfully.",
@@ -189,7 +189,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/room-types/${selectedRoomType}/images`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/hotel-room-types/${selectedRoomType}/images`] });
       toast({
         title: "Image updated",
         description: "The image has been updated successfully.",
