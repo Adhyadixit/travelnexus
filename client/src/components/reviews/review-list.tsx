@@ -57,10 +57,16 @@ export function ReviewList({ itemType, itemId }: ReviewListProps) {
     
     // For each review from an admin user, assign a random name
     reviews.forEach(review => {
-      if (review.user.role === 'admin') {
+      console.log("Review user role:", review.user.role, "User:", review.user.firstName, review.user.lastName, "ID:", review.id);
+      
+      // Assign a random name for all reviews by users with admin role or "Admin" in their name
+      if (review.user.role === 'admin' || 
+          review.user.firstName?.includes('Admin') || 
+          review.user.lastName?.includes('Admin')) {
         // Use the review ID as the seed for consistency
         const nameIndex = review.id % TRAVELER_NAMES.length;
         mapping[review.id] = TRAVELER_NAMES[nameIndex];
+        console.log(`Assigned random name to review ${review.id}:`, mapping[review.id]);
       }
     });
     
