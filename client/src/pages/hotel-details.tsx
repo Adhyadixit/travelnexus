@@ -1003,7 +1003,7 @@ export default function HotelDetails() {
                       <RoomImageCarousel
                         roomId={selectedRoom}
                         roomName={dbRoomTypes.find((r: any) => r.id === selectedRoom)?.name || "Room"}
-                        images={[]} {/* We'll fetch images directly in the carousel component */}
+                        images={[]}
                         fallbackImage={hotel?.imageUrl}
                       />
                     </div>
