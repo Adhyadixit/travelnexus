@@ -651,38 +651,74 @@ export default function PackageDetails() {
                           </div>
                         )}
                         
-                        {dayContent.activities && (
+                        {/* Display regular activities */}
+                        {dayContent.activities && Array.isArray(dayContent.activities) && dayContent.activities.length > 0 && (
                           <div className="mb-3">
                             <div className="flex items-center text-neutral-800 font-medium mb-1">
                               <Sparkles className="w-4 h-4 mr-2" />
                               Activities
                             </div>
                             <ul className="text-neutral-600 ml-6 space-y-1">
-                              {dayContent.activities.map((activity: string, idx: number) => (
-                                <li key={idx} className="flex items-start">
-                                  <span className="text-primary mr-2">•</span>
-                                  <span>{activity}</span>
-                                </li>
+                              {dayContent.activities
+                                .filter((activity: any) => typeof activity === 'string' || !activity.isOptional)
+                                .map((activity: any, idx: number) => (
+                                  <li key={idx} className="flex items-start">
+                                    <span className="text-primary mr-2">•</span>
+                                    <div>
+                                      <span>{typeof activity === 'string' ? activity : activity.name}</span>
+                                      {typeof activity !== 'string' && activity.description && (
+                                        <p className="text-sm text-neutral-500 mt-1">{activity.description}</p>
+                                      )}
+                                    </div>
+                                  </li>
                               ))}
                             </ul>
                           </div>
                         )}
                         
-                        {dayContent.optionalActivities && (
+                        {/* Display optional activities - both from the new format and old format */}
+                        {(
+                          (dayContent.activities && Array.isArray(dayContent.activities) && 
+                           dayContent.activities.some((a: any) => typeof a !== 'string' && a.isOptional)) || 
+                          dayContent.optionalActivities
+                        ) && (
                           <div>
                             <div className="flex items-center text-neutral-800 font-medium mb-1">
                               <Plus className="w-4 h-4 mr-2" />
                               Optional Add-ons
                             </div>
                             <ul className="text-neutral-600 ml-6 space-y-1">
-                              {dayContent.optionalActivities.map((activity: any, idx: number) => (
-                                <li key={idx} className="flex items-center justify-between">
-                                  <div className="flex items-start">
-                                    <span className="text-secondary mr-2">•</span>
-                                    <span>{activity.name}</span>
-                                  </div>
-                                  <span className="font-medium">{formatCurrency(activity.price)}</span>
-                                </li>
+                              {/* Display optional activities from the new format */}
+                              {dayContent.activities && Array.isArray(dayContent.activities) && 
+                                dayContent.activities
+                                  .filter((activity: any) => typeof activity !== 'string' && activity.isOptional)
+                                  .map((activity: any, idx: number) => (
+                                    <li key={`new-${idx}`} className="flex items-center justify-between">
+                                      <div className="flex items-start">
+                                        <span className="text-secondary mr-2">•</span>
+                                        <div>
+                                          <span>{activity.name}</span>
+                                          {activity.description && (
+                                            <p className="text-sm text-neutral-500 mt-1">{activity.description}</p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      {activity.price !== undefined && (
+                                        <span className="font-medium">{formatCurrency(activity.price)}</span>
+                                      )}
+                                    </li>
+                                ))}
+                              
+                              {/* Display optional activities from the old format */}
+                              {dayContent.optionalActivities && Array.isArray(dayContent.optionalActivities) &&
+                                dayContent.optionalActivities.map((activity: any, idx: number) => (
+                                  <li key={`old-${idx}`} className="flex items-center justify-between">
+                                    <div className="flex items-start">
+                                      <span className="text-secondary mr-2">•</span>
+                                      <span>{activity.name}</span>
+                                    </div>
+                                    <span className="font-medium">{formatCurrency(activity.price)}</span>
+                                  </li>
                               ))}
                             </ul>
                           </div>

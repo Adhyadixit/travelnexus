@@ -115,7 +115,7 @@ export function parseAmenities(amenitiesData: string | null | undefined): string
             return [];
           }
           // Otherwise try to convert object values to array
-          return Object.values(parsed);
+          return Object.values(parsed).map(item => String(item));
         }
         // If it's not an object or array, return empty array
         return [];
@@ -138,18 +138,63 @@ export function parseAmenities(amenitiesData: string | null | undefined): string
   }
 }
 
+// Type definitions for itinerary data
+export interface ItineraryDayActivity {
+  id: string;
+  name: string;
+  description?: string;
+  isOptional?: boolean;
+  price?: number;
+}
+
+export interface ItineraryDayContent {
+  title: string;
+  description?: string;
+  hotel?: string;
+  location?: string;
+  meals?: {
+    breakfast: boolean;
+    lunch: boolean;
+    dinner: boolean;
+  };
+  activities?: ItineraryDayActivity[];
+}
+
+export interface ItineraryData {
+  [key: string]: ItineraryDayContent;
+}
+
 // Parse itinerary from JSON string
-export function parseItinerary(itineraryJson: string | null | undefined): Record<string, string> {
+export function parseItinerary(itineraryJson: string | null | undefined): ItineraryData {
   if (!itineraryJson) return {};
   
   try {
     const parsed = JSON.parse(itineraryJson);
     
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      console.warn("Itinerary is not a proper object:", parsed);
       return {};
     }
     
-    return parsed;
+    // Validate and transform the structure if needed
+    const result: ItineraryData = {};
+    
+    // Loop through each day and ensure it has the required structure
+    Object.entries(parsed).forEach(([dayKey, dayContent]) => {
+      if (typeof dayContent === 'object' && dayContent !== null) {
+        // It's already an object with our expected structure
+        result[dayKey] = dayContent as ItineraryDayContent;
+      } else if (typeof dayContent === 'string') {
+        // It's a simple string, convert it to our new format
+        result[dayKey] = {
+          title: dayContent,
+          description: '',
+          activities: []
+        };
+      }
+    });
+    
+    return result;
   } catch (e) {
     console.error("Error parsing itinerary:", e);
     return {};
