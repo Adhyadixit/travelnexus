@@ -41,12 +41,7 @@ const checkoutFormSchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),
-  zipCode: z.string().min(5, "Zip code is required"),
-  // Payment information
-  cardName: z.string().min(1, "Card holder name is required"),
-  cardNumber: z.string().min(16, "Card number must be 16 digits").max(16),
-  cardExpiry: z.string().min(5, "Expiry date is required in MM/YY format"),
-  cardCVC: z.string().min(3, "CVC must be 3 digits").max(3),
+  zipCode: z.string().min(5, "Zip code is required")
 }).refine((data) => {
   if (data.endDate) {
     return data.endDate > data.startDate;
