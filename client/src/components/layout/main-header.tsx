@@ -30,7 +30,7 @@ export default function MainHeader() {
         <div className="flex items-center">
           <Link href="/">
             <a className="text-2xl font-heading font-bold text-primary">
-              TravelEase<span className="text-secondary">.</span>
+              Travel Ease by Expedia<span className="text-secondary">.</span>
             </a>
           </Link>
         </div>
@@ -59,10 +59,10 @@ export default function MainHeader() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="hover:bg-transparent flex items-center gap-2">
                   <AvatarWithStatus 
-                    fallback={`${user.firstName.charAt(0)}${user.lastName.charAt(0)}`} 
+                    fallback={`${user.firstName?.charAt(0) || ''}${user.lastName?.charAt(0) || ''}`} 
                     size="sm"
                   />
-                  <span className="font-medium">{user.firstName}</span>
+                  <span className="font-medium">{user.firstName || user.username}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -78,7 +78,7 @@ export default function MainHeader() {
                     <a className="w-full cursor-pointer">My Bookings</a>
                   </Link>
                 </DropdownMenuItem>
-                {user.isAdmin && (
+                {user.role === 'admin' && (
                   <DropdownMenuItem asChild>
                     <Link href="/admin/dashboard">
                       <a className="w-full cursor-pointer">Admin Dashboard</a>

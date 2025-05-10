@@ -30,7 +30,7 @@ export default function Footer({ className = "" }: FooterProps) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-heading font-semibold mb-4">
-              TravelEase<span className="text-secondary">.</span>
+              Travel Ease by Expedia<span className="text-secondary">.</span>
             </h3>
             <p className="text-neutral-300 mb-4">
               Your trusted partner for international travel experiences. We make your travel dreams a reality.
@@ -104,18 +104,18 @@ export default function Footer({ className = "" }: FooterProps) {
         
         <div className="border-t border-neutral-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-neutral-400 text-sm mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} TravelEase. All rights reserved.
+            &copy; {new Date().getFullYear()} Travel Ease by Expedia. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <a href="#" className="text-neutral-400 text-sm hover:text-white transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-neutral-400 text-sm hover:text-white transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="text-neutral-400 text-sm hover:text-white transition-colors">
-              Cookie Policy
-            </a>
+            <Link href="/privacy-policy" className="text-neutral-400 text-sm hover:text-white transition-colors">
+              <a>Privacy Policy</a>
+            </Link>
+            <Link href="/terms-of-service" className="text-neutral-400 text-sm hover:text-white transition-colors">
+              <a>Terms of Service</a>
+            </Link>
+            <Link href="/cookie-policy" className="text-neutral-400 text-sm hover:text-white transition-colors">
+              <a>Cookie Policy</a>
+            </Link>
           </div>
         </div>
       </div>
