@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useMediaQuery } from "@/hooks/use-mobile"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -56,9 +57,22 @@ const Carousel = React.forwardRef<
     },
     ref
   ) => {
+    const isMobile = useMediaQuery("(max-width: 768px)");
+    
+    // Enhanced options for mobile devices
+    const mobileOptions: EmblaOptionsType = {
+      dragFree: true,
+      containScroll: "trimSnaps",
+      loop: true,
+      draggable: true,
+      speed: 10,
+      ...opts,
+    };
+    
     const [carouselRef, api] = useEmblaCarousel(
       {
         ...opts,
+        ...(isMobile ? mobileOptions : {}),
         axis: orientation === "horizontal" ? "x" : "y",
       },
       plugins
