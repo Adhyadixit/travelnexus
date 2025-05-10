@@ -88,8 +88,8 @@ export default function AdminCruises() {
       name: "",
       description: "",
       price: 0,
-      maxOccupancy: 1,
-      imageUrl: "",
+      capacity: 2,
+      image: "",
       features: "[]"
     }
   });
@@ -102,8 +102,8 @@ export default function AdminCruises() {
       name: "",
       description: "",
       price: 0,
-      maxOccupancy: 1,
-      imageUrl: "",
+      capacity: 2,
+      image: "",
       features: "[]"
     }
   });
@@ -116,9 +116,12 @@ export default function AdminCruises() {
         name: editingCabinType.name,
         description: editingCabinType.description || "",
         price: editingCabinType.price,
-        maxOccupancy: editingCabinType.maxOccupancy || 2,
-        imageUrl: editingCabinType.imageUrl || "",
-        features: editingCabinType.features || "[]"
+        capacity: editingCabinType.capacity || 2,
+        image: editingCabinType.image || "",
+        features: editingCabinType.features || "[]",
+        featured: editingCabinType.featured || false,
+        availability: editingCabinType.availability || 10,
+        active: editingCabinType.active || true
       });
     }
   }, [editingCabinType]);
@@ -1804,7 +1807,7 @@ export default function AdminCruises() {
                 
                 <FormField
                   control={addCabinTypeForm.control}
-                  name="maxOccupancy"
+                  name="capacity"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Max Occupancy</FormLabel>
@@ -1874,9 +1877,33 @@ export default function AdminCruises() {
                 )}
               />
               
-              <DialogFooter>
+              <DialogFooter className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={() => setIsAddCabinTypeOpen(false)}>
                   Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="secondary"
+                  onClick={() => {
+                    if (selectedCruise) {
+                      const values = addCabinTypeForm.getValues();
+                      addCabinTypeMutation.mutate({
+                        cruiseId: selectedCruise.id,
+                        name: values.name,
+                        description: values.description,
+                        price: values.price,
+                        capacity: values.capacity ?? 2,
+                        features: values.features,
+                        image: values.image,
+                        featured: values.featured ?? false,
+                        availability: values.availability ?? 10,
+                        active: values.active ?? true
+                      });
+                    }
+                  }}
+                  disabled={addCabinTypeMutation.isPending}
+                >
+                  {addCabinTypeMutation.isPending ? "Saving..." : "Save (Manual)"}
                 </Button>
                 <Button type="submit" disabled={addCabinTypeMutation.isPending}>
                   {addCabinTypeMutation.isPending ? "Adding..." : "Add Cabin Type"}
@@ -1930,7 +1957,7 @@ export default function AdminCruises() {
                 
                 <FormField
                   control={editCabinTypeForm.control}
-                  name="maxOccupancy"
+                  name="capacity"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Max Occupancy</FormLabel>
@@ -2000,9 +2027,34 @@ export default function AdminCruises() {
                 )}
               />
               
-              <DialogFooter>
+              <DialogFooter className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={() => setEditingCabinType(null)}>
                   Cancel
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="secondary"
+                  onClick={() => {
+                    if (editingCabinType && selectedCruise) {
+                      const values = editCabinTypeForm.getValues();
+                      updateCabinTypeMutation.mutate({
+                        id: editingCabinType.id,
+                        cruiseId: selectedCruise.id,
+                        name: values.name,
+                        description: values.description,
+                        price: values.price,
+                        capacity: values.capacity ?? 2,
+                        features: values.features,
+                        image: values.image,
+                        featured: values.featured ?? false,
+                        availability: values.availability ?? 10,
+                        active: values.active ?? true
+                      });
+                    }
+                  }}
+                  disabled={updateCabinTypeMutation.isPending}
+                >
+                  {updateCabinTypeMutation.isPending ? "Saving..." : "Save (Manual)"}
                 </Button>
                 <Button type="submit" disabled={updateCabinTypeMutation.isPending}>
                   {updateCabinTypeMutation.isPending ? "Updating..." : "Update Cabin Type"}
