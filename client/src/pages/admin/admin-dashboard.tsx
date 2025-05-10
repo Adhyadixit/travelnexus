@@ -25,10 +25,10 @@ export default function AdminDashboard() {
   return (
     <div className="flex h-screen bg-background">
       <Helmet>
-        <title>Admin Dashboard | TravelEase</title>
-        <meta name="description" content="TravelEase administrative dashboard for managing travel bookings, packages, and analytics." />
-        <meta property="og:title" content="Admin Dashboard | TravelEase" />
-        <meta property="og:description" content="Comprehensive administration panel for TravelEase travel platform." />
+        <title>Admin Dashboard | Travel Ease by Expedia</title>
+        <meta name="description" content="Travel Ease by Expedia administrative dashboard for managing travel bookings, packages, and analytics." />
+        <meta property="og:title" content="Admin Dashboard | Travel Ease by Expedia" />
+        <meta property="og:description" content="Comprehensive administration panel for Travel Ease by Expedia travel platform." />
       </Helmet>
       
       <AdminSidebar />
