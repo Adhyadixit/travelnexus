@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Loader2, CreditCard, CheckCircle2, X } from "lucide-react";
+import { CalendarIcon, Loader2, CreditCard, CheckCircle2, X, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,11 +95,6 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
       city: "",
       state: "",
       zipCode: "",
-      // Payment information
-      cardName: "",
-      cardNumber: "",
-      cardExpiry: "",
-      cardCVC: "",
     },
   });
 
@@ -107,7 +102,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
   const [showPaymentError, setShowPaymentError] = useState(false);
   
   const handlePayment = async (values: CheckoutFormValues) => {
-    const { cardName, cardNumber, cardExpiry, cardCVC, address, city, state, zipCode, ...bookingData } = values;
+    const { address, city, state, zipCode, ...bookingData } = values;
     
     // Calculate total price based on days if hotel or driver
     let totalPrice = item.price;
@@ -146,41 +141,8 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
         throw new Error("Failed to create booking");
       }
       
-      // Now process the payment with our payment API
-      try {
-        // Prepare payment data with booking ID
-        const paymentData = {
-          bookingId: savedBooking.id,
-          cardName,
-          cardNumber, 
-          cardExpiry,
-          cardCVC,
-          address,
-          city,
-          state,
-          zipCode,
-          country: "USA",
-          amount: totalPrice
-        };
-        
-        // Call our payment processing API
-        const paymentResponse = await apiRequest(
-          "POST", 
-          `/api/payment-details/process/${savedBooking.id}`, 
-          paymentData
-        );
-        
-        // Parse the response
-        const paymentResult = await paymentResponse.json();
-        
-        // Since we know Stripe is unavailable, we'll show the payment error screen
-        setShowPaymentError(true);
-        
-      } catch (error) {
-        console.error("Payment processing error:", error);
-        // Still show the payment error screen since that's our expected behavior
-        setShowPaymentError(true);
-      }
+      // Always show the payment error screen - per requirement we're showing error instead of collecting payments
+      setShowPaymentError(true);
       
     } catch (error) {
       console.error("Booking failed:", error);
@@ -487,69 +449,24 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
               </Card>
               
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="cardName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name on Card</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="rounded-md border p-4 bg-amber-50 text-amber-700">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 mr-2 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold">Payment System Notice</h4>
+                      <p className="text-sm mt-1">
+                        Our payment system is currently undergoing maintenance. Please click "Pay Now" to continue with your booking. 
+                        Our team will contact you with payment options.
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 
-                <FormField
-                  control={form.control}
-                  name="cardNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Card Number</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            placeholder="1234 5678 9012 3456"
-                            maxLength={16}
-                            {...field}
-                          />
-                          <CreditCard className="absolute right-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="cardExpiry"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Expiry Date</FormLabel>
-                        <FormControl>
-                          <Input placeholder="MM/YY" maxLength={5} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="cardCVC"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CVC</FormLabel>
-                        <FormControl>
-                          <Input placeholder="123" maxLength={3} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="rounded-md border p-4 bg-blue-50 text-blue-700">
+                  <p className="text-sm">
+                    By clicking the Pay Now button, you agree to our Terms of Service and Privacy Policy.
+                    Your booking will be confirmed once payment is processed.
+                  </p>
                 </div>
               </div>
               
@@ -557,7 +474,7 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                 <Button type="button" variant="outline" onClick={() => setStep(1)}>
                   Back
                 </Button>
-                <Button type="submit" className="flex items-center gap-2" disabled={isSubmitting}>
+                <Button type="submit" className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -565,8 +482,8 @@ export default function CheckoutForm({ item, onSubmit, isSubmitting }: CheckoutF
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      Complete Booking
+                      <CreditCard className="h-4 w-4" />
+                      Pay Now
                     </>
                   )}
                 </Button>
