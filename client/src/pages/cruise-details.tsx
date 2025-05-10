@@ -161,17 +161,8 @@ export default function CruiseDetails() {
 
   const itinerary = getItinerary();
 
-  // Fetch cabin types from API
-  const { 
-    data: cabinTypesData = [],
-    isLoading: isLoadingCabinTypes
-  } = useQuery<CruiseCabinType[]>({
-    queryKey: [`/api/cruises/${id}/cabin-types`],
-    enabled: !!id,
-  });
-  
-  // Helper function to safely parse JSON
-  const safelyParseJSON = (jsonString: string | null | undefined): any[] => {
+  // Helper function to safely parse JSON string
+  const safelyParseJSON = (jsonString: string | null | undefined): string[] => {
     if (!jsonString) return [];
     try {
       return JSON.parse(jsonString);
@@ -181,8 +172,17 @@ export default function CruiseDetails() {
     }
   };
   
-  // Fallback cabin types if none are found in the database
-  const fallbackCabinTypes = [
+  // Fetch cabin types from API
+  const { 
+    data: cabinTypesData = [],
+    isLoading: isLoadingCabinTypes
+  } = useQuery<CruiseCabinType[]>({
+    queryKey: [`/api/cruises/${id}/cabin-types`],
+    enabled: !!id,
+  });
+  
+  // Define fallback cabin types in case the API doesn't return any
+  const fallbackCabinTypes: CruiseCabinType[] = cruise ? [
     {
       id: 0,
       cruiseId: parseInt(id || "0"),
@@ -190,7 +190,7 @@ export default function CruiseDetails() {
       image: "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=1470&auto=format&fit=crop",
       description: "Affordable and comfortable interior cabins with no window, perfect for budget-conscious travelers.",
       features: '["Queen-size bed or twin beds", "Private bathroom", "TV", "Mini refrigerator"]',
-      price: cruise?.price || 0,
+      price: cruise.price,
       availability: 8,
       capacity: 2,
       featured: false,
@@ -204,7 +204,7 @@ export default function CruiseDetails() {
       image: "https://images.unsplash.com/photo-1616394158624-the29065ff11c?q=80&w=1470&auto=format&fit=crop",
       description: "Comfortable cabins with a window or porthole offering beautiful ocean views.",
       features: '["Ocean view window", "Queen-size bed", "Private bathroom", "TV", "Mini refrigerator"]',
-      price: cruise ? Math.round(cruise.price * 1.3) : 0,
+      price: Math.round(cruise.price * 1.3),
       availability: 5,
       capacity: 2,
       featured: false,
@@ -218,14 +218,17 @@ export default function CruiseDetails() {
       image: "https://images.unsplash.com/photo-1616394158732-95cfc48fc350?q=80&w=1470&auto=format&fit=crop",
       description: "Spacious cabins featuring a private balcony for you to enjoy the ocean breeze and views.",
       features: '["Private balcony", "Queen-size bed", "Sitting area", "Private bathroom", "TV", "Mini bar"]',
-      price: cruise ? Math.round(cruise.price * 1.6) : 0,
+      price: Math.round(cruise.price * 1.6),
       availability: 3,
       capacity: 2,
       featured: true,
       active: true,
       createdAt: new Date(),
     }
-  ];
+  ] : [];
+  
+  // Use actual cabin types from API or fallback if none found
+  const cabinTypes = cabinTypesData.length > 0 ? cabinTypesData : fallbackCabinTypes;
 
   // Route/ports of call (example data)
   const ports = [
@@ -807,7 +810,7 @@ export default function CruiseDetails() {
                           <p className="text-neutral-600 mb-4">{cabin.description}</p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-                            {JSON.parse(cabin.features).map((feature: string, i: number) => (
+                            {safelyParseJSON(cabin.features).map((feature: string, i: number) => (
                               <div key={i} className="flex items-center">
                                 <div className="rounded-full bg-primary/10 p-1 mr-2">
                                   <CheckCheck className="w-3 h-3 text-primary" />
