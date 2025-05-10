@@ -71,7 +71,7 @@ const Carousel = React.forwardRef<
     // Pass the options directly to avoid typing issues
     const [carouselRef, api] = useEmblaCarousel(
       {
-        axis: orientation === "horizontal" ? "x" : "y",
+        axis: orientation === "horizontal" ? "x" : "y" as "x" | "y",
         ...(isMobile ? {
           dragFree: true,
           loop: true,
@@ -136,6 +136,36 @@ const Carousel = React.forwardRef<
         api?.off("select", onSelect)
       }
     }, [api, onSelect])
+    
+    // Enhanced touch handling for mobile devices
+    React.useEffect(() => {
+      if (!api || !carouselRef || !isMobile) {
+        return
+      }
+      
+      // Refresh on window resize
+      const handleResize = () => {
+        if (api) {
+          api.reInit()
+        }
+      }
+      
+      window.addEventListener('resize', handleResize)
+      
+      // Add responsive behavior to handle orientation changes
+      const handleOrientationChange = () => {
+        if (api) {
+          setTimeout(() => api.reInit(), 200) // Small delay to ensure DOM updates
+        }
+      }
+      
+      window.addEventListener('orientationchange', handleOrientationChange)
+      
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        window.removeEventListener('orientationchange', handleOrientationChange)
+      }
+    }, [api, carouselRef, isMobile])
 
     return (
       <CarouselContext.Provider
@@ -179,7 +209,7 @@ const CarouselContent = React.forwardRef<
       ref={carouselRef} 
       className={cn(
         "overflow-hidden",
-        isMobile && "mobile-slider touch-pan-y" // Enable native touch handling
+        isMobile && "mobile-slider mobile-gallery" // Enhanced mobile styling
       )}
     >
       <div
@@ -190,6 +220,11 @@ const CarouselContent = React.forwardRef<
           isMobile && "touch-pan-x mobile-slider", // Enable horizontal touch handling
           className
         )}
+        style={isMobile ? {
+          touchAction: "pan-x", // Enable native horizontal swiping
+          WebkitOverflowScrolling: "touch", // Smooth inertial scrolling for iOS
+          scrollSnapType: orientation === "horizontal" ? "x mandatory" : "y mandatory", // Snap to slides
+        } : undefined}
         {...props}
       />
     </div>
@@ -213,9 +248,13 @@ const CarouselItem = React.forwardRef<
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
         orientation === "horizontal" ? "pl-4" : "pt-4",
-        isMobile && "touch-action-pan-y p-1 select-none", // Enhanced mobile touch handling
+        isMobile && "p-1 select-none mobile-gallery-item", // Enhanced mobile touch handling
         className
       )}
+      style={isMobile ? {
+        scrollSnapAlign: "center", // Ensure slides snap properly
+        touchAction: orientation === "horizontal" ? "pan-x" : "pan-y", // Better touch handling
+      } : undefined}
       {...props}
     />
   )
@@ -235,7 +274,7 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute rounded-full z-10",
+        "absolute rounded-full z-10 carousel-arrow",
         isMobile 
           ? "h-10 w-10 left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md" 
           : "h-8 w-8",
@@ -268,7 +307,7 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute rounded-full z-10",
+        "absolute rounded-full z-10 carousel-arrow",
         isMobile 
           ? "h-10 w-10 right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md" 
           : "h-8 w-8",

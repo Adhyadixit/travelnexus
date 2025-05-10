@@ -68,6 +68,41 @@
     background-color: white;
     transform: scale(1.25);
   }
+  
+  /* Carousel specific mobile enhancements */
+  .carousel-touch-feedback {
+    transition: transform 0.15s ease-in-out;
+  }
+  
+  .carousel-touch-feedback.touching {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-in-out;
+  }
+  
+  /* Add smooth transitions for carousel arrows */
+  .carousel-arrow {
+    transition: all 0.2s ease;
+    opacity: 0.8;
+  }
+  
+  .carousel-arrow:hover {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  
+  /* Improved touch feedback for swipe gestures */
+  @media (max-width: 768px) {
+    .embla {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x mandatory;
+    }
+    
+    .embla__slide {
+      scroll-snap-align: center;
+      touch-action: pan-x;
+    }
+  }
 }
 
 :root {
