@@ -29,6 +29,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Plus, X, AlertCircle } from "lucide-react";
 import RoomImagesManager from "@/components/rooms/room-images-manager";
 import RoomTypesManager from "@/components/rooms/room-types-manager";
+import { ImageUpload } from "@/components/ui/image-upload";
 
 // Extend the insert schema for form validation
 const hotelFormSchema = insertHotelSchema.extend({
@@ -330,7 +331,11 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                         <FormControl>
                           <Input 
                             placeholder="e.g., 14:00" 
-                            {...field} 
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
                           />
                         </FormControl>
                         <FormDescription>Format: 24-hour time (e.g., 14:00)</FormDescription>
@@ -348,7 +353,11 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                         <FormControl>
                           <Input 
                             placeholder="e.g., 12:00" 
-                            {...field} 
+                            value={field.value || ''}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
                           />
                         </FormControl>
                         <FormDescription>Format: 24-hour time (e.g., 12:00)</FormDescription>
@@ -366,7 +375,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -387,7 +396,7 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={field.value || false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
@@ -418,9 +427,13 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                   name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image URL</FormLabel>
+                      <FormLabel>Main Image</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter primary image URL" {...field} />
+                        <ImageUpload 
+                          value={field.value}
+                          onChange={field.onChange}
+                          folder="hotels"
+                        />
                       </FormControl>
                       <FormDescription>
                         This is the main image displayed in listings and at the top of the details page
@@ -456,17 +469,23 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                       name={`imageGalleryUrls.${index}`}
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-2">
                             <FormControl>
-                              <Input placeholder={`Gallery image ${index + 1}`} {...field} />
+                              <ImageUpload 
+                                value={field.value}
+                                onChange={field.onChange}
+                                folder="hotels/gallery"
+                              />
                             </FormControl>
                             <Button 
                               type="button" 
-                              variant="ghost" 
-                              size="icon"
+                              variant="outline" 
+                              size="sm"
                               onClick={() => removeImageFromGallery(index)}
+                              className="self-end"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-4 w-4 mr-2" />
+                              Remove Image
                             </Button>
                           </div>
                         </FormItem>
@@ -618,8 +637,11 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
                           min="0" 
                           max="10" 
                           step="0.1" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseFloat(e.target.value))} 
+                          value={field.value || 0}
+                          onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormDescription>Average rating from guest reviews (out of 10)</FormDescription>
