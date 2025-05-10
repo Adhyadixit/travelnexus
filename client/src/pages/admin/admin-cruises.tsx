@@ -144,8 +144,32 @@ export default function AdminCruises() {
     mutationFn: async (cabinType: Partial<CruiseCabinType>) => {
       if (!selectedCruise?.id) throw new Error("No cruise selected");
       
-      const res = await apiRequest("POST", `/api/cruises/${selectedCruise.id}/cabin-types`, cabinType);
-      return await res.json();
+      try {
+        const res = await apiRequest("POST", `/api/cruises/${selectedCruise.id}/cabin-types`, cabinType);
+        
+        // Check if response is OK before parsing JSON
+        if (!res.ok) {
+          const errorText = await res.text();
+          // Check if the error response contains HTML
+          if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+            console.error("Server returned HTML instead of JSON:", errorText);
+            throw new Error("Server error. Please try again later.");
+          }
+          
+          // Try to parse as JSON if it doesn't seem to be HTML
+          try {
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.message || "Failed to add cabin type");
+          } catch (parseError) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.error("Error adding cabin type:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
@@ -169,8 +193,32 @@ export default function AdminCruises() {
     mutationFn: async (cabinType: Partial<CruiseCabinType>) => {
       if (!selectedCruise?.id) throw new Error("No cruise selected");
       
-      const res = await apiRequest("PATCH", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinType.id}`, cabinType);
-      return await res.json();
+      try {
+        const res = await apiRequest("PATCH", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinType.id}`, cabinType);
+        
+        // Check if response is OK before parsing JSON
+        if (!res.ok) {
+          const errorText = await res.text();
+          // Check if the error response contains HTML
+          if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+            console.error("Server returned HTML instead of JSON:", errorText);
+            throw new Error("Server error. Please try again later.");
+          }
+          
+          // Try to parse as JSON if it doesn't seem to be HTML
+          try {
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.message || "Failed to update cabin type");
+          } catch (parseError) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.error("Error updating cabin type:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
@@ -193,8 +241,32 @@ export default function AdminCruises() {
     mutationFn: async (cabinTypeId: number) => {
       if (!selectedCruise?.id) throw new Error("No cruise selected");
       
-      const res = await apiRequest("DELETE", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinTypeId}`);
-      return await res.json();
+      try {
+        const res = await apiRequest("DELETE", `/api/cruises/${selectedCruise.id}/cabin-types/${cabinTypeId}`);
+        
+        // Check if response is OK before parsing JSON
+        if (!res.ok) {
+          const errorText = await res.text();
+          // Check if the error response contains HTML
+          if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
+            console.error("Server returned HTML instead of JSON:", errorText);
+            throw new Error("Server error. Please try again later.");
+          }
+          
+          // Try to parse as JSON if it doesn't seem to be HTML
+          try {
+            const errorJson = JSON.parse(errorText);
+            throw new Error(errorJson.message || "Failed to delete cabin type");
+          } catch (parseError) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+        }
+        
+        return await res.json();
+      } catch (error) {
+        console.error("Error deleting cabin type:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/cruises/${selectedCruise?.id}/cabin-types`] });
