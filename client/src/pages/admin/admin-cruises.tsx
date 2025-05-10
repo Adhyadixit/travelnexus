@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Cruise, insertCruiseSchema } from "@shared/schema";
+import { Cruise, insertCruiseSchema, CruiseCabinType, insertCruiseCabinTypeSchema } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,11 +13,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import { Search, Edit, Trash, Plus, Ship, X } from "lucide-react";
+import { Search, Edit, Trash, Plus, Ship, X, Bed } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatCurrency } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { Badge } from "@/components/ui/badge";
 
 const cruiseFormSchema = insertCruiseSchema.extend({
   price: z.coerce.number().min(1, "Price must be greater than 0"),
@@ -37,6 +38,34 @@ export default function AdminCruises() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedCruise, setSelectedCruise] = useState<Cruise | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // New states for cabin type management
+  const [cabinTypes, setCabinTypes] = useState<CruiseCabinType[]>([]);
+  const [isAddCabinTypeOpen, setIsAddCabinTypeOpen] = useState(false);
+  const [editingCabinType, setEditingCabinType] = useState<CruiseCabinType | null>(null);
+  
+  // Fetch cabin types when a cruise is selected for editing
+  useEffect(() => {
+    if (selectedCruise?.id) {
+      // Fetch cabin types for the selected cruise
+      apiRequest("GET", `/api/cruises/${selectedCruise.id}/cabin-types`)
+        .then(res => res.json())
+        .then(data => {
+          setCabinTypes(data);
+        })
+        .catch(error => {
+          console.error("Error fetching cabin types:", error);
+          toast({
+            title: "Error",
+            description: "Failed to load cabin types for this cruise.",
+            variant: "destructive",
+          });
+        });
+    } else {
+      // Clear cabin types when no cruise is selected
+      setCabinTypes([]);
+    }
+  }, [selectedCruise?.id]);
   
   // Fetch all cruises using direct database access
   const { 
