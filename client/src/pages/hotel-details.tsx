@@ -400,13 +400,16 @@ export default function HotelDetails() {
       
       // Handle different possible formats
       if (Array.isArray(parsed)) {
-        parsedGalleryImages = parsed.filter(img => img && img.trim() !== '');
+        parsedGalleryImages = parsed.filter((img: any) => 
+          typeof img === 'string' && img && img.trim() !== ''
+        );
       } else if (typeof parsed === 'string' && parsed.trim() !== '') {
         parsedGalleryImages = [parsed];
       } else if (parsed && typeof parsed === 'object') {
         // Handle case where it might be an object with URLs
-        parsedGalleryImages = Object.values(parsed)
-          .filter(val => typeof val === 'string' && val.trim() !== '');
+        const values = Object.values(parsed);
+        parsedGalleryImages = values
+          .filter((val: any): val is string => typeof val === 'string' && val.trim() !== '');
       }
     } catch (e) {
       console.error("Error parsing hotel gallery images:", e);

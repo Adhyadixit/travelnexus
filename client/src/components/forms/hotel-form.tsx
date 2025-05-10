@@ -54,16 +54,42 @@ const stringToArray = (str: string): string[] => {
   }
 };
 
-const arrayToString = (arr: string[] | null): string => {
+const arrayToString = (arr: any): string => {
   if (!arr) return '';
-  return arr.join('\n');
+  
+  // Make sure we're working with an array
+  const safeArray = Array.isArray(arr) ? arr : 
+                   (typeof arr === 'string' ? [arr] : 
+                   (typeof arr === 'object' ? Object.values(arr) : [String(arr)]));
+  
+  return safeArray.join('\n');
 };
 
 const parseJsonOrDefault = (jsonString: string | null, defaultValue: any): any => {
   if (!jsonString) return defaultValue;
   try {
-    return JSON.parse(jsonString);
+    const parsed = JSON.parse(jsonString);
+    
+    // Handle different expected types based on defaultValue
+    if (Array.isArray(defaultValue)) {
+      if (Array.isArray(parsed)) {
+        return parsed;
+      } else if (typeof parsed === 'string') {
+        return [parsed];
+      } else if (parsed && typeof parsed === 'object') {
+        return Object.values(parsed);
+      } else {
+        return [String(parsed)];
+      }
+    } else if (defaultValue && typeof defaultValue === 'object') {
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+      return defaultValue;
+    }
+    return parsed;
   } catch (e) {
+    console.error("Error parsing JSON:", e, "Input:", jsonString);
     return defaultValue;
   }
 };
