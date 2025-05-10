@@ -236,32 +236,34 @@ export default function HotelDetails() {
       return;
     }
 
-    if (!startDate || !endDate || !selectedRoom) {
-      // Scroll to the booking form section when fields are not selected
-      if (bookingFormRef.current) {
-        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
-        
-        // Add a visual indicator to help users see what they need to complete
-        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
-        if (datePickerEl && !startDate) {
-          datePickerEl.classList.add('highlight-pulse');
-          setTimeout(() => {
-            datePickerEl.classList.remove('highlight-pulse');
-          }, 2000);
-        }
-        
-        const roomSelectorEl = bookingFormRef.current.querySelector('.room-selector-container');
-        if (roomSelectorEl && !selectedRoom) {
-          roomSelectorEl.classList.add('highlight-pulse');
-          setTimeout(() => {
-            roomSelectorEl.classList.remove('highlight-pulse');
-          }, 2000);
-        }
+    // Scroll to the booking form section
+    if (bookingFormRef.current) {
+      bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+      
+      if (!selectedRoom) {
+        // First scroll to room selection if no room is selected
+        document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' });
+        return;
       }
-      return;
+
+      // Highlight date picker if dates are not selected
+      if (!startDate || !endDate) {
+        // Add a visual indicator to help users see what they need to complete
+        const datePickerContainer = bookingFormRef.current.querySelector('.date-picker-container');
+        if (datePickerContainer) {
+          datePickerContainer.classList.add('highlight-pulse');
+          setTimeout(() => {
+            datePickerContainer.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+        return;
+      }
     }
 
-    setLocation(`/checkout/hotel/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&roomType=${selectedRoom}`);
+    // Proceed to checkout if all required fields are filled
+    if (startDate && endDate && selectedRoom) {
+      setLocation(`/checkout/hotel/${id}?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&guests=${guests}&roomType=${selectedRoom}`);
+    }
   };
 
   // Parse amenities
@@ -705,7 +707,25 @@ export default function HotelDetails() {
                         <div className="mt-4 flex justify-end">
                           <Button 
                             variant={selectedRoom === room.id ? "default" : "outline"}
-                            onClick={() => setSelectedRoom(room.id)}
+                            onClick={() => {
+                              setSelectedRoom(room.id);
+                              // If room is selected, scroll to the booking form for date selection
+                              if (bookingFormRef.current) {
+                                setTimeout(() => {
+                                  bookingFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                  // Highlight date picker to guide user to next step
+                                  if (!startDate && bookingFormRef.current) {
+                                    const datePickerContainer = bookingFormRef.current.querySelector('.date-picker-container');
+                                    if (datePickerContainer) {
+                                      datePickerContainer.classList.add('highlight-pulse');
+                                      setTimeout(() => {
+                                        datePickerContainer.classList.remove('highlight-pulse');
+                                      }, 2000);
+                                    }
+                                  }
+                                }, 100);
+                              }
+                            }}
                           >
                             {selectedRoom === room.id ? "Selected" : "Select Room"}
                           </Button>
@@ -864,6 +884,25 @@ export default function HotelDetails() {
                 <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
 
                 <div className="space-y-4">
+                  <div className="room-selector-container">
+                    <label className="block text-sm font-medium mb-2">Room Type</label>
+                    <Select 
+                      value={selectedRoom?.toString() || ""} 
+                      onValueChange={(value) => setSelectedRoom(parseInt(value))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select room type" />
+                      </SelectTrigger>
+                      <SelectContent className="text-neutral-800">
+                        {roomTypes.map((room: any) => (
+                          <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
+                            {room.name} - {formatCurrency(room.price)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
                   <div className="date-picker-container">
                     <label className="block text-sm font-medium mb-2">Check-in Date</label>
                     <Popover>
@@ -936,25 +975,6 @@ export default function HotelDetails() {
                         <SelectItem value="3" className="text-neutral-800">3 Guests</SelectItem>
                         <SelectItem value="4" className="text-neutral-800">4 Guests</SelectItem>
                         <SelectItem value="5" className="text-neutral-800">5 Guests</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="room-selector-container">
-                    <label className="block text-sm font-medium mb-2">Room Type</label>
-                    <Select 
-                      value={selectedRoom?.toString() || ""} 
-                      onValueChange={(value) => setSelectedRoom(parseInt(value))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select room type" />
-                      </SelectTrigger>
-                      <SelectContent className="text-neutral-800">
-                        {roomTypes.map((room: any) => (
-                          <SelectItem key={room.id} value={room.id.toString()} className="text-neutral-800">
-                            {room.name} - {formatCurrency(room.price)}
-                          </SelectItem>
-                        ))}
                       </SelectContent>
                     </Select>
                   </div>
