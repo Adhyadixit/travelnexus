@@ -171,7 +171,7 @@ export function DesktopLayout({
                 <div className="flex flex-col h-full py-6">
                   <div className="flex items-center justify-between mb-6">
                     <Link href="/" className="text-2xl font-heading font-bold text-primary">
-                      TravelEase<span className="text-secondary">.</span>
+                      Travel Ease by Expedia<span className="text-secondary">.</span>
                     </Link>
                   </div>
                   
