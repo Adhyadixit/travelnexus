@@ -541,10 +541,13 @@ export default function HotelDetails() {
           </div>
         </div>
 
-        {/* Image Gallery Section */}
-        <div className="grid grid-cols-12 gap-2 mb-6 relative">
-          {/* Main large image with enhanced mobile support */}
-          <div className="col-span-12 md:col-span-8 relative overflow-hidden rounded-xl mobile-gallery">
+        {/* Image Gallery and Booking Section Grid */}
+        <div className="grid grid-cols-12 gap-6 mb-6">
+          {/* Image Gallery Section */}
+          <div className="col-span-12 lg:col-span-8">
+            <div className="relative">
+              {/* Main large image with enhanced mobile support */}
+              <div className="relative overflow-hidden rounded-xl mobile-gallery">
             <div 
               className="w-full mobile-slider touch-pan-x" 
               style={{ 
@@ -669,9 +672,24 @@ export default function HotelDetails() {
               Free cancellation
             </Badge>
           )}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Booking Section */}
+        <div className="col-span-12 lg:col-span-4">
+          <Card className="sticky top-4">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
+              <div className="space-y-4">
+                {/* Existing booking form content */}
+                {/* ... */}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main content */}
           <div className="lg:col-span-2">
             {/* Detailed Description Section */}
