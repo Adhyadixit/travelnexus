@@ -15,7 +15,7 @@ if (enableDebugLogs) {
 
 let initializingDb = false;
 let dbInitialized = false;
-let connectionErrors = [];
+let connectionErrors: string[] = [];
 
 function makeDb() {
   console.log('db-serverless.ts: makeDb() called.');
@@ -52,30 +52,33 @@ function makeDb() {
     (async () => {
       try {
         console.log(' [DB] Testing database connection...');
-        const dbInfo = await drizzleInstance.select({ now: sql`NOW()` }).execute();
+        // Use raw SQL query to avoid type issues
+        const dbInfo = await sql`SELECT NOW() as now`;
         console.log(' [DB] Database connection successful', dbInfo);
         
         // Check if we can access a few key tables
         console.log(' [DB] Testing destinations table...');
-        const destinationCount = await drizzleInstance.select({ count: sql`COUNT(*)` }).from(schema.destinations);
+        // Use raw SQL query to avoid type issues
+        const destinationCount = await sql`SELECT COUNT(*) as count FROM ${schema.destinations}`;
         console.log(` [DB] Destinations table accessible. Count: ${destinationCount[0]?.count || 0}`);
 
         console.log(' [DB] Testing hotels table...');
-        const hotelCount = await drizzleInstance.select({ count: sql`COUNT(*)` }).from(schema.hotels);
+        // Use raw SQL query to avoid type issues
+        const hotelCount = await sql`SELECT COUNT(*) as count FROM ${schema.hotels}`;
         console.log(` [DB] Hotels table accessible. Count: ${hotelCount[0]?.count || 0}`);
         
         // Mark as initialized
         dbInitialized = true;
         initializingDb = false;
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(' [DB] Database connection test failed:', error);
-        connectionErrors.push(`Connection test failed: ${error.message}`);
+        connectionErrors.push(`Connection test failed: ${error instanceof Error ? error.message : String(error)}`);
         initializingDb = false;
       }
     })();
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(' [DB] Database initialization failed:', error);
-    connectionErrors.push(`Initialization failed: ${error.message}`);
+    connectionErrors.push(`Initialization failed: ${error instanceof Error ? error.message : String(error)}`);
     initializingDb = false;
   }
 }
