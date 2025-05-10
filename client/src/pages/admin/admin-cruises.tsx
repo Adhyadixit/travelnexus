@@ -30,7 +30,15 @@ const cruiseFormSchema = insertCruiseSchema.extend({
   available: z.boolean().optional().default(true),
 });
 
+// Schema for the cabin type form
+const cabinTypeFormSchema = insertCruiseCabinTypeSchema.extend({
+  price: z.coerce.number().min(1, "Price must be greater than 0"),
+  maxOccupancy: z.coerce.number().min(1, "Max occupancy must be at least 1"),
+  features: z.string().optional().default("[]"),
+});
+
 type CruiseFormValues = z.infer<typeof cruiseFormSchema>;
+type CabinTypeFormValues = z.infer<typeof cabinTypeFormSchema>;
 
 export default function AdminCruises() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -1461,6 +1469,91 @@ export default function AdminCruises() {
                 </div>
               </div>
               
+              {/* Cabin Types Management Section */}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Cabin Types</h3>
+                  <Button 
+                    type="button" 
+                    onClick={() => setIsAddCabinTypeOpen(true)} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={!selectedCruise?.id}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Cabin Type
+                  </Button>
+                </div>
+                
+                {cabinTypes.length === 0 ? (
+                  <div className="text-center py-8 border rounded-md bg-muted/20">
+                    <Bed className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">No cabin types defined for this cruise</p>
+                    <p className="text-xs text-muted-foreground mt-1">Add cabin types to display pricing and availability options</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {cabinTypes.map((cabinType) => (
+                      <Card key={cabinType.id} className="overflow-hidden">
+                        <div className="flex flex-col md:flex-row">
+                          {cabinType.imageUrl && (
+                            <div className="h-32 md:h-auto md:w-32 lg:w-48 overflow-hidden">
+                              <img 
+                                src={cabinType.imageUrl} 
+                                alt={cabinType.name} 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium">{cabinType.name}</h4>
+                                <Badge className="mt-1">{formatCurrency(cabinType.price)}</Badge>
+                                <div className="flex items-center mt-1 text-sm text-muted-foreground">
+                                  <span>Max Occupancy: {cabinType.maxOccupancy}</span>
+                                </div>
+                              </div>
+                              <div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => setEditingCabinType(cabinType)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete the ${cabinType.name} cabin type?`)) {
+                                      deleteCabinTypeMutation.mutate(cabinType.id);
+                                    }
+                                  }}
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            <p className="mt-2 text-sm">{cabinType.description}</p>
+                            {cabinType.features && (
+                              <div className="mt-2">
+                                <h5 className="text-xs font-medium mb-1">Features:</h5>
+                                <div className="flex flex-wrap gap-1">
+                                  {JSON.parse(cabinType.features || '[]').map((feature: string, index: number) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">{feature}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <div className="space-y-6">
                 <h3 className="text-lg font-medium">Display Settings</h3>
                 <FormField
@@ -1522,6 +1615,260 @@ export default function AdminCruises() {
               {deleteCruiseMutation.isPending ? "Deleting..." : "Delete Cruise"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Cabin Type Dialog */}
+      <Dialog open={isAddCabinTypeOpen} onOpenChange={setIsAddCabinTypeOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Cabin Type</DialogTitle>
+            <DialogDescription>
+              Create a new cabin type for {selectedCruise?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...addCabinTypeForm}>
+            <form onSubmit={addCabinTypeForm.handleSubmit(onAddCabinTypeSubmit)} className="space-y-6">
+              <FormField
+                control={addCabinTypeForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cabin Type Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Suite, Balcony, Interior, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={addCabinTypeForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price (USD)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addCabinTypeForm.control}
+                  name="maxOccupancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max Occupancy</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="1" step="1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={addCabinTypeForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea rows={3} placeholder="Describe cabin amenities and features" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={addCabinTypeForm.control}
+                name="features"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Features (comma-separated)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Balcony, Mini-bar, Ocean view, etc."
+                        value={field.value === '[]' ? '' : JSON.parse(field.value).join(', ')}
+                        onChange={(e) => {
+                          const featuresArray = e.target.value
+                            ? e.target.value.split(',').map(feature => feature.trim())
+                            : [];
+                          field.onChange(JSON.stringify(featuresArray));
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Enter features separated by commas
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={addCabinTypeForm.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cabin Image</FormLabel>
+                    <FormControl>
+                      <ImageUpload 
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onRemove={() => field.onChange('')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsAddCabinTypeOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={addCabinTypeMutation.isPending}>
+                  {addCabinTypeMutation.isPending ? "Adding..." : "Add Cabin Type"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Cabin Type Dialog */}
+      <Dialog open={!!editingCabinType} onOpenChange={(open) => !open && setEditingCabinType(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Cabin Type</DialogTitle>
+            <DialogDescription>
+              Update cabin type details for {selectedCruise?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...editCabinTypeForm}>
+            <form onSubmit={editCabinTypeForm.handleSubmit(onEditCabinTypeSubmit)} className="space-y-6">
+              <FormField
+                control={editCabinTypeForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cabin Type Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Suite, Balcony, Interior, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={editCabinTypeForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price (USD)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.01" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editCabinTypeForm.control}
+                  name="maxOccupancy"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Max Occupancy</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="1" step="1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={editCabinTypeForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea rows={3} placeholder="Describe cabin amenities and features" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={editCabinTypeForm.control}
+                name="features"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Features (comma-separated)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Balcony, Mini-bar, Ocean view, etc."
+                        value={field.value === '[]' ? '' : JSON.parse(field.value).join(', ')}
+                        onChange={(e) => {
+                          const featuresArray = e.target.value
+                            ? e.target.value.split(',').map(feature => feature.trim())
+                            : [];
+                          field.onChange(JSON.stringify(featuresArray));
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Enter features separated by commas
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={editCabinTypeForm.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cabin Image</FormLabel>
+                    <FormControl>
+                      <ImageUpload 
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onRemove={() => field.onChange('')}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditingCabinType(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateCabinTypeMutation.isPending}>
+                  {updateCabinTypeMutation.isPending ? "Updating..." : "Update Cabin Type"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </AdminLayout>
