@@ -3,7 +3,21 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    
+    // Check if the error response contains HTML (which indicates a server error page)
+    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+      console.error("Server returned HTML instead of JSON:", text);
+      throw new Error(`Server error: ${res.status}`);
+    }
+    
+    // Try to parse as JSON if it doesn't seem to be HTML
+    try {
+      const errorJson = JSON.parse(text);
+      throw new Error(errorJson.message || `${res.status}: ${text}`);
+    } catch (parseError) {
+      // If not valid JSON, use the raw text
+      throw new Error(`${res.status}: ${text}`);
+    }
   }
 }
 
