@@ -278,6 +278,23 @@ export const cruiseCabinTypes = pgTable('cruise_cabin_types', {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Insert schema and types for Cruise Cabin Types
+export const insertCruiseCabinTypeSchema = createInsertSchema(cruiseCabinTypes).pick({
+  cruiseId: true,
+  name: true,
+  description: true,
+  price: true,
+  image: true,
+  features: true,
+  availability: true,
+  capacity: true,
+  featured: true,
+  active: true,
+});
+
+export type CruiseCabinType = typeof cruiseCabinTypes.$inferSelect;
+export type InsertCruiseCabinType = z.infer<typeof insertCruiseCabinTypeSchema>;
+
 // Cruise relations
 export const cruisesRelations = relations(cruises, ({ many }) => ({
   bookings: many(bookings),

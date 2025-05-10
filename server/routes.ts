@@ -1073,6 +1073,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update cruise" });
     }
   });
+  
+  // Cruise Cabin Types endpoints
+  app.get("/api/cruises/:cruiseId/cabin-types", async (req, res) => {
+    try {
+      const cruiseId = parseInt(req.params.cruiseId);
+      const cabinTypes = await storage.getCruiseCabinTypes(cruiseId);
+      res.json(cabinTypes);
+    } catch (error) {
+      console.error("Error fetching cabin types:", error);
+      res.status(500).json({ error: "Failed to fetch cabin types" });
+    }
+  });
+
+  app.post("/api/admin/cruises/:cruiseId/cabin-types", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cruiseId = parseInt(req.params.cruiseId);
+      const cabinTypeData = {
+        ...req.body,
+        cruiseId,
+      };
+      
+      const cabinType = await storage.createCruiseCabinType(cabinTypeData);
+      res.status(201).json(cabinType);
+    } catch (error) {
+      console.error("Error creating cabin type:", error);
+      res.status(500).json({ error: "Failed to create cabin type" });
+    }
+  });
+
+  app.put("/api/admin/cruises/cabin-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cabinTypeId = parseInt(req.params.id);
+      const cabinType = await storage.updateCruiseCabinType(cabinTypeId, req.body);
+      
+      if (!cabinType) {
+        return res.status(404).json({ error: "Cabin type not found" });
+      }
+      
+      res.json(cabinType);
+    } catch (error) {
+      console.error("Error updating cabin type:", error);
+      res.status(500).json({ error: "Failed to update cabin type" });
+    }
+  });
+
+  app.delete("/api/admin/cruises/cabin-types/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user!.role !== 'admin') {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    
+    try {
+      const cabinTypeId = parseInt(req.params.id);
+      await storage.deleteCruiseCabinType(cabinTypeId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting cabin type:", error);
+      res.status(500).json({ error: "Failed to delete cabin type" });
+    }
+  });
 
   app.delete("/api/admin/cruises/:id", async (req, res) => {
     if (!req.isAuthenticated() || req.user!.role !== 'admin') {

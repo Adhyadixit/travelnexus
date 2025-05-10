@@ -5,6 +5,7 @@ import {
   hotels, type Hotel, type InsertHotel,
   drivers, type Driver, type InsertDriver,
   cruises, type Cruise, type InsertCruise,
+  cruiseCabinTypes, type CruiseCabinType, type InsertCruiseCabinType,
   events, type Event, type InsertEvent,
   bookings, type Booking, type InsertBooking,
   bookingTypeEnum,
