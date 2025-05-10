@@ -294,7 +294,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
             <CardDescription>Create a new room type for this hotel</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleAddRoomType} className="space-y-4">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Room Type Name</Label>
@@ -365,8 +365,9 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                   Cancel
                 </Button>
                 <Button 
-                  type="submit" 
-                  disabled={createRoomTypeMutation.isPending}
+                  type="button" 
+                  onClick={handleAddRoomType}
+                  disabled={createRoomTypeMutation.isPending || !newRoomType.name}
                 >
                   {createRoomTypeMutation.isPending ? (
                     <>
@@ -378,7 +379,7 @@ export default function RoomImagesManager({ hotelId }: RoomImagesManagerProps) {
                   )}
                 </Button>
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
       )}
