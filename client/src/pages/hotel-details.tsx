@@ -918,16 +918,22 @@ export default function HotelDetails() {
               
               {hotel?.nearbyAttractions && hotel.nearbyAttractions !== "{}" && hotel.nearbyAttractions !== "null" ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {parseNearbyAttractions(hotel.nearbyAttractions).map((attraction: string, index: number) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="flex items-start">
-                        <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
-                        <div>
-                          <p className="font-medium">{attraction}</p>
+                  {(() => {
+                    console.log("Hotel details - Displaying attractions:", hotel.nearbyAttractions);
+                    const attractions = parseNearbyAttractions(hotel.nearbyAttractions);
+                    console.log("Hotel details - Parsed attractions:", attractions);
+                    
+                    return attractions.map((attraction: string, index: number) => (
+                      <div key={index} className="p-4 border rounded-lg">
+                        <div className="flex items-start">
+                          <MapPin className="w-5 h-5 text-primary mr-2 mt-0.5" />
+                          <div>
+                            <p className="font-medium">{attraction}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
               ) : (
                 <div className="p-4 rounded-lg bg-neutral-50">

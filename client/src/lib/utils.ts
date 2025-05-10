@@ -151,8 +151,65 @@ export function parseAmenities(amenitiesData: string | null | undefined): string
 
 // Parse nearby attractions from string
 export function parseNearbyAttractions(attractionsData: string | null | undefined): string[] {
-  // Use the same logic as parseAmenities
-  return parseAmenities(attractionsData);
+  if (!attractionsData) {
+    console.log("parseNearbyAttractions: No attractions data provided");
+    return [];
+  }
+  
+  console.log("parseNearbyAttractions: Raw data:", attractionsData);
+  
+  // First check if it looks like a JSON string
+  if ((attractionsData.startsWith('[') && attractionsData.endsWith(']')) || 
+      (attractionsData.startsWith('{') && attractionsData.endsWith('}'))) {
+    try {
+      const parsed = JSON.parse(attractionsData);
+      console.log("parseNearbyAttractions: Successfully parsed JSON:", parsed);
+      
+      // Handle case when it's an object but should be an array
+      if (!Array.isArray(parsed)) {
+        if (typeof parsed === 'object' && parsed !== null) {
+          // If it's an empty object, return empty array
+          if (Object.keys(parsed).length === 0) {
+            console.log("parseNearbyAttractions: Empty object, returning empty array");
+            return [];
+          }
+          // Otherwise try to convert object values to array
+          const result = Object.values(parsed).map(item => String(item));
+          console.log("parseNearbyAttractions: Converted object to array:", result);
+          return result;
+        }
+        // If it's a simple value, return it as a single-item array
+        if (parsed) {
+          console.log("parseNearbyAttractions: Single value, returning as array:", [String(parsed)]);
+          return [String(parsed)];
+        }
+        // If it's not an object or array, return empty array
+        console.log("parseNearbyAttractions: Not an object or array, returning empty array");
+        return [];
+      }
+      
+      console.log("parseNearbyAttractions: Returning parsed array:", parsed);
+      return parsed;
+    } catch (e) {
+      console.error("Error parsing attractions as JSON:", e);
+      // If it doesn't look like valid JSON, try treating as a comma/newline separated list
+    }
+  }
+  
+  console.log("parseNearbyAttractions: Not a JSON string, trying other formats");
+  // If it doesn't look like JSON or JSON parsing failed, try other formats
+  
+  // First check for newlines
+  if (attractionsData.includes('\n')) {
+    const result = attractionsData.split('\n').map(item => item.trim()).filter(Boolean);
+    console.log("parseNearbyAttractions: Parsed as newline-separated:", result);
+    return result;
+  }
+  
+  // Otherwise try commas
+  const result = attractionsData.split(',').map(item => item.trim()).filter(Boolean);
+  console.log("parseNearbyAttractions: Parsed as comma-separated:", result);
+  return result;
 }
 
 // Type definitions for itinerary data

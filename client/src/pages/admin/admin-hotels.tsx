@@ -103,7 +103,8 @@ export default function AdminHotels() {
   
   const updateHotelMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await apiRequest("PATCH", `/api/direct/hotels/${id}`, data);
+      console.log("Updating hotel with data:", data); // Add debug log
+      const res = await apiRequest("PUT", `/api/admin/hotels/${id}`, data);
       return await res.json();
     },
     onSuccess: () => {

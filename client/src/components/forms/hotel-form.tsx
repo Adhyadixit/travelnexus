@@ -160,13 +160,22 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
     try {
       // Format the data for database storage
       console.log("Form data before formatting:", data);
+      
+      // Process nearby attractions specifically - make sure it's a direct string not an array when submitted
+      const attractionsArray = stringToArray(data.attractionsList || "");
+      console.log("Attractions after stringToArray:", attractionsArray);
+      
+      // Join the array with newlines to ensure it's saved in a consistent format
+      const nearbyAttractionsString = attractionsArray.join('\n');
+      console.log("Nearby attractions string to save:", nearbyAttractionsString);
+      
       const formattedData = {
         ...data,
         destinationId: parseInt(data.destinationId),
         // Convert form text fields to proper JSON strings for DB storage
         amenities: stringToArray(data.amenitiesList || ""),
         languagesSpoken: stringToArray(data.languagesList || ""),
-        nearbyAttractions: stringToArray(data.attractionsList || ""),
+        nearbyAttractions: nearbyAttractionsString, // Save as plain string with newlines
         policies: data.policiesList,
         imageGallery: JSON.stringify(data.imageGalleryUrls || []),
       };
