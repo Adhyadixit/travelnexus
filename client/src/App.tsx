@@ -22,6 +22,9 @@ import BookingsPage from "@/pages/bookings-page";
 import BookingDetails from "@/pages/booking-details";
 import CheckoutPage from "@/pages/checkout-page";
 import ProfilePage from "@/pages/profile-page";
+import PrivacyPolicyPage from "@/pages/privacy-policy";
+import TermsOfServicePage from "@/pages/terms-of-service";
+import CookiePolicyPage from "@/pages/cookie-policy";
 import AdminAuth from "@/pages/admin/admin-auth-page";
 import AdminDashboard from "@/pages/admin/admin-dashboard";
 import AdminDestinations from "@/pages/admin/admin-destinations";
@@ -57,6 +60,11 @@ function Router() {
       <Route path="/cabs/:id" component={CabDetails} />
       <Route path="/events" component={EventsPage} />
       <Route path="/events/:id" component={EventDetails} />
+      
+      {/* Policy Pages */}
+      <Route path="/privacy-policy" component={PrivacyPolicyPage} />
+      <Route path="/terms-of-service" component={TermsOfServicePage} />
+      <Route path="/cookie-policy" component={CookiePolicyPage} />
       
       <ProtectedRoute path="/bookings" component={BookingsPage} />
       <ProtectedRoute path="/bookings/:id" component={BookingDetails} />

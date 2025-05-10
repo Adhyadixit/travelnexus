@@ -110,9 +110,11 @@ type Message = {
 };
 
 export default function AdminMessages() {
+  const { user } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [remoteTypingUsers, setRemoteTypingUsers] = useState<{[conversationId: string]: boolean}>({});
   
   // Initialize the socket connection for real-time updates
   useEffect(() => {
@@ -168,12 +170,33 @@ export default function AdminMessages() {
       queryClient.invalidateQueries({ queryKey: ["/api/direct/conversations"] });
     });
     
+    // Subscribe to typing indicators
+    subscribeToTypingIndicators((typingData) => {
+      console.log("Typing indicator received:", typingData);
+      
+      // Update typing indicators state
+      setRemoteTypingUsers(prev => ({
+        ...prev,
+        [typingData.conversationId]: typingData.isTyping
+      }));
+    });
+    
     // Cleanup function
     return () => {
       unsubscribeFromEvent('message-received');
       unsubscribeFromEvent('new-conversation');
+      unsubscribeFromEvent('user-typing');
     };
   }, [selectedConversation]);
+  
+  // Handle cleanup for typing timeout
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
 
   // Use direct database access to fetch conversations with user data
   const {
@@ -257,6 +280,15 @@ export default function AdminMessages() {
   // State for typing indicator to show when admin is typing
   const [isTyping, setIsTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  // Clean up typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeout) {
+        clearTimeout(typingTimeout);
+      }
+    };
+  }, [typingTimeout]);
 
   // Handle typing indicator
   const handleTyping = () => {
@@ -502,18 +534,33 @@ export default function AdminMessages() {
               {selectedConversation && selectedConversation.status === "open" && (
                 <div className="p-3 border-t">
                   <div className="flex space-x-2">
-                    <Textarea
-                      placeholder="Type your message..."
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      className="min-h-[80px]"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                    />
+                    <div className="flex flex-col w-full">
+                      {/* Typing indicator */}
+                      {selectedConversation && remoteTypingUsers[selectedConversation.id.toString()] && (
+                        <div className="text-xs text-muted-foreground animate-pulse mb-1 ml-2">
+                          {selectedConversation.user 
+                            ? `${selectedConversation.user.firstName} is typing...` 
+                            : selectedConversation.guestUser 
+                              ? `${selectedConversation.guestUser.name} is typing...` 
+                              : "Someone is typing..."}
+                        </div>
+                      )}
+                      <Textarea
+                        placeholder="Type your message..."
+                        value={messageInput}
+                        onChange={(e) => {
+                          setMessageInput(e.target.value);
+                          handleTyping();
+                        }}
+                        className="min-h-[80px]"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                      />
+                    </div>
                     <Button
                       className="self-end"
                       onClick={handleSendMessage}
