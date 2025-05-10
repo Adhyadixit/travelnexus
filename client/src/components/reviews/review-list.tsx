@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Review, User } from "@shared/schema";
 import { Star, ThumbsUp, ChevronDown, ChevronUp } from "lucide-react";
@@ -8,6 +8,30 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+
+// Random traveler names for admin users to display instead of "Admin User"
+const TRAVELER_NAMES = [
+  { firstName: "James", lastName: "Wilson" },
+  { firstName: "Sophia", lastName: "Martinez" },
+  { firstName: "Alexander", lastName: "Johnson" },
+  { firstName: "Olivia", lastName: "Taylor" },
+  { firstName: "Daniel", lastName: "Anderson" },
+  { firstName: "Emma", lastName: "Garcia" },
+  { firstName: "Michael", lastName: "Brown" },
+  { firstName: "Ava", lastName: "Thompson" },
+  { firstName: "William", lastName: "Davis" },
+  { firstName: "Emily", lastName: "Rodriguez" },
+  { firstName: "Benjamin", lastName: "Lee" },
+  { firstName: "Isabella", lastName: "Wright" },
+  { firstName: "Ethan", lastName: "Thomas" },
+  { firstName: "Mia", lastName: "Patel" },
+  { firstName: "Jacob", lastName: "Kim" },
+  { firstName: "Charlotte", lastName: "Lopez" },
+  { firstName: "Ryan", lastName: "Walker" },
+  { firstName: "Lily", lastName: "Turner" },
+  { firstName: "Nathan", lastName: "Bennett" },
+  { firstName: "Zoe", lastName: "Mitchell" }
+];
 
 interface ReviewListProps {
   itemType: string;
@@ -24,6 +48,24 @@ export function ReviewList({ itemType, itemId }: ReviewListProps) {
   const { data: reviews, isLoading } = useQuery<ReviewWithUser[]>({
     queryKey: [`/api/reviews/${itemType}/${itemId}`],
   });
+
+  // Create a consistent mapping of review IDs to random names for admin users
+  const adminNameMapping = useMemo(() => {
+    if (!reviews) return {};
+    
+    const mapping: Record<number, typeof TRAVELER_NAMES[number]> = {};
+    
+    // For each review from an admin user, assign a random name
+    reviews.forEach(review => {
+      if (review.user.role === 'admin') {
+        // Use the review ID as the seed for consistency
+        const nameIndex = review.id % TRAVELER_NAMES.length;
+        mapping[review.id] = TRAVELER_NAMES[nameIndex];
+      }
+    });
+    
+    return mapping;
+  }, [reviews]);
   
   // Initially show only 3 reviews
   const displayedReviews = expanded ? reviews : reviews?.slice(0, 3);
@@ -140,11 +182,19 @@ export function ReviewList({ itemType, itemId }: ReviewListProps) {
                 <div className="flex items-start gap-4">
                   <Avatar>
                     <AvatarFallback>
-                      {review.user.firstName?.charAt(0)}{review.user.lastName?.charAt(0)}
+                      {review.user.role === 'admin' && adminNameMapping[review.id]
+                        ? `${adminNameMapping[review.id].firstName.charAt(0)}${adminNameMapping[review.id].lastName.charAt(0)}`
+                        : `${review.user.firstName?.charAt(0) || ''}${review.user.lastName?.charAt(0) || ''}`
+                      }
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-medium">{review.user.firstName} {review.user.lastName}</h4>
+                    <h4 className="font-medium">
+                      {review.user.role === 'admin' && adminNameMapping[review.id]
+                        ? `${adminNameMapping[review.id].firstName} ${adminNameMapping[review.id].lastName}`
+                        : `${review.user.firstName || ''} ${review.user.lastName || ''}`
+                      }
+                    </h4>
                     <p className="text-sm text-neutral-500">
                       {review.dateOfStay 
                         ? `Stayed in ${format(new Date(review.dateOfStay), 'MMMM yyyy')}` 
