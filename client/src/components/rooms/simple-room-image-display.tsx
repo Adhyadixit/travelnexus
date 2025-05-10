@@ -26,15 +26,7 @@ export function SimpleRoomImageDisplay({
     return () => clearTimeout(timer);
   }, []);
   
-  // Detailed logging to debug issue
-  console.log('ROOM IMAGE DISPLAY COMPONENT:', { 
-    roomId, 
-    roomName, 
-    loading,
-    imageToShow: roomId === 1 ? 'Using room ID 1 image' : 'Using fallback', 
-    knownRoomImage,
-    fallbackImage
-  });
+  console.log('Room image display:', { roomId, roomName, loading });
   
   if (loading) {
     return (
