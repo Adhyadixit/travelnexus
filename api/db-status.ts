@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import { db } from '../server/db-serverless';
 import { sql } from 'drizzle-orm';
-import { destinations, hotels, packages, users } from '@shared/schema';
+import { destinations, hotels, packages, users } from '../shared/schema';
 import { count } from 'drizzle-orm';
 
 export default async function handler(req: Request, res: Response) {
@@ -17,16 +17,16 @@ export default async function handler(req: Request, res: Response) {
       success: true,
       message: 'Database status check completed',
       counts: {
-        destinations: destinationCount[0]?.count || 0,
-        hotels: hotelCount[0]?.count || 0,
-        packages: packageCount[0]?.count || 0,
-        users: userCount[0]?.count || 0
+        destinations: Number(destinationCount[0]?.count || 0),
+        hotels: Number(hotelCount[0]?.count || 0),
+        packages: Number(packageCount[0]?.count || 0),
+        users: Number(userCount[0]?.count || 0)
       },
       isSeeded: (
-        (destinationCount[0]?.count > 0) && 
-        (hotelCount[0]?.count > 0) && 
-        (packageCount[0]?.count > 0) && 
-        (userCount[0]?.count > 0)
+        (Number(destinationCount[0]?.count) > 0) && 
+        (Number(hotelCount[0]?.count) > 0) && 
+        (Number(packageCount[0]?.count) > 0) && 
+        (Number(userCount[0]?.count) > 0)
       ),
       database_url: process.env.DATABASE_URL ? 
         `${process.env.DATABASE_URL.substring(0, 20)}...` : 

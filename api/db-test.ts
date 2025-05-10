@@ -8,14 +8,15 @@ export default async function handler(req: Request, res: Response) {
     const connectionTest = await testConnection();
     
     // Also try a time query to verify full functionality
-    let timeResult = null;
+    let timeResult: any = null;
     let time = new Date().toISOString();
     
     if (connectionTest.success) {
       try {
         const result = await db.execute(sql`SELECT NOW() as time`);
         timeResult = result;
-        time = result.rows?.[0]?.time || time;
+        // Ensure time is always a string
+        time = result.rows?.[0]?.time ? String(result.rows[0].time) : time;
       } catch (timeError) {
         console.error('Time query failed:', timeError);
       }
