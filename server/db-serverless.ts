@@ -6,9 +6,10 @@ import { sql } from 'drizzle-orm';
 // Set warm-up for Neon serverless driver
 neonConfig.fetchConnectionCache = true;
 
-// Enable debug logging in development
+// Enable logging in development
 if (process.env.NODE_ENV !== 'production') {
-  neonConfig.debug = true;
+  console.log('Database running in development mode');
+  // Debug mode not available in this version of the Neon driver
 }
 
 let db: ReturnType<typeof makeDb>;
