@@ -7,14 +7,8 @@ import { db } from "./db";
 import { seed } from "./seed";
 import { uploadImage } from "./cloudinary";
 import imageUploadRoutes from "./routes/image-upload";
-import adminDestinationsRoutes from "./routes/admin-destinations";
-import adminCruisesRoutes from "./routes/admin-cruises";
-import adminDriversRoutes from "./routes/admin-drivers";
-import adminEventsRoutes from "./routes/admin-events";
-import adminHotelsRoutes from "./routes/admin-hotels";
-import adminPackagesRoutes from "./routes/admin-packages";
-import directDatabaseRoutes from "./routes/direct-database";
-import paymentDetailsRoutes from "./routes/payment-details";
+import adminRoutes from "./routes/admin";
+import dataRoutes from "./routes/data";
 import {
   eq, and, gte, lte, desc, asc, like,
 } from "drizzle-orm";
@@ -334,16 +328,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register our custom routes
   app.use(imageUploadRoutes);
-  app.use(adminDestinationsRoutes);
-  app.use(adminCruisesRoutes);
-  app.use(adminDriversRoutes);
-  app.use(adminEventsRoutes);
-  app.use(adminHotelsRoutes);
-  app.use(adminPackagesRoutes);
-  app.use(paymentDetailsRoutes);
-  
-  // Register direct database routes that bypass auth and storage
-  app.use(directDatabaseRoutes);
+  app.use(adminRoutes);
+  app.use(dataRoutes);
   
   return httpServer;
 }
