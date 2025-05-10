@@ -1909,29 +1909,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if this is the first message (need engagement welcome)
           const messageCount = await storage.getMessageCountForConversation(conversationIdNum);
           
+          // Format the WhatsApp link properly for better visibility
+          const whatsAppLink = "https://wa.me/+918062407920";
+          
           if (messageCount <= 2) { // First user message + our first auto-response
-            aiResponse = "Thank you for contacting Travel Ease by Expedia! Please hold while we connect you with a travel specialist. One of our agents will be with you shortly.\n\nFor immediate assistance, you can also reach us on WhatsApp at: wa.me/+918062407920";
+            aiResponse = `Thank you for contacting Travel Ease by Expedia! Please hold while we connect you with a travel specialist. One of our agents will be with you shortly.\n\n⚡ For immediate assistance, you can also reach us on WhatsApp: ${whatsAppLink}`;
           } else {
             // Choose an appropriate response based on message content
             const lowercaseMessage = message.toLowerCase();
             
             if (lowercaseMessage.includes("book") || lowercaseMessage.includes("reservation") || lowercaseMessage.includes("booking")) {
-              aiResponse = "Thanks for your interest in booking with us! Our agents are currently assisting other customers. Please hold and an agent will help you complete your reservation shortly.\n\nFor immediate booking assistance, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `Thanks for your interest in booking with us! Our agents are currently assisting other customers. Please hold and an agent will help you complete your reservation shortly.\n\n⚡ For immediate booking assistance, please contact us on WhatsApp: ${whatsAppLink}`;
             } 
             else if (lowercaseMessage.includes("cancel") || lowercaseMessage.includes("refund")) {
-              aiResponse = "I understand you have a question about cancellations or refunds. Our customer service team will be with you shortly to address your concerns.\n\nFor immediate assistance with your booking, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `I understand you have a question about cancellations or refunds. Our customer service team will be with you shortly to address your concerns.\n\n⚡ For immediate assistance with your booking, please contact us on WhatsApp: ${whatsAppLink}`;
             }
             else if (lowercaseMessage.includes("price") || lowercaseMessage.includes("cost") || lowercaseMessage.includes("discount")) {
-              aiResponse = "Thank you for your inquiry about pricing. Our travel specialists will be with you shortly to provide you with detailed pricing information and any available discounts.\n\nFor immediate pricing questions, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `Thank you for your inquiry about pricing. Our travel specialists will be with you shortly to provide you with detailed pricing information and any available discounts.\n\n⚡ For immediate pricing questions, please contact us on WhatsApp: ${whatsAppLink}`;
             }
             else if (lowercaseMessage.includes("package") || lowercaseMessage.includes("tour")) {
-              aiResponse = "Thank you for your interest in our travel packages! Our team will be with you shortly to help you find the perfect tour package for your needs.\n\nFor immediate assistance with packages, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `Thank you for your interest in our travel packages! Our team will be with you shortly to help you find the perfect tour package for your needs.\n\n⚡ For immediate assistance with packages, please contact us on WhatsApp: ${whatsAppLink}`;
             }
             else if (lowercaseMessage.includes("hotel") || lowercaseMessage.includes("accommodation") || lowercaseMessage.includes("room")) {
-              aiResponse = "Thank you for your interest in our hotel accommodations! Our hotel specialists will be with you shortly to help you find the perfect stay.\n\nFor immediate assistance with accommodations, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `Thank you for your interest in our hotel accommodations! Our hotel specialists will be with you shortly to help you find the perfect stay.\n\n⚡ For immediate assistance with accommodations, please contact us on WhatsApp: ${whatsAppLink}`;
+            }
+            else if (lowercaseMessage.includes("cruise") || lowercaseMessage.includes("ship") || lowercaseMessage.includes("cabin")) {
+              aiResponse = `Thank you for your interest in our cruise offerings! Our cruise specialists will be with you shortly to help you find the perfect voyage.\n\n⚡ For immediate assistance with cruise bookings, please contact us on WhatsApp: ${whatsAppLink}`;
+            }
+            else if (lowercaseMessage.includes("payment") || lowercaseMessage.includes("pay") || lowercaseMessage.includes("card")) {
+              aiResponse = `Thank you for your inquiry about payment options. Our payment specialists will be with you shortly to assist with your transaction.\n\n⚡ For immediate assistance with payments, please contact us on WhatsApp: ${whatsAppLink}`;
+            }
+            else if (lowercaseMessage.includes("itinerary") || lowercaseMessage.includes("schedule") || lowercaseMessage.includes("plan")) {
+              aiResponse = `Thank you for your inquiry about travel itineraries. Our travel planners will be with you shortly to help you plan your perfect trip.\n\n⚡ For immediate itinerary assistance, please contact us on WhatsApp: ${whatsAppLink}`;
             }
             else {
-              aiResponse = "Thank you for your message. Our team is reviewing your inquiry and will respond shortly. We appreciate your patience.\n\nFor immediate assistance, please contact us on WhatsApp: wa.me/+918062407920";
+              aiResponse = `Thank you for your message. Our team is reviewing your inquiry and will respond shortly. We appreciate your patience.\n\n⚡ For immediate assistance, please contact us on WhatsApp: ${whatsAppLink}`;
             }
           }
           
@@ -1947,10 +1959,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           const aiResponseMessage = await storage.createMessage(aiMessageData);
           
-          // Mark the conversation as needing admin attention
+          // Mark the conversation as needing admin attention (open and unread)
           await storage.updateConversation(conversationIdNum, {
             status: 'open',
-            readByAdmin: false
+            readByAdmin: false // This is valid in the schema
           });
           
           // Emit the automated response to the client

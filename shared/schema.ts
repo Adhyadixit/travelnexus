@@ -871,6 +871,8 @@ export const insertConversationSchema = createInsertSchema(conversations).pick({
   itemId: true,
   subject: true,
   status: true,
+  readByUser: true,
+  readByAdmin: true,
 });
 
 export const insertMessageSchema = createInsertSchema(messages).pick({
