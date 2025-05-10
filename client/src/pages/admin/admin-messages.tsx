@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
 import { 
   initializeSocket, 
   subscribeToNewMessages, 
   subscribeToNewConversations,
   unsubscribeFromEvent,
+  joinConversation,
+  leaveConversation,
+  sendTypingIndicator,
+  subscribeToTypingIndicators,
   ConversationNotification
 } from "@/lib/socket";
 import { AdminLayout } from "@/components/layout/admin-layout";
@@ -234,14 +239,64 @@ export default function AdminMessages() {
   });
 
   const handleSelectConversation = (conversation: Conversation) => {
+    // If we're changing conversations, leave the previous one
+    if (selectedConversation && selectedConversation.id !== conversation.id) {
+      leaveConversation(selectedConversation.id);
+    }
+    
+    // Join the new conversation's socket room
+    joinConversation(conversation.id);
+    
     setSelectedConversation(conversation);
+    
     if (conversation.unreadByAdmin) {
       markAsReadMutation.mutate(conversation.id);
     }
   };
 
+  // State for typing indicator to show when admin is typing
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  // Handle typing indicator
+  const handleTyping = () => {
+    if (!selectedConversation) return;
+    
+    // Only send typing indicator if not already typing
+    if (!isTyping) {
+      setIsTyping(true);
+      // Join the room and send typing indicator
+      joinConversation(selectedConversation.id);
+      sendTypingIndicator(selectedConversation.id, user?.id || 0, 'admin', true);
+    }
+    
+    // Clear previous timeout if any
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+    
+    // Set a new timeout to stop typing indicator after 2 seconds of inactivity
+    const timeout = setTimeout(() => {
+      setIsTyping(false);
+      if (selectedConversation) {
+        sendTypingIndicator(selectedConversation.id, user?.id || 0, 'admin', false);
+      }
+    }, 2000);
+    
+    setTypingTimeout(timeout);
+  };
+
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedConversation) return;
+    
+    // Make sure we've joined the conversation room for real-time updates
+    joinConversation(selectedConversation.id);
+    
+    // Stop typing indicator
+    if (isTyping) {
+      setIsTyping(false);
+      sendTypingIndicator(selectedConversation.id, user?.id || 0, 'admin', false);
+    }
     
     sendMessageMutation.mutate({
       conversationId: selectedConversation.id,
