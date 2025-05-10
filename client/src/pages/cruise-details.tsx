@@ -1177,21 +1177,16 @@ export default function CruiseDetails() {
                           </span>
                           <span>
                             {formatCurrency(
-                              cabinTypes.find(c => c.name === selectedCabinType)?.price || cruise.price * parseInt(guests)
+                              (cabinTypes.find(c => c.name === selectedCabinType)?.price || cruise.price) * parseInt(guests)
                             )}
                           </span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between text-neutral-500">
-                          <span>Taxes & Fees</span>
-                          <span>{formatCurrency((cabinTypes.find(c => c.name === selectedCabinType)?.price || cruise.price) * 0.2)}</span>
                         </div>
                         <Separator />
                         <div className="flex justify-between font-bold text-lg pt-2">
                           <span>Total</span>
                           <span>
                             {formatCurrency(
-                              (cabinTypes.find(c => c.name === selectedCabinType)?.price || cruise.price) * parseInt(guests) * 1.2
+                              (cabinTypes.find(c => c.name === selectedCabinType)?.price || cruise.price) * parseInt(guests)
                             )}
                           </span>
                         </div>
