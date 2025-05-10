@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { registerRoutes } from '../server/routes.ts';
+import { registerRoutes } from './routes.ts';
 
 // Import serverless database connection
 import '../server/db-serverless';
