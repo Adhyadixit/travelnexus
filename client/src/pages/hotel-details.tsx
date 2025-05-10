@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
@@ -226,6 +226,9 @@ export default function HotelDetails() {
     enabled: !!hotel?.destinationId,
   });
 
+  // Reference to the booking form section for scrolling
+  const bookingFormRef = useRef<HTMLDivElement>(null);
+  
   // Handle booking
   const handleBookNow = () => {
     if (!user) {
@@ -234,6 +237,27 @@ export default function HotelDetails() {
     }
 
     if (!startDate || !endDate || !selectedRoom) {
+      // Scroll to the booking form section when fields are not selected
+      if (bookingFormRef.current) {
+        bookingFormRef.current.scrollIntoView({ behavior: 'smooth' });
+        
+        // Add a visual indicator to help users see what they need to complete
+        const datePickerEl = bookingFormRef.current.querySelector('.date-picker-container');
+        if (datePickerEl && !startDate) {
+          datePickerEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            datePickerEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+        
+        const roomSelectorEl = bookingFormRef.current.querySelector('.room-selector-container');
+        if (roomSelectorEl && !selectedRoom) {
+          roomSelectorEl.classList.add('highlight-pulse');
+          setTimeout(() => {
+            roomSelectorEl.classList.remove('highlight-pulse');
+          }, 2000);
+        }
+      }
       return;
     }
 
