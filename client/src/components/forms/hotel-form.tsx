@@ -54,54 +54,127 @@ const stringToArray = (str: string): string[] => {
   }
 };
 
-// Safely convert array-like data to string
+// Safely convert array-like data to string for form display
 function arrayToString(arr: any): string {
+  console.log("Converting to string for form:", arr);
+  
+  // Return empty string for falsy values
   if (!arr) return '';
   
   let safeArray;
+  
+  // Handle arrays
   if (Array.isArray(arr)) {
     safeArray = arr;
-  } else if (typeof arr === 'string') {
+  }
+  // Handle comma-separated strings
+  else if (typeof arr === 'string' && arr.includes(',')) {
+    safeArray = arr.split(',').map(item => item.trim()).filter(Boolean);
+  }
+  // Handle newline-separated strings
+  else if (typeof arr === 'string' && arr.includes('\n')) {
+    safeArray = arr.split('\n').map(item => item.trim()).filter(Boolean);
+  }
+  // Handle regular strings
+  else if (typeof arr === 'string') {
+    // If the string is empty or just whitespace, return empty string
+    if (!arr.trim()) return '';
+    
+    // Otherwise treat as a single item
     safeArray = [arr];
-  } else if (typeof arr === 'object') {
+  }
+  // Handle objects
+  else if (typeof arr === 'object') {
     safeArray = Object.values(arr);
-  } else {
+  }
+  // Handle primitive values
+  else {
     safeArray = [String(arr)];
   }
   
-  return safeArray.join('\n');
+  // Join with newlines for textarea display and log the result
+  const result = safeArray.join('\n');
+  console.log("Converted to form string:", result);
+  return result;
 }
 
 // Safely parse JSON with fallback to default value
 function parseJsonOrDefault(jsonString: string | null, defaultValue: any): any {
+  // Early return for null/empty
   if (!jsonString) return defaultValue;
   
-  try {
-    const parsed = JSON.parse(jsonString);
-    
-    if (Array.isArray(defaultValue)) {
-      // If expecting an array
+  console.log("Parsing JSON or fallback:", jsonString, "Expected type:", Array.isArray(defaultValue) ? "array" : typeof defaultValue);
+  
+  // Special handling for arrays (amenities, attractions, languages)
+  if (Array.isArray(defaultValue)) {
+    // First try parsing as JSON
+    try {
+      const parsed = JSON.parse(jsonString);
+      
       if (Array.isArray(parsed)) {
+        console.log("Successfully parsed as JSON array:", parsed);
         return parsed;
       } else if (typeof parsed === 'string') {
+        console.log("Parsed as string, converting to array:", [parsed]);
         return [parsed];
       } else if (parsed && typeof parsed === 'object') {
+        console.log("Parsed as object, extracting values:", Object.values(parsed));
         return Object.values(parsed);
-      } else {
-        return [String(parsed)];
       }
-    } else if (defaultValue && typeof defaultValue === 'object') {
-      // If expecting an object
+    } catch (e) {
+      console.log("Not valid JSON, trying other formats");
+      
+      // Not valid JSON, check different string formats
+      if (typeof jsonString === 'string') {
+        // Try handling comma-separated string
+        if (jsonString.includes(',')) {
+          const items = jsonString.split(',').map(item => item.trim()).filter(Boolean);
+          console.log("Parsed as comma-separated list:", items);
+          return items;
+        }
+        
+        // Try handling newline-separated string
+        if (jsonString.includes('\n')) {
+          const items = jsonString.split('\n').map(item => item.trim()).filter(Boolean);
+          console.log("Parsed as newline-separated list:", items);
+          return items;
+        }
+        
+        // For a plain string with no separators
+        if (jsonString.trim()) {
+          console.log("Single item string:", [jsonString.trim()]);
+          return [jsonString.trim()];
+        }
+      }
+      
+      // All parsing attempts failed, return empty array as fallback
+      console.log("All parsing attempts failed, using default empty array");
+      return defaultValue;
+    }
+  } 
+  
+  // For objects
+  if (defaultValue && typeof defaultValue === 'object' && !Array.isArray(defaultValue)) {
+    try {
+      const parsed = JSON.parse(jsonString);
       if (parsed && typeof parsed === 'object') {
         return parsed;
       }
+    } catch (e) {
+      console.log("Not valid JSON object, using default");
       return defaultValue;
     }
-    
-    // Default case
-    return parsed;
+  }
+  
+  // For primitive types
+  try {
+    return JSON.parse(jsonString);
   } catch (e) {
-    console.error("Error parsing JSON:", e, "Input:", jsonString);
+    // For primitive types, if JSON parse fails just return the string
+    if (typeof defaultValue === 'string' || typeof defaultValue === 'number' || typeof defaultValue === 'boolean') {
+      return jsonString;
+    }
+    console.error("Failed to parse value:", jsonString, e);
     return defaultValue;
   }
 }
@@ -190,21 +263,22 @@ export default function HotelForm({ initialData, onSubmit, isSubmitting }: Hotel
       // Format the data for database storage
       console.log("Form data before formatting:", data);
       
-      // Process nearby attractions specifically - make sure it's a direct string not an array when submitted
+      // Process text fields into arrays for database storage
+      const amenitiesArray = stringToArray(data.amenitiesList || "");
+      const languagesArray = stringToArray(data.languagesList || "");
       const attractionsArray = stringToArray(data.attractionsList || "");
-      console.log("Attractions after stringToArray:", attractionsArray);
       
-      // Join the array with newlines to ensure it's saved in a consistent format
-      const nearbyAttractionsString = attractionsArray.join('\n');
-      console.log("Nearby attractions string to save:", nearbyAttractionsString);
+      console.log("Amenities processed:", amenitiesArray);
+      console.log("Languages processed:", languagesArray);
+      console.log("Attractions processed:", attractionsArray);
       
       const formattedData = {
         ...data,
         destinationId: parseInt(data.destinationId),
-        // Convert form text fields to proper JSON strings for DB storage
-        amenities: stringToArray(data.amenitiesList || ""),
-        languagesSpoken: stringToArray(data.languagesList || ""),
-        nearbyAttractions: nearbyAttractionsString, // Save as plain string with newlines
+        // Format special fields for database
+        amenities: amenitiesArray,
+        languagesSpoken: languagesArray,
+        nearbyAttractions: attractionsArray,
         policies: data.policiesList,
         imageGallery: JSON.stringify(data.imageGalleryUrls || []),
       };
