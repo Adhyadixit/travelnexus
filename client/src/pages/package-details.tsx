@@ -85,6 +85,9 @@ export default function PackageDetails() {
   const [startDate, setStartDate] = useState<Date>();
   const [guests, setGuests] = useState("2");
   
+  // State for image gallery
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
   // Fetch package details
   const { 
     data: packageData,
@@ -309,25 +312,55 @@ export default function PackageDetails() {
           <div className="md:col-span-2">
             {/* Image Gallery */}
             <div className="rounded-xl overflow-hidden mb-6 relative group">
-              <img 
-                src={packageData.imageUrl} 
-                alt={packageData.name} 
-                className="w-full h-[400px] object-cover"
-              />
+              {/* Render current image from gallery or primary image */}
+              {packageData.imageGallery ? (
+                // With gallery
+                <img 
+                  src={currentImageIndex === 0 
+                    ? packageData.imageUrl 
+                    : safeJsonParse(packageData.imageGallery, [])[currentImageIndex - 1]}
+                  alt={`${packageData.name} - Image ${currentImageIndex + 1}`} 
+                  className="w-full h-[400px] object-cover"
+                />
+              ) : (
+                // No gallery, just show main image
+                <img 
+                  src={packageData.imageUrl} 
+                  alt={packageData.name} 
+                  className="w-full h-[400px] object-cover"
+                />
+              )}
+              
               {/* Gallery controls - Only shown if there are gallery images */}
               {packageData.imageGallery && (
                 <>
                   <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full bg-white/80 hover:bg-white"
+                      onClick={() => {
+                        const galleryLength = safeJsonParse(packageData.imageGallery, []).length + 1;
+                        setCurrentImageIndex(prev => prev === 0 ? galleryLength - 1 : prev - 1);
+                      }}
+                    >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="rounded-full bg-white/80 hover:bg-white"
+                      onClick={() => {
+                        const galleryLength = safeJsonParse(packageData.imageGallery, []).length + 1;
+                        setCurrentImageIndex(prev => (prev + 1) % galleryLength);
+                      }}
+                    >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                   {/* Image count indicator - Only shown if gallery exists */}
                   <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                    1/{safeJsonParse(packageData.imageGallery, []).length + 1}
+                    {currentImageIndex + 1}/{safeJsonParse(packageData.imageGallery, []).length + 1}
                   </div>
                 </>
               )}

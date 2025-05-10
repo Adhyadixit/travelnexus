@@ -38,6 +38,8 @@ import {
   HeartPulse,
   Dumbbell,
   BadgePercent,
+  ChevronLeft,
+  ChevronRight,
   CheckCheck
 } from "lucide-react";
 import { format } from "date-fns";
@@ -77,6 +79,9 @@ export default function CruiseDetails() {
   const [startDate, setStartDate] = useState<Date>();
   const [guests, setGuests] = useState("2");
   const [selectedCabinType, setSelectedCabinType] = useState<string | null>(null);
+  
+  // State for image gallery navigation
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Fetch cruise details
   const { 
@@ -417,26 +422,55 @@ export default function CruiseDetails() {
       <div className="bg-white">
         <div className="container mx-auto px-4 py-8">
           <div className="relative overflow-hidden rounded-xl h-[300px] md:h-[500px] group">
-            <img 
-              src={cruise.imageUrl} 
-              alt={cruise.name} 
-              className="w-full h-full object-cover"
-            />
+            {/* Render current image from gallery or primary image */}
+            {cruise.imageGallery ? (
+              // With gallery
+              <img 
+                src={currentImageIndex === 0 
+                  ? cruise.imageUrl 
+                  : safeJsonParse(cruise.imageGallery, [])[currentImageIndex - 1]}
+                alt={`${cruise.name} - Image ${currentImageIndex + 1}`} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              // No gallery, just show main image
+              <img 
+                src={cruise.imageUrl} 
+                alt={cruise.name} 
+                className="w-full h-full object-cover"
+              />
+            )}
             
             {/* Gallery controls - Only shown if gallery exists */}
             {cruise.imageGallery && (
               <>
                 <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={() => {
+                      const galleryLength = safeJsonParse(cruise.imageGallery, []).length + 1;
+                      setCurrentImageIndex(prev => prev === 0 ? galleryLength - 1 : prev - 1);
+                    }}
+                  >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full bg-white/80 hover:bg-white">
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-full bg-white/80 hover:bg-white"
+                    onClick={() => {
+                      const galleryLength = safeJsonParse(cruise.imageGallery, []).length + 1;
+                      setCurrentImageIndex(prev => (prev + 1) % galleryLength);
+                    }}
+                  >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
                 {/* Image count indicator - Only shown if gallery exists */}
                 <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                  1/{safeJsonParse(cruise.imageGallery, []).length + 1}
+                  {currentImageIndex + 1}/{safeJsonParse(cruise.imageGallery, []).length + 1}
                 </div>
               </>
             )}
