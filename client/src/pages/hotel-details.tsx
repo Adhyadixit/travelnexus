@@ -747,55 +747,57 @@ export default function HotelDetails() {
               </div>
             </section>
 
-            {/* Room Types & Booking Options Section */}
+            {/* Room Types & Booking Options Section - Improved for desktop */}
             <section id="booking-section" className="mb-10">
               <h2 className="text-2xl font-heading font-bold mb-6">Available Rooms</h2>
 
               <div className="space-y-6">
                 {roomTypes.map((room: any) => (
-                  <Card key={room.id} className={`overflow-hidden ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-4">
-                      <div className="md:col-span-1">
+                  <Card key={room.id} className={`overflow-hidden hover:shadow-md transition-shadow ${selectedRoom === room.id ? 'ring-2 ring-primary' : ''}`}>
+                    <div className={`grid grid-cols-1 ${isDesktop ? 'md:grid-cols-12' : 'md:grid-cols-4'}`}>
+                      <div className={`${isDesktop ? 'md:col-span-3' : 'md:col-span-1'} h-52 md:h-auto`}>
                         <img 
                           src={room.images[0] || hotel.imageUrl} 
                           alt={room.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="p-4 md:col-span-3">
-                        <div className="flex justify-between">
-                          <h3 className="text-xl font-heading font-bold">{room.name}</h3>
-                          <div className="text-right">
+                      <div className={`p-5 ${isDesktop ? 'md:col-span-9' : 'md:col-span-3'}`}>
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2">
+                          <div>
+                            <h3 className="text-xl font-heading font-bold text-neutral-800">{room.name}</h3>
+                            <p className="text-neutral-600 my-2">{room.description}</p>
+                          </div>
+                          <div className="text-left md:text-right md:min-w-[120px]">
                             <div className="text-lg font-bold text-primary">{formatCurrency(room.price)}</div>
                             <div className="text-sm text-neutral-500">per night</div>
                           </div>
                         </div>
 
-                        <p className="text-neutral-600 my-2">{room.description}</p>
-
-                        <div className="flex items-center text-neutral-600 mb-2">
-                          <User className="w-4 h-4 mr-1" />
+                        <div className="flex items-center text-neutral-600 mb-3 mt-4">
+                          <User className="w-4 h-4 mr-2" />
                           <span>Up to {room.capacity} guests</span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 my-3">
+                        <div className={`grid ${isDesktop ? 'grid-cols-3' : 'grid-cols-2'} gap-3 my-4`}>
                           {room.amenities.map((amenity: string, index: number) => (
                             <div key={index} className="flex items-center text-sm">
-                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-1" />}
-                              <span className="ml-1">{amenity}</span>
+                              {AMENITY_ICONS[amenity] || <Check className="w-4 h-4 text-primary mr-2" />}
+                              <span>{amenity}</span>
                             </div>
                           ))}
                         </div>
 
                         {room.cancellation && (
-                          <div className="text-sm text-green-600 flex items-center mb-4">
-                            <Check className="w-4 h-4 mr-1" />
+                          <div className="text-sm text-green-600 flex items-center mb-4 mt-2">
+                            <Check className="w-4 h-4 mr-2" />
                             <span>{room.cancellation}</span>
                           </div>
                         )}
 
-                        <div className="mt-4 flex justify-end">
+                        <div className="mt-6 flex justify-end">
                           <Button 
+                            className="min-w-[140px]"
                             variant={selectedRoom === room.id ? "default" : "outline"}
                             onClick={() => {
                               setSelectedRoom(room.id);
@@ -972,9 +974,9 @@ export default function HotelDetails() {
           {/* Booking Sidebar */}
           {/* Booking sidebar - improved for desktop */}
           <div className={`${isDesktop ? 'lg:col-span-4' : 'lg:col-span-1'}`}>
-            <Card className="sticky top-4 shadow-md" ref={bookingFormRef}>
+            <Card className="sticky top-4 shadow-lg border border-gray-100 rounded-xl" ref={bookingFormRef}>
               <CardContent className="p-6">
-                <h2 className="text-xl font-heading font-bold mb-4">Book Your Stay</h2>
+                <h2 className="text-xl font-heading font-bold mb-5 text-center md:text-left">Book Your Stay</h2>
 
                 <div className="space-y-4">
                   <div className="room-selector-container">
