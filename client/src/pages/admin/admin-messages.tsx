@@ -115,6 +115,7 @@ export default function AdminMessages() {
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [remoteTypingUsers, setRemoteTypingUsers] = useState<{[conversationId: string]: boolean}>({});
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   
   // Initialize the socket connection for real-time updates
   useEffect(() => {
@@ -189,14 +190,7 @@ export default function AdminMessages() {
     };
   }, [selectedConversation]);
   
-  // Handle cleanup for typing timeout
-  useEffect(() => {
-    return () => {
-      if (typingTimeout) {
-        clearTimeout(typingTimeout);
-      }
-    };
-  }, [typingTimeout]);
+  // Handle cleanup is managed in a separate effect
 
   // Use direct database access to fetch conversations with user data
   const {
@@ -279,7 +273,6 @@ export default function AdminMessages() {
 
   // State for typing indicator to show when admin is typing
   const [isTyping, setIsTyping] = useState(false);
-  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
   
   // Clean up typing timeout on unmount
   useEffect(() => {
