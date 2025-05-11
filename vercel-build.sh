@@ -14,8 +14,5 @@ npx drizzle-kit push --accept-data-loss
 echo "Building frontend..."
 npm run build
 
-# Compile TypeScript for serverless functions
-echo "Compiling TypeScript for serverless functions..."
-npx tsc --project tsconfig.vercel.json
 
 echo "Build completed successfully!"

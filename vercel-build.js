@@ -17,9 +17,6 @@ try {
   console.log('Building frontend...');
   execSync('npm run build', { stdio: 'inherit' });
   
-  // Compile TypeScript for serverless functions
-  console.log('Compiling TypeScript for serverless functions...');
-  execSync('tsc --project tsconfig.vercel.json', { stdio: 'inherit' });
   
   console.log('Build completed successfully!');
 } catch (error) {
