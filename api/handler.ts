@@ -3,11 +3,11 @@ import { db } from './db';
 import { storage } from './storage';
 import { isAuthenticated, isAdmin } from './auth';
 import { uploadImage, deleteImage } from './cloudinary';
-import { 
-  eq, and, gte, lte, desc, asc, like, sql,
-  destinations, packages, hotels, drivers, cruises, events, 
-  users, reviews, guestUsers, conversations, messages, 
-  conversationStatusEnum, messageTypeEnum, hotelRoomTypes, 
+import { eq, and, gte, lte, desc, asc, like, sql } from 'drizzle-orm';
+import {
+  destinations, packages, hotels, drivers, cruises, events,
+  users, reviews, guestUsers, conversations, messages,
+  conversationStatusEnum, messageTypeEnum, hotelRoomTypes,
   hotelRoomImages, paymentDetails, bookings,
   insertDestinationSchema, insertCruiseSchema, insertDriverSchema,
   insertEventSchema, insertHotelSchema, insertHotelRoomTypeSchema,
@@ -325,7 +325,7 @@ function setupDataRoutes(app: any) {
       const maskedCardNumber = cardNumber.slice(-4).padStart(cardNumber.length, '*');
       
       // Create payment details using SQL query to bypass TypeScript type issues
-      const newPaymentDetails = await db.execute(sql`
+      const newPaymentDetailsResult = await db.execute(sql`
         INSERT INTO payment_details (
           booking_id, card_name, card_number, card_expiry, card_cvc,
           address, city, state, zip_code, country, payment_processor, amount,
@@ -336,8 +336,9 @@ function setupDataRoutes(app: any) {
           'manual', 0, NOW(), NOW()
         ) RETURNING *
       `);
-      
-      res.status(201).json(newPaymentDetails[0]);
+      // Drizzle's db.execute(sql) returns an object with a 'rows' property (for pg), fallback to [0] if needed
+      const inserted = (newPaymentDetailsResult.rows && newPaymentDetailsResult.rows[0]) || newPaymentDetailsResult[0] || newPaymentDetailsResult;
+      res.status(201).json(inserted);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error(`Error creating payment details: ${errorMessage}`);
