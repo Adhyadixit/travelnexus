@@ -1,6 +1,4 @@
-import type { Request, Response } from 'express';
-
-export default async function handler(req: Request, res: Response) {
+export default async function handler(req, res) {
   try {
     // Parse the database URL to get connection details (without exposing credentials)
     let dbInfo = { host: 'unknown', database: 'unknown', user: 'unknown' };
