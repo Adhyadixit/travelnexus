@@ -18,6 +18,6 @@
       "@assets/*": ["attached_assets/*"]
     }
   },
-  "include": ["api/**/*.ts", "server/**/*.ts", "shared/**/*.ts"],
+  "include": ["server/**/*.ts", "shared/**/*.ts"],
   "exclude": ["node_modules", "dist", "client"]
 }
