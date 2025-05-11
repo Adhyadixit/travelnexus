@@ -1,8 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { registerRoutes } from './routes.js';
+// Import the consolidated handler instead of individual routes
+import { setupAllRoutes } from './handler';
 
 // Import serverless database connection
-import '../server/db-serverless.js';
+import './db-serverless';
 
 // Create Express app
 const app = express();
@@ -22,13 +23,14 @@ app.use((req, res, next) => {
 
 // Setup API routes
 let routesRegistered = false;
-let routePromise: Promise<any> | null = null;
 
 async function initializeRoutes() {
-  if (!routePromise) {
-    routePromise = registerRoutes(app);
+  if (!routesRegistered) {
+    // Use our consolidated handler to setup all routes
+    setupAllRoutes(app);
+    routesRegistered = true;
   }
-  return routePromise;
+  return Promise.resolve();
 }
 
 // Create an API handler for Vercel
